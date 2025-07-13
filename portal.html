@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="#HUMANITY Web Portal - Access your dashboard and verify your humanity.">
+  <title>#HUMANITY Web Portal</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+    header {
+      padding: 30px 20px;
+    }
+    header h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.5rem;
+      color: #00f6ff;
+      text-shadow: 0 0 10px #00f6ff;
+      margin: 0;
+    }
+    nav {
+      margin-top: 15px;
+    }
+    nav a {
+      color: #00f6ff;
+      text-decoration: none;
+      margin: 0 15px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #00c6d7;
+    }
+    .content {
+      max-width: 900px;
+      width: 100%;
+      text-align: left;
+      margin: 30px auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #00f6ff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 20px rgba(0, 246, 255, 0.3);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 25px rgba(0, 246, 255, 0.6);
+    }
+    .card h2 {
+      font-family: 'Orbitron', sans-serif;
+      color: #00f6ff;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+    .card p {
+      line-height: 1.6;
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+    .button {
+      background: linear-gradient(135deg, #00f6ff, #0066ff);
+      border: none;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.3s;
+    }
+    .button:hover {
+      background: linear-gradient(135deg, #00c6d7, #0044aa);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Welcome to the #HUMANITY Web Portal</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="verify.html">Verify Identity</a>
+      <a href="profile.html">Profile</a>
+    </nav>
+  </header>
+
+  <div class="content">
+    <div class="card">
+      <h2>Verify Your Identity</h2>
+      <p>Start the verification process to prove your humanity securely using advanced biometrics and encryption.</p>
+      <a href="verify.html" class="button">Start Verification</a>
+    </div>
+
+    <div class="card">
+      <h2>View or Edit Your Profile</h2>
+      <p>Update your personal information, customize your avatar, and manage your verification status easily.</p>
+      <a href="profile.html" class="button">Go to Profile</a>
+    </div>
+  </div>
+
+  <!-- Firebase SDK and Initialization -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js';
+    import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-analytics.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
+      measurementId: "G-3ZTCXL4374"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    console.log('Firebase Initialized:', app);
+  </script>
+
+</body>
+</html>
