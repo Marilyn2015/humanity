@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="#HUMANITY: Prove you're real in the digital age.">
-  <meta name="author" content="#HUMANITY Team">
-  <title>#HUMANITY Landing Page</title>
+  <meta name="description" content="#HUMANITY Web Portal">
+  <title>#HUMANITY Web Portal</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap" rel="stylesheet">
   <style>
@@ -20,80 +19,47 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      overflow-x: hidden;
     }
     h1 {
       font-family: 'Orbitron', sans-serif;
       font-size: 2.5em;
       color: #00f6ff;
-      margin-bottom: 0.5em;
-      text-shadow: 0 0 10px #00f6ff;
+      margin-bottom: 1em;
     }
-    p {
-      max-width: 600px;
-      margin: 0 auto 1.5em auto;
-      font-size: 1.2em;
-    }
-    .appLinks a {
+    .button {
       display: inline-block;
-      text-decoration: none;
-      background: linear-gradient(135deg, #00f6ff, #0066ff);
-      color: #ffffff;
-      padding: 15px 30px;
-      border-radius: 12px;
+      background: #000000;
+      color: #ff00ff;
+      padding: 15px 40px;
+      width: 240px;
+      text-align: center;
+      border: 2px solid #ff00ff;
+      border-radius: 0;
       font-weight: bold;
-      font-size: 1.1em;
-      box-shadow: 0 4px 15px rgba(0, 246, 255, 0.4);
-      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+      font-size: 1em;
+      margin: 10px 0;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+      transition: background 0.3s, transform 0.3s, box-shadow 0.3s, border-color 0.3s;
     }
-    .appLinks a:hover {
-      background: linear-gradient(135deg, #00c6d7, #0044aa);
-      transform: translateY(-3px);
-      box-shadow: 0 6px 20px rgba(0, 198, 215, 0.6);
-    }
-    canvas {
-      width: 500px !important;
-      height: 500px !important;
-      display: block;
-      margin: 20px auto;
+    .button:hover {
+      background: #ff00ff;
+      color: #000000;
+      border-color: #ff00ff;
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff;
     }
   </style>
 </head>
 <body>
 
-  <canvas id="globe"></canvas>
+  <h1>Welcome to the #HUMANITY Web Portal</h1>
 
-  <h1>#HUMANITY: Prove You're Real</h1>
-  <p>Join the decentralized movement to verify human identity using biometrics, powered by privacy, security, and integrity.</p>
-
-  <div class="appLinks">
-    <a href="https://github.com/Marilyn2015/Humanity/blob/main/portal.html">Enter the Web Portal</a>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
-  <script>
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('globe'), alpha: true });
-    renderer.setSize(500, 500);
-
-    const geometry = new THREE.SphereGeometry(1, 32, 32);
-    const material = new THREE.MeshBasicMaterial({
-      map: new THREE.TextureLoader().load('https://raw.githubusercontent.com/jeromeetienne/threex.planets/master/images/earthmap1k.jpg'),
-      transparent: true
-    });
-    const globe = new THREE.Mesh(geometry, material);
-    scene.add(globe);
-
-    camera.position.z = 3;
-
-    function animate() {
-      requestAnimationFrame(animate);
-      globe.rotation.y += 0.01;
-      renderer.render(scene, camera);
-    }
-    animate();
-  </script>
+  <a href="#" class="button">Create Digital Profile</a>
+  <a href="#" class="button">My Digital Profile</a>
+  <a href="#" class="button">Verify Identity</a>
 
 </body>
 </html>
