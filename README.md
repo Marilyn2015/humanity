@@ -1,1 +1,1 @@
-# -Humanity
+Humanity
