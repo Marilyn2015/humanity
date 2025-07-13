@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="#HUMANITY Web Portal - Access your dashboard and verify your humanity.">
-  <title>#HUMANITY Web Portal</title>
+  <meta name="description" content="#HUMANITY Portal - Access your dashboard and verify your humanity.">
+  <title>#HUMANITY Portal</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap" rel="stylesheet">
   <style>
@@ -13,6 +13,7 @@
       font-family: 'Roboto', sans-serif;
       background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
       color: #ffffff;
+      text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -27,10 +28,6 @@
       font-size: 2.5rem;
       color: #00f6ff;
       text-shadow: 0 0 10px #00f6ff;
-      margin: 0;
-    }
-    nav {
-      margin-top: 15px;
     }
     nav a {
       color: #00f6ff;
@@ -48,9 +45,6 @@
       width: 100%;
       text-align: left;
       margin: 30px auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
     }
     .card {
       background: #1a1a1a;
@@ -58,22 +52,15 @@
       border-radius: 12px;
       padding: 20px;
       box-shadow: 0 0 20px rgba(0, 246, 255, 0.3);
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0 25px rgba(0, 246, 255, 0.6);
+      margin-bottom: 20px;
     }
     .card h2 {
       font-family: 'Orbitron', sans-serif;
       color: #00f6ff;
-      font-size: 1.5rem;
-      margin-bottom: 10px;
     }
     .card p {
       line-height: 1.6;
       font-size: 1rem;
-      margin-bottom: 20px;
     }
     .button {
       background: linear-gradient(135deg, #00f6ff, #0066ff);
@@ -95,7 +82,7 @@
 <body>
 
   <header>
-    <h1>Welcome to the #HUMANITY Web Portal</h1>
+    <h1>Welcome to the #HUMANITY Portal</h1>
     <nav>
       <a href="index.html">Home</a>
       <a href="verify.html">Verify Identity</a>
@@ -116,27 +103,6 @@
       <a href="profile.html" class="button">Go to Profile</a>
     </div>
   </div>
-
-  <!-- Firebase SDK and Initialization -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js';
-    import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-analytics.js';
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-      authDomain: "hashhumanity-58b9a.firebaseapp.com",
-      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-      projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.appspot.com",
-      messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
-      measurementId: "G-3ZTCXL4374"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    console.log('Firebase Initialized:', app);
-  </script>
 
 </body>
 </html>
