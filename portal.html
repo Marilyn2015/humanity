@@ -3,16 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="#HUMANITY Web Portal">
+  <meta name="description" content="#HUMANITY Portal">
   <title>#HUMANITY Web Portal</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
-      font-family: 'Roboto', sans-serif;
+      font-family: 'Orbitron', Tahoma, sans-serif;
       background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: #ffffff;
+      color: #00f6ff;
       text-align: center;
       display: flex;
       flex-direction: column;
@@ -21,34 +19,29 @@
       min-height: 100vh;
     }
     h1 {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 2.5em;
-      color: #00f6ff;
-      margin-bottom: 1em;
+      font-size: 3em;
+      text-shadow: 0 0 15px #00f6ff;
+      margin-bottom: 30px;
     }
     .button {
-      display: inline-block;
-      background: #000000;
+      background: #000;
       color: #ff00ff;
-      padding: 15px 40px;
-      width: 240px;
-      text-align: center;
       border: 2px solid #ff00ff;
-      border-radius: 0;
+      border-radius: 6px;
       font-weight: bold;
-      font-size: 1em;
-      margin: 10px 0;
-      text-decoration: none;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
-      transition: background 0.3s, transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+      padding: 15px 40px;
+      margin: 12px 0;
+      font-size: 1em;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff;
+      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
     }
     .button:hover {
       background: #ff00ff;
-      color: #000000;
-      border-color: #ff00ff;
-      transform: translateY(-2px);
+      color: #000;
+      transform: translateY(-3px);
       box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff;
     }
   </style>
@@ -57,9 +50,8 @@
 
   <h1>Welcome to the #HUMANITY Web Portal</h1>
 
-  <a href="#" class="button">Create Digital Profile</a>
-  <a href="#" class="button">My Digital Profile</a>
-  <a href="#" class="button">Verify Identity</a>
+  <a href="#" class="button">Register World ID</a>
+  <a href="create-profile.html" class="button">Connect via World ID</a>
 
 </body>
 </html>
