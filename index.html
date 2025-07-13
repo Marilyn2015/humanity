@@ -1,63 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="#HUMANITY: Prove you're real in the digital age. Decentralized human verification via privacy-focused biometrics." />
+  <meta name="author" content="#HUMANITY Team" />
   <title>#HUMANITY Landing Page</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="https://yourdomain.com/favicon.ico" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap" rel="stylesheet">
+
   <style>
     body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
       background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color: #ffffff;
       text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-    .landingPage {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 20px;
+      overflow-x: hidden;
     }
-    .mobileBranding img {
-      max-width: 180px;
-      margin: 10px;
-    }
-    
-    .branding img {
-      margin: 5px;
-    }
-    .text h1 {
+    h1 {
+      font-family: 'Orbitron', sans-serif;
       font-size: 2.5em;
-      margin-bottom: 10px;
       color: #00f6ff;
+      margin-bottom: 0.5em;
+      text-shadow: 0 0 10px #00f6ff;
     }
-    .text p {
-      font-size: 1.2em;
+    p {
       max-width: 600px;
-      margin: 0 auto 20px;
-    }
-    .actions {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
+      margin: 0 auto 1.5em auto;
+      font-size: 1.2em;
     }
     .qrCode img {
+      width: 180px;
       border: 2px solid #00f6ff;
       border-radius: 10px;
       background: #ffffff;
+      margin-bottom: 20px;
     }
     .appLinks a {
+      display: inline-block;
       text-decoration: none;
-      color: #ffffff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
       background: linear-gradient(135deg, #00f6ff, #0066ff);
+      color: #ffffff;
       padding: 15px 30px;
       border-radius: 12px;
       font-weight: bold;
@@ -70,47 +63,42 @@
       transform: translateY(-3px);
       box-shadow: 0 6px 20px rgba(0, 198, 215, 0.6);
     }
-    .appLinks img {
-      width: 120px;
-    }
     canvas {
-  width: 600px !important;
-  height: 600px !important;
-  display: block;
-  margin: 10px auto 20px auto;
-}
+      width: 300px !important;
+      height: 300px !important;
+      display: block;
+      margin: 20px auto;
+      animation: pulse 3s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    video {
+      width: 90%;
+      max-width: 600px;
+      border: 2px solid #00f6ff;
+      border-radius: 12px;
+      margin: 20px auto;
+      box-shadow: 0 0 20px rgba(0, 246, 255, 0.5);
+    }
   </style>
 </head>
 <body>
 
-  <div class="landingPage">
-    
+  <canvas id="globe"></canvas>
 
-    <canvas id="globe" style="margin: 0 auto 10px auto;"></canvas>
+  <video src="https://hashhumanity.net/promo.mp4" autoplay muted loop playsinline></video>
 
-    <div class="landingVideo">
-      <video src="https://hashhumanity.net/promo.mp4" autoplay muted loop playsinline width="576"></video>
-    </div>
+  <h1>#HUMANITY: Prove You're Real</h1>
+  <p>Join the decentralized movement to verify human identity using biometrics, powered by privacy, security, and integrity.</p>
 
-    <div class="landingInfo" style="margin-top: -300px;">
-      
+  <div class="qrCode">
+    <img src="https://yourdomain.com/humanity_qr.png" alt="QR Code to Join #HUMANITY">
+  </div>
 
-      <div class="text">
-        <h1>#HUMANITY: Prove You're Real in the Digital Age</h1>
-        <p>Join the decentralized movement to verify human identity using biometrics, powered by privacy, security, and integrity.</p>
-      </div>
-
-      <div class="actions">
-        <div class="qrCode">
-          <img src="/humanity_qr.png" width="180" alt="QR Code">
-        </div>
-        <div class="appLinks">
-          <a href="/home">
-            <p>Enter via Web Portal</p>
-          </a>
-        </div>
-      </div>
-    </div>
+  <div class="appLinks">
+    <a href="social.html">Enter via Web Portal</a>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
@@ -118,7 +106,7 @@
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('globe'), alpha: true });
-    renderer.setSize(600, 600);
+    renderer.setSize(300, 300);
 
     const geometry = new THREE.SphereGeometry(1, 32, 32);
     const material = new THREE.MeshBasicMaterial({
@@ -134,8 +122,31 @@
       globe.rotation.y += 0.01;
       renderer.render(scene, camera);
     }
-
     animate();
+  </script>
+
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script type="module">
+    // Import the functions from Firebase SDK
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-analytics.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
+      measurementId: "G-3ZTCXL4374"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    console.log('Firebase Initialized:', app);
   </script>
 
 </body>
