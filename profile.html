@@ -1,62 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="description" content="Create Digital Profile">
   <title>Create Digital Profile</title>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, setDoc, doc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-      authDomain: "hashhumanity-58b9a.firebaseapp.com",
-      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-      projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.appspot.com",
-      messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
-      measurementId: "G-3ZTCXL4374"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    window.saveProfileData = async () => {
-      const photoInput = document.getElementById('photoInput');
+  <script>
+    async function saveProfileData() {
       const usernameInput = document.getElementById('username');
       const aboutInput = document.getElementById('about');
 
-      if (!photoInput.files.length || !usernameInput.value.trim() || !aboutInput.value.trim()) {
+      if (!usernameInput.value.trim() || !aboutInput.value.trim()) {
         alert('Please complete all fields before proceeding.');
         return;
       }
 
-      const file = photoInput.files[0];
-      const username = usernameInput.value.trim();
-      const about = aboutInput.value.trim();
-
       try {
-        const storageRef = ref(storage, `avatars/${username}`);
-        await uploadBytes(storageRef, file);
-        const avatarURL = await getDownloadURL(storageRef);
-
-        await setDoc(doc(db, "users", username), {
-          username,
-          about,
-          avatarURL
-        });
-
-        console.log('Profile saved to Firebase');
+        console.log('Profile data ready to be saved.');
+        // Redirect to universe.html after validation
         window.location.href = 'universe.html';
       } catch (error) {
-        console.error('Error saving profile:', error);
-        alert('Failed to save profile.');
+        console.error('Unexpected error:', error);
+        alert('An error occurred while processing your profile.');
       }
-    };
+    }
   </script>
   <style>
     body {
@@ -129,7 +96,7 @@
 
   <div class="avatar-preview" id="avatarPreview"></div>
 
-  <input type="file" id="photoInput" accept="image/*" required>
+  <input type="file" id="photoInput" accept="image/*">
   <input type="text" id="username" placeholder="Enter your username" required>
   <textarea id="about" placeholder="Write something about yourself..." required></textarea>
   <button id="saveProfile" onclick="saveProfileData()">Save Profile</button>
