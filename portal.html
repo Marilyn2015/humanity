@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="#HUMANITY Portal - Access your dashboard and verify your humanity.">
-  <title>#HUMANITY Portal</title>
+  <meta name="description" content="#HUMANITY: Prove you're real in the digital age.">
+  <meta name="author" content="#HUMANITY Team">
+  <title>#HUMANITY Landing Page</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Roboto&display=swap" rel="stylesheet">
   <style>
@@ -17,92 +18,82 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       min-height: 100vh;
-      text-align: center;
+      overflow-x: hidden;
     }
-    header {
-      padding: 30px 20px;
-    }
-    header h1 {
+    h1 {
       font-family: 'Orbitron', sans-serif;
-      font-size: 2.5rem;
+      font-size: 2.5em;
       color: #00f6ff;
+      margin-bottom: 0.5em;
       text-shadow: 0 0 10px #00f6ff;
     }
-    nav a {
-      color: #00f6ff;
-      text-decoration: none;
-      margin: 0 15px;
-      font-weight: bold;
-      font-size: 1.1rem;
-      transition: color 0.3s;
+    p {
+      max-width: 600px;
+      margin: 0 auto 1.5em auto;
+      font-size: 1.2em;
     }
-    nav a:hover {
-      color: #00c6d7;
-    }
-    .content {
-      max-width: 900px;
-      width: 100%;
-      text-align: left;
-      margin: 30px auto;
-    }
-    .card {
-      background: #1a1a1a;
-      border: 1px solid #00f6ff;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 0 20px rgba(0, 246, 255, 0.3);
-      margin-bottom: 20px;
-    }
-    .card h2 {
-      font-family: 'Orbitron', sans-serif;
-      color: #00f6ff;
-    }
-    .card p {
-      line-height: 1.6;
-      font-size: 1rem;
-    }
-    .button {
-      background: linear-gradient(135deg, #00f6ff, #0066ff);
-      border: none;
-      color: white;
-      padding: 12px 25px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      text-decoration: none;
+    .appLinks a {
       display: inline-block;
-      transition: background 0.3s;
+      text-decoration: none;
+      background: linear-gradient(135deg, #00f6ff, #0066ff);
+      color: #ffffff;
+      padding: 15px 30px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 1.1em;
+      box-shadow: 0 4px 15px rgba(0, 246, 255, 0.4);
+      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
     }
-    .button:hover {
+    .appLinks a:hover {
       background: linear-gradient(135deg, #00c6d7, #0044aa);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 198, 215, 0.6);
+    }
+    canvas {
+      width: 500px !important;
+      height: 500px !important;
+      display: block;
+      margin: 20px auto;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Welcome to the #HUMANITY Portal</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="verify.html">Verify Identity</a>
-      <a href="profile.html">Profile</a>
-    </nav>
-  </header>
+  <canvas id="globe"></canvas>
 
-  <div class="content">
-    <div class="card">
-      <h2>Verify Your Identity</h2>
-      <p>Start the verification process to prove your humanity securely using advanced biometrics and encryption.</p>
-      <a href="verify.html" class="button">Start Verification</a>
-    </div>
+  <h1>#HUMANITY: Prove You're Real</h1>
+  <p>Join the decentralized movement to verify human identity using biometrics, powered by privacy, security, and integrity.</p>
 
-    <div class="card">
-      <h2>View or Edit Your Profile</h2>
-      <p>Update your personal information, customize your avatar, and manage your verification status easily.</p>
-      <a href="profile.html" class="button">Go to Profile</a>
-    </div>
+  <div class="appLinks">
+    <a href="https://github.com/Marilyn2015/Humanity/blob/main/portal.html">Enter the Web Portal</a>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
+  <script>
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('globe'), alpha: true });
+    renderer.setSize(500, 500);
+
+    const geometry = new THREE.SphereGeometry(1, 32, 32);
+    const material = new THREE.MeshBasicMaterial({
+      map: new THREE.TextureLoader().load('https://raw.githubusercontent.com/jeromeetienne/threex.planets/master/images/earthmap1k.jpg'),
+      transparent: true
+    });
+    const globe = new THREE.Mesh(geometry, material);
+    scene.add(globe);
+
+    camera.position.z = 3;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      globe.rotation.y += 0.01;
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
 
 </body>
 </html>
