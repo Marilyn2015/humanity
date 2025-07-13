@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="The Universe - #HUMANITY Social Media"/>
+  <title>#HUMANITY Universe</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Tahoma, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #00f6ff;
+      text-shadow: 0 0 10px #00f6ff;
+      margin-bottom: 20px;
+    }
+    .nav-button {
+      background: #000;
+      color: #ff00ff;
+      border: 2px solid #ff00ff;
+      border-radius: 6px;
+      font-weight: bold;
+      text-transform: uppercase;
+      padding: 10px 20px;
+      cursor: pointer;
+      box-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff;
+      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+      margin-bottom: 20px;
+    }
+    .nav-button:hover {
+      background: #ff00ff;
+      color: #000;
+      transform: translateY(-3px);
+      box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+    }
+    .search-bar input, .post-form textarea {
+      width: 90%;
+      max-width: 400px;
+      padding: 10px;
+      background: #222;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      margin: 10px 0;
+    }
+    .post-form button {
+      background: #000;
+      color: #ff00ff;
+      border: 2px solid #ff00ff;
+      border-radius: 6px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+    .feed {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .post {
+      text-align: left;
+      background: #222;
+      margin: 10px 0;
+      padding: 10px;
+      border-left: 3px solid #00f6ff;
+      border-radius: 6px;
+    }
+    .username {
+      font-weight: bold;
+      color: #00f6ff;
+    }
+    .profile-link {
+      color: #ff00ff;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .timestamp {
+      font-size: 0.8em;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Welcome to the Universe</h1>
+
+  <button class="nav-button" onclick="location.href='profile.html'">My Digital Profile</button>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search for users..." onkeyup="searchUsers()">
+  </div>
+
+  <div class="post-form">
+    <textarea id="newPostContent" placeholder="What's on your mind?"></textarea>
+    <button onclick="submitPost()">Post</button>
+  </div>
+
+  <div class="feed" id="feed"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    function submitPost() {
+      const content = document.getElementById('newPostContent').value.trim();
+      if (!content) {
+        alert('Please write something to post.');
+        return;
+      }
+
+      database.ref('posts').push({
+        username: '@You',
+        content: content,
+        timestamp: new Date().toLocaleString()
+      });
+
+      document.getElementById('newPostContent').value = '';
+    }
+
+    function loadPosts() {
+      database.ref('posts').on('child_added', snapshot => {
+        const post = snapshot.val();
+        const postContainer = document.createElement('div');
+        postContainer.className = 'post';
+        postContainer.innerHTML = `
+          <div class="username"><a class="profile-link" href="#">${post.username}</a></div>
+          <div>${post.content}</div>
+          <div class="timestamp">${post.timestamp}</div>
+        `;
+        document.getElementById('feed').prepend(postContainer);
+      });
+    }
+
+    function searchUsers() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const posts = document.querySelectorAll('.post');
+
+      posts.forEach(post => {
+        const username = post.querySelector('.username').textContent.toLowerCase();
+        post.style.display = username.includes(query) ? 'block' : 'none';
+      });
+    }
+
+    window.onload = loadPosts;
+  </script>
+
+</body>
+</html>
