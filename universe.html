@@ -5,6 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>#HUMANITY Universe</title>
   <link rel="stylesheet" href="https://marilyn2015.github.io/Humanity/styles.css">
+  <style>
+    body {
+      background: url('https://cdn.pixabay.com/photo/2017/08/30/00/05/space-2695569_1280.jpg') no-repeat center center fixed;
+      background-size: cover;
+      font-family: Tahoma, sans-serif;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .post {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid #00ffcc;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 10px auto;
+      max-width: 600px;
+      text-align: left;
+    }
+    .like-btn {
+      background: transparent;
+      border: none;
+      color: #ff69b4;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
@@ -38,12 +69,11 @@
     const firestore = getFirestore(app);
     const postRef = ref(db, 'posts');
 
-    // Submit new post
     window.submitPost = async () => {
       const content = document.getElementById('newPostContent').value.trim();
       if (!content) return alert('Please write something to post.');
 
-      const userId = "user_" + Date.now(); // Simulated unique ID
+      const userId = "user_" + Date.now();
       await setDoc(doc(firestore, "profiles", userId), {
         displayName: "You",
         photoURL: "https://via.placeholder.com/32",
@@ -61,7 +91,6 @@
       document.getElementById('newPostContent').value = '';
     };
 
-    // Display posts
     onChildAdded(postRef, async (snapshot) => {
       const post = snapshot.val();
       let displayName = "@Unknown";
@@ -102,7 +131,6 @@
       document.getElementById('feed').appendChild(postContainer);
     });
 
-    // Like button
     window.likePost = (btn) => {
       const countSpan = btn.querySelector('.like-count');
       let count = parseInt(countSpan.textContent);
@@ -110,7 +138,6 @@
       countSpan.textContent = Math.max(count + (liked ? 1 : -1), 0);
     };
 
-    // Seed mock profiles
     const profiles = {
       neo: {
         displayName: "Neo",
@@ -138,7 +165,6 @@
       if (!docSnap.exists()) await setDoc(docRef, data);
     });
 
-    // Seed mock posts
     const mockPosts = [
       { userId: "neo", message: "I am the One.", likes: 3 },
       { userId: "trinity", message: "Let’s ride.", likes: 5 },
