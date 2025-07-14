@@ -4,83 +4,203 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Digital Profile</title>
-  <link rel="stylesheet" href="https://marilyn2015.github.io/Humanity/styles.css">
   <style>
     body {
-      background: url('https://marilyn2015.github.io/Humanity/universe-bg.jpg') no-repeat center center fixed;
-      background-size: cover;
+      background: #000;
+      font-family: 'Orbitron', sans-serif;
+      color: #00ffcc;
+      text-align: center;
+      margin: 0;
+      padding: 0;
     }
     .profile-container {
-      background: rgba(0,0,0,0.7);
+      background: #111;
+      border: 2px solid #00ffcc;
       padding: 20px;
-      border-radius: 12px;
-      max-width: 800px;
+      max-width: 600px;
       margin: 20px auto;
-      color: #fff;
+      box-shadow: 0 0 25px #00ffcc;
     }
     .avatar-preview {
-      width: 150px;
-      height: 150px;
+      width: 120px;
+      height: 120px;
+      border: 2px solid #00ffcc;
       border-radius: 50%;
-      border: 2px solid #00f6ff;
-      background-color: #333;
+      background-color: #1a1a1a;
       background-size: cover;
       background-position: center;
-      margin: auto;
+      margin: 20px auto;
     }
-    .button-group button {
-      margin: 5px;
+    input[type="file"], textarea, button {
+      background: #0a0a0a;
+      border: 2px solid #ff00ff;
+      color: #fff;
+      padding: 10px;
+      margin: 10px 0;
+      width: 80%;
+      border-radius: 4px;
+    }
+    button {
+      cursor: pointer;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    button:hover {
+      background: #ff00ff;
+      color: #000;
+    }
+    #userPosts {
+      max-width: 400px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    #userPosts .post {
+      background: #1c1c1c;
+      border-left: 3px solid #00ffcc;
+      margin: 8px 0;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+    }
+    .post-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+      background-size: cover;
+      background-position: center;
+      border: 1px solid #00ffcc;
+    }
+    h1, h3 {
+      text-shadow: 0 0 8px #ff00ff;
     }
   </style>
+  <!-- Firebase scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 </head>
 <body>
 
-  <div class="profile-container">
-    <h1>@You's Digital Profile</h1>
+<div class="profile-container">
+  <h1>Your Digital Profile</h1>
 
-    <div class="avatar-preview" id="avatarPreview"></div>
-    <input type="file" id="photoInput" accept="image/*"><br/>
+  <div class="avatar-preview" id="avatarPreview"></div>
+  <input type="file" id="photoInput" accept="image/*">
 
-    <h3>Bio</h3>
-    <textarea id="bioInput" placeholder="Write your bio here..." style="width: 100%; height: 80px;"></textarea>
+  <h3>About You</h3>
+  <textarea id="bioInput" placeholder="Write about yourself..." rows="3"></textarea>
 
-    <div class="button-group">
-      <button onclick="showMessages()">Messages</button>
-      <button onclick="showFollows()">Follows</button>
-    </div>
-
-    <h3>My Posts</h3>
-    <div id="userPosts">
-      <div class="post"><div class="username">@You</div><div>First mock post!</div></div>
-      <div class="post"><div class="username">@You</div><div>Another mock post here.</div></div>
-    </div>
+  <div class="button-group">
+    <button onclick="showMessages()">Messages</button>
+    <button onclick="showFollows()">Follows</button>
   </div>
 
-  <script>
-    const avatarPreview = document.getElementById('avatarPreview');
-    const photoInput = document.getElementById('photoInput');
+  <h3>My Posts</h3>
+  <div id="userPosts">
+    <!-- Posts loaded dynamically here -->
+  </div>
 
-    photoInput.addEventListener('change', function() {
-      const file = this.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          avatarPreview.style.backgroundImage = `url('${e.target.result}')`;
-        };
-        reader.readAsDataURL(file);
+  <h3>Add New Post</h3>
+  <textarea id="newPostContent" placeholder="What's on your mind?" rows="3"></textarea><br/>
+  <button onclick="submitPost()">Post</button>
+</div>
+
+<script>
+  // Your Firebase config - replace with your own keys
+  const firebaseConfig = {
+    apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+    authDomain: "hashhumanity-58b9a.firebaseapp.com",
+    databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+    projectId: "hashhumanity-58b9a",
+    storageBucket: "hashhumanity-58b9a.appspot.com",
+    messagingSenderId: "886745899016",
+    appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+
+  const avatarPreview = document.getElementById('avatarPreview');
+  const photoInput = document.getElementById('photoInput');
+  const userPosts = document.getElementById('userPosts');
+
+  photoInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        avatarPreview.style.backgroundImage = `url('${e.target.result}')`;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  function renderPost(postData) {
+    const postDiv = document.createElement('div');
+    postDiv.className = 'post';
+
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'post-avatar';
+    avatarDiv.style.backgroundImage = postData.avatar || "url('https://randomuser.me/api/portraits/lego/1.jpg')";
+
+    const contentDiv = document.createElement('div');
+    contentDiv.innerHTML = `<div class="username">@You</div><div>${postData.content}</div>`;
+
+    postDiv.appendChild(avatarDiv);
+    postDiv.appendChild(contentDiv);
+
+    userPosts.prepend(postDiv);
+  }
+
+  function loadPosts() {
+    userPosts.innerHTML = ''; // clear posts before loading
+
+    database.ref('userPosts').once('value', snapshot => {
+      const posts = snapshot.val();
+
+      if (!posts) {
+        // If no posts, add some mock ones
+        const mockPosts = [
+          {content: 'First mock post!', avatar: "url('https://randomuser.me/api/portraits/men/75.jpg')"},
+          {content: 'Another mock post here.', avatar: "url('https://randomuser.me/api/portraits/women/65.jpg')"},
+        ];
+        mockPosts.forEach(post => renderPost(post));
+      } else {
+        Object.values(posts).forEach(post => renderPost(post));
       }
     });
+  }
 
-    function showMessages() {
-      alert('Showing messages (mock data)');
-      // Future: Populate a modal or section with messages
+  function submitPost() {
+    const content = document.getElementById('newPostContent').value.trim();
+    if (!content) {
+      alert('Please write something to post.');
+      return;
     }
 
-    function showFollows() {
-      alert('Showing follows (mock data)');
-      // Future: Populate a modal or section with following list
-    }
-  </script>
+    const avatar = avatarPreview.style.backgroundImage || "url('https://randomuser.me/api/portraits/lego/1.jpg')";
+
+    // Save to Firebase
+    database.ref('userPosts').push({
+      content: content,
+      avatar: avatar
+    }).then(() => {
+      document.getElementById('newPostContent').value = '';
+      loadPosts();
+    });
+  }
+
+  window.showMessages = function() {
+    alert('Showing messages (mock data)');
+  }
+
+  window.showFollows = function() {
+    alert('Showing follows (mock data)');
+  }
+
+  // Initial load
+  loadPosts();
+</script>
 
 </body>
 </html>
