@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Morpheus's Profile</title>
+  <link rel="stylesheet" href="https://marilyn2015.github.io/Humanity/styles.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Tahoma, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #00f6ff;
+      text-shadow: 0 0 10px #00f6ff;
+      margin-bottom: 20px;
+    }
+    .profile-card {
+      background: #222;
+      border-left: 3px solid #00f6ff;
+      border-radius: 8px;
+      display: inline-block;
+      padding: 20px;
+      box-shadow: 0 0 12px #00f6ff;
+      max-width: 400px;
+      text-align: left;
+      margin-bottom: 20px;
+    }
+    .avatar {
+      width: 100px;
+      border-radius: 50%;
+      display: block;
+      margin: 0 auto 15px;
+    }
+    .username {
+      font-weight: bold;
+      color: #00f6ff;
+      font-size: 1.5em;
+      text-align: center;
+    }
+    .bio, .location, .interests, .about {
+      color: #ccc;
+      margin: 10px 0;
+    }
+    .button {
+      background: #000;
+      color: #00f6ff;
+      border: 2px solid #00f6ff;
+      border-radius: 6px;
+      padding: 8px 12px;
+      text-transform: uppercase;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 5px;
+      display: inline-block;
+    }
+    .button:hover {
+      background: #00f6ff;
+      color: #000;
+    }
+    .timeline {
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .post {
+      background: #222;
+      margin: 10px 0;
+      padding: 10px;
+      border-left: 3px solid #00f6ff;
+      border-radius: 6px;
+    }
+    .timestamp {
+      font-size: 0.8em;
+      color: #aaa;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #111;
+      border: 2px solid #00f6ff;
+      padding: 20px;
+      z-index: 1000;
+      color: #fff;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <button class="button" onclick="window.location.href='universe.html'">Back</button>
+
+  <h1>Morpheus's Profile</h1>
+
+  <div class="profile-card">
+    <img src="https://randomuser.me/api/portraits/men/2.jpg" alt="Morpheus Avatar" class="avatar">
+    <div class="username">@Morpheus</div>
+    <div class="bio">Leader and visionary of the resistance against the Matrix.</div>
+    <div class="location"><strong>Location:</strong> The Nebuchadnezzar</div>
+    <div class="interests"><strong>Interests:</strong> Philosophy, martial arts, liberation of humanity.</div>
+    <div class="about"><strong>About:</strong> Morpheus is the respected leader who searches relentlessly for "The One." His strong belief in prophecy and destiny fuels his quest to free humanity from the Matrix.</div>
+    <button class="button" onclick="showFollowers()">Followers</button>
+    <button class="button" onclick="showMessageModal()">Message</button>
+  </div>
+
+  <h2>Timeline</h2>
+  <div class="timeline">
+    <div class="post">
+      <div>"The Matrix is everywhere. It is all around us."</div>
+      <div class="timestamp">Posted 1 hour ago</div>
+    </div>
+    <div class="post">
+      <div>"We’ve freed more minds today. Humanity will prevail."</div>
+      <div class="timestamp">Posted 5 hours ago</div>
+    </div>
+    <div class="post">
+      <div>"The Oracle spoke again. A new path unfolds."</div>
+      <div class="timestamp">Posted yesterday</div>
+    </div>
+  </div>
+
+  <div id="messageModal" class="modal">
+    <h3>Message Inbox/Outbox</h3>
+    <p><strong>Inbox:</strong></p>
+    <ul>
+      <li>Message from Neo: "We need your advice, Morpheus."</li>
+      <li>Message from Trinity: "We're ready for the next mission."</li>
+    </ul>
+    <p><strong>Outbox:</strong></p>
+    <ul>
+      <li>To Neo: "Meet me in the construct."</li>
+      <li>To Trinity: "We'll go as soon as everyone is ready."</li>
+    </ul>
+    <button class="button" onclick="hideModals()">Close</button>
+  </div>
+
+  <div id="followersModal" class="modal">
+    <h3>Morpheus Follows</h3>
+    <ul>
+      <li>Neo</li>
+      <li>Trinity</li>
+      <li>The Oracle</li>
+      <li>Tank</li>
+    </ul>
+    <button class="button" onclick="hideModals()">Close</button>
+  </div>
+
+  <script>
+    function showMessageModal() {
+      hideModals();
+      document.getElementById('messageModal').style.display = 'block';
+    }
+
+    function showFollowers() {
+      hideModals();
+      document.getElementById('followersModal').style.display = 'block';
+    }
+
+    function hideModals() {
+      document.getElementById('messageModal').style.display = 'none';
+      document.getElementById('followersModal').style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>
