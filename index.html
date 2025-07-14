@@ -84,7 +84,7 @@
     const geometry = new THREE.SphereGeometry(1, 32, 32);
 
     new THREE.TextureLoader().load(
-      'https://raw.githubusercontent.com/jeromeetienne/threex.planets/master/images/earthmap1k.jpg',
+      'https://marilyn2015.github.io/Humanity/earthmap1k.jpg',
       (texture) => {
         const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
         const globe = new THREE.Mesh(geometry, material);
