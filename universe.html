@@ -82,7 +82,7 @@
     <button id="postButton">Post</button>
   </div>  <div class="feed" id="feed"></div>  <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getDatabase, ref, push, onChildAdded, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    import { getDatabase, ref, push, onChildAdded, update, get, child } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
     import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
     const firebaseConfig = {
@@ -100,6 +100,20 @@
     const storage = getStorage(app);
     const postRef = ref(db, 'posts');
 
+    async function seedMockPosts() {
+      const snapshot = await get(postRef);
+      if (!snapshot.exists()) {
+        const mockPosts = [
+          { userId: 'neo', message: 'I am the One.', timestamp: Date.now(), likes: 0 },
+          { userId: 'trinity', message: 'Let’s ride.', timestamp: Date.now(), likes: 0 },
+          { userId: 'morpheus', message: 'What if I told you...', timestamp: Date.now(), likes: 0 }
+        ];
+        mockPosts.forEach(post => push(postRef, post));
+      }
+    }
+
+    seedMockPosts();
+
     document.getElementById('postButton').addEventListener('click', async () => {
       const content = document.getElementById('newPostContent').value.trim();
       const imageFile = document.getElementById('postImage').files[0];
@@ -108,18 +122,26 @@
 
       let imageURL = '';
       if (imageFile) {
-        const imgRef = storageRef(storage, `postImages/${Date.now()}_${imageFile.name}`);
-        await uploadBytes(imgRef, imageFile);
-        imageURL = await getDownloadURL(imgRef);
+        try {
+          const imgRef = storageRef(storage, `postImages/${Date.now()}_${imageFile.name}`);
+          await uploadBytes(imgRef, imageFile);
+          imageURL = await getDownloadURL(imgRef);
+        } catch (err) {
+          console.error('Image upload failed:', err);
+        }
       }
 
-      push(postRef, {
-        userId: 'user_' + Date.now(),
-        message: content,
-        image: imageURL,
-        timestamp: Date.now(),
-        likes: 0
-      });
+      try {
+        await push(postRef, {
+          userId: 'user_' + Date.now(),
+          message: content,
+          image: imageURL,
+          timestamp: Date.now(),
+          likes: 0
+        });
+      } catch (err) {
+        console.error('Post submission failed:', err);
+      }
 
       document.getElementById('newPostContent').value = '';
       document.getElementById('postImage').value = '';
