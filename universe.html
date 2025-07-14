@@ -135,18 +135,31 @@
       }
 
       push(postRef, {
-        userId: "you",
-        message: content,
-        timestamp: Date.now(),
-        likes: 0
-      });
+  userId: "neo",       // must match Firestore document ID
+  message: "I am the One.",
+  timestamp: Date.now(),
+  likes: 3
+});
 
-      document.getElementById('newPostContent').value = '';
+push(postRef, {
+  userId: "trinity",
+  message: "Let’s ride.",
+  timestamp: Date.now(),
+  likes: 5
+});
+
+push(postRef, {
+  userId: "morpheus",
+  message: "What if I told you...",
+  timestamp: Date.now(),
+  likes: 9
+});
+    document.getElementById('newPostContent').value = '';
     };
 
     onChildAdded(postRef, async (snapshot) => {
       const post = snapshot.val();
-      let displayName = "@You";
+      let displayName = "userId";
       let photoURL = "https://via.placeholder.com/32";
       let profileLink = "#";
 
