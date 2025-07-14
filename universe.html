@@ -72,6 +72,7 @@
       border-left: 3px solid #00f6ff;
       border-radius: 6px;
       text-align: left;
+      position: relative;
     }
     .username {
       font-weight: bold;
@@ -85,6 +86,27 @@
     .timestamp {
       font-size: 0.8em;
       color: #aaa;
+    }
+    .like-btn {
+      background: #111;
+      color: #ff00ff;
+      border: 1px solid #ff00ff;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.9em;
+      margin: 10px 0 0 0;
+      padding: 6px 14px;
+      box-shadow: 0 0 8px #ff00ff33;
+      transition: background 0.2s, color 0.2s, border 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .like-btn.liked, .like-btn:active {
+      background: #ff00ff;
+      color: #111;
+      border: 1px solid #fff;
     }
     .logout-button {
       position: absolute;
@@ -119,22 +141,25 @@
   </div>
 
   <div class="feed" id="feed">
-    <div class="post">
+    <div class="post" data-likes="0">
       <div class="username"><a class="profile-link" href="https://marilyn2015.github.io/Humanity/profile_neo.html" target="_blank">@Neo</a></div>
       <div>Just cracked another layer of the simulation. Stay aware.</div>
       <div class="timestamp">Posted 2 hours ago</div>
+      <button class="like-btn" onclick="likePost(this)">&#10084; <span class="like-count">0</span></button>
     </div>
 
-    <div class="post">
+    <div class="post" data-likes="0">
       <div class="username"><a class="profile-link" href="https://marilyn2015.github.io/Humanity/profile_trinity.html" target="_blank">@Trinity</a></div>
       <div>Exploring the human condition through code and connection.</div>
       <div class="timestamp">Posted 3 hours ago</div>
+      <button class="like-btn" onclick="likePost(this)">&#10084; <span class="like-count">0</span></button>
     </div>
 
-    <div class="post">
+    <div class="post" data-likes="0">
       <div class="username"><a class="profile-link" href="https://marilyn2015.github.io/Humanity/profile_morpheus.html" target="_blank">@Morpheus</a></div>
       <div>The Universe is vast, but the truth is within you.</div>
       <div class="timestamp">Posted 5 hours ago</div>
+      <button class="like-btn" onclick="likePost(this)">&#10084; <span class="like-count">0</span></button>
     </div>
   </div>
 
@@ -148,13 +173,30 @@
 
       const postContainer = document.createElement('div');
       postContainer.className = 'post';
+      postContainer.setAttribute('data-likes', '0');
       postContainer.innerHTML = `
         <div class="username">@You</div>
         <div>${content}</div>
         <div class="timestamp">Posted just now</div>
+        <button class="like-btn" onclick="likePost(this)">&#10084; <span class="like-count">0</span></button>
       `;
       document.getElementById('feed').prepend(postContainer);
       document.getElementById('newPostContent').value = '';
+    }
+
+    function likePost(btn) {
+      const countSpan = btn.querySelector('.like-count');
+      let count = parseInt(countSpan.textContent, 10);
+      const liked = btn.classList.toggle('liked');
+      if (liked) {
+        count += 1;
+      } else {
+        count -= 1;
+      }
+      count = Math.max(count, 0);
+      countSpan.textContent = count;
+      // Optionally update data-likes attribute for future use
+      btn.closest('.post').setAttribute('data-likes', count);
     }
   </script>
 
