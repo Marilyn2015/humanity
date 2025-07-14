@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -53,22 +54,41 @@
       background: #292929;
       border: 1px solid #00ffcc;
       border-radius: 8px;
-      padding: 10px;
-      margin-top: 10px;
+      padding: 15px;
+      margin: 10px auto;
       text-align: left;
+    }
+    .post img {
+      max-width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+    }
+    .post p {
+      font-size: 14px;
+      line-height: 1.4;
     }
     .username { color: #00ffcc; font-weight: bold; cursor: pointer; text-decoration: underline; }
     .timestamp { font-size: 0.8em; color: #ccc; }
   </style>
 </head>
-<body><div class="header-buttons">
+<body>
+
+<div class="header-buttons">
   <button onclick="window.location.href='profile.html'">My Digital Profile</button>
   <button onclick="window.location.href='index.html'">Logout</button>
-</div><h1>Welcome to the Universe</h1><div class="post-form">
+</div>
+
+<h1>Welcome to the Universe</h1>
+
+<div class="post-form">
   <textarea id="newPostContent" placeholder="What's on your mind?"></textarea><br>
   <input type="file" id="postImage"><br>
   <button id="postButton">Post</button>
-</div><div class="feed" id="feed"></div><script type="module">
+</div>
+
+<div class="feed" id="feed"></div>
+
+<script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
   import { getDatabase, ref, push, onChildAdded, get, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
   import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
@@ -157,5 +177,20 @@
     update(postLikesRef, { likes: count });
   };
 
-</script></body>
+</script>
+
+</body>
 </html>
+
+
+✅ The posts are now styled for compactness:
+
+Images are capped at 300px height.
+
+Post text is smaller and more readable.
+
+Padding and spacing are tightened.
+
+
+Let me know if you'd like further visual tweaks or size adjustments!
+
