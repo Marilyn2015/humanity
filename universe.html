@@ -12,36 +12,49 @@
       color: white;
       text-align: center;
       padding: 20px;
-    }.space-bg {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: url('https://cdn.pixabay.com/photo/2017/08/30/00/05/space-2695569_1280.jpg') no-repeat center center;
-  background-size: cover;
-  z-index: -1;
-}
-
-.post {
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid #00ffcc;
-  border-radius: 8px;
-  padding: 10px;
-  margin: 10px auto;
-  max-width: 600px;
-  text-align: left;
-}
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  margin-right: 8px;
-}
-.like-btn {
-  background: transparent;
-  border: none;
-  color: #ff69b4;
-  cursor: pointer;
-}
-
+    }
+    .space-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('https://cdn.pixabay.com/photo/2017/08/30/00/05/space-2695569_1280.jpg') no-repeat center center;
+      background-size: cover;
+      z-index: -1;
+    }
+    .post {
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid #00ffcc;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 10px auto;
+      max-width: 600px;
+      text-align: left;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .like-btn {
+      background: transparent;
+      border: none;
+      color: #ff69b4;
+      cursor: pointer;
+    }
+    .post-form textarea {
+      width: 90%;
+      height: 60px;
+      border-radius: 5px;
+      padding: 10px;
+    }
+    .post-form button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      background-color: #00ffcc;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>  <div class="space-bg"></div>  <h1>Welcome to the Universe</h1>  <div class="post-form">
@@ -136,5 +149,50 @@
       const liked = btn.classList.toggle('liked');
       countSpan.textContent = Math.max(count + (liked ? 1 : -1), 0);
     };
+
+    // Seed mock profiles
+    const profiles = {
+      neo: {
+        displayName: "Neo",
+        photoURL: "https://xsgames.co/randomusers/avatar.php?g=male",
+        bio: "I know kung fu.",
+        socialVibes: "🌌 Waking the world"
+      },
+      trinity: {
+        displayName: "Trinity",
+        photoURL: "https://xsgames.co/randomusers/avatar.php?g=female",
+        bio: "I fly. I fight. I believe.",
+        socialVibes: "💫 Hacker of hearts"
+      },
+      morpheus: {
+        displayName: "Morpheus",
+        photoURL: "https://xsgames.co/randomusers/avatar.php?g=male",
+        bio: "I offer truth, not comfort.",
+        socialVibes: "🕶️ Seeker of the One"
+      }
+    };
+
+    Object.entries(profiles).forEach(async ([id, data]) => {
+      const docRef = doc(firestore, "profiles", id);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) await setDoc(docRef, data);
+    });
+
+    // Seed mock posts
+    const mockPosts = [
+      { userId: "neo", message: "I am the One.", likes: 3 },
+      { userId: "trinity", message: "Let’s ride.", likes: 5 },
+      { userId: "morpheus", message: "What if I told you...", likes: 9 }
+    ];
+
+    mockPosts.forEach(post => {
+      push(postRef, {
+        userId: post.userId,
+        message: post.message,
+        timestamp: Date.now(),
+        likes: post.likes
+      });
+    });
+
   </script></body>
 </html>
