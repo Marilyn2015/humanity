@@ -20,6 +20,12 @@
       background-size: cover;
       z-index: -1;
     }
+    .center-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
     .post {
       background: rgba(0, 0, 0, 0.7);
       border: 1px solid #00ffcc;
@@ -37,30 +43,38 @@
     }
     .like-btn {
       background: transparent;
-      border: none;
+      border: 1px solid #ff69b4;
       color: #ff69b4;
+      border-radius: 5px;
+      padding: 5px 10px;
       cursor: pointer;
     }
     .post-form textarea {
       width: 90%;
-      height: 60px;
+      height: 120px;
       border-radius: 5px;
       padding: 10px;
+      font-size: 16px;
     }
     .post-form button {
       margin-top: 10px;
-      padding: 8px 16px;
+      padding: 10px 20px;
       background-color: #00ffcc;
       border: none;
       border-radius: 5px;
+      font-size: 16px;
       cursor: pointer;
+      color: black;
     }
   </style>
 </head>
-<body>  <div class="space-bg"></div>  <h1>Welcome to the Universe</h1>  <div class="post-form">
-    <textarea id="newPostContent" placeholder="What's on your mind?"></textarea>
-    <button onclick="submitPost()">Post</button>
-  </div>  <div class="feed" id="feed"></div>  <script type="module">
+<body>  <div class="space-bg"></div>  <h1>Welcome to the Universe</h1>  <div class="center-box">
+    <div class="post-form">
+      <textarea id="newPostContent" placeholder="What's on your mind?"></textarea>
+      <button id="postButton">Post</button>
+    </div><div class="feed" id="feed"></div>
+
+  </div>  <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getDatabase, ref, push, onChildAdded } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
     import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
@@ -81,7 +95,7 @@
     const firestore = getFirestore(app);
     const postRef = ref(db, 'posts');
 
-    window.submitPost = async () => {
+    async function submitPost() {
       const content = document.getElementById('newPostContent').value.trim();
       if (!content) return alert('Please write something to post.');
 
@@ -101,7 +115,9 @@
       });
 
       document.getElementById('newPostContent').value = '';
-    };
+    }
+
+    document.getElementById('postButton').addEventListener('click', submitPost);
 
     onChildAdded(postRef, async (snapshot) => {
       const post = snapshot.val();
@@ -149,50 +165,5 @@
       const liked = btn.classList.toggle('liked');
       countSpan.textContent = Math.max(count + (liked ? 1 : -1), 0);
     };
-
-    // Seed mock profiles
-    const profiles = {
-      neo: {
-        displayName: "Neo",
-        photoURL: "https://xsgames.co/randomusers/avatar.php?g=male",
-        bio: "I know kung fu.",
-        socialVibes: "🌌 Waking the world"
-      },
-      trinity: {
-        displayName: "Trinity",
-        photoURL: "https://xsgames.co/randomusers/avatar.php?g=female",
-        bio: "I fly. I fight. I believe.",
-        socialVibes: "💫 Hacker of hearts"
-      },
-      morpheus: {
-        displayName: "Morpheus",
-        photoURL: "https://xsgames.co/randomusers/avatar.php?g=male",
-        bio: "I offer truth, not comfort.",
-        socialVibes: "🕶️ Seeker of the One"
-      }
-    };
-
-    Object.entries(profiles).forEach(async ([id, data]) => {
-      const docRef = doc(firestore, "profiles", id);
-      const docSnap = await getDoc(docRef);
-      if (!docSnap.exists()) await setDoc(docRef, data);
-    });
-
-    // Seed mock posts
-    const mockPosts = [
-      { userId: "neo", message: "I am the One.", likes: 3 },
-      { userId: "trinity", message: "Let’s ride.", likes: 5 },
-      { userId: "morpheus", message: "What if I told you...", likes: 9 }
-    ];
-
-    mockPosts.forEach(post => {
-      push(postRef, {
-        userId: post.userId,
-        message: post.message,
-        timestamp: Date.now(),
-        likes: post.likes
-      });
-    });
-
   </script></body>
 </html>
