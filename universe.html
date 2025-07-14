@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>#HUMANITY Universe</title>
-  <link rel="stylesheet" href="https://marilyn2015.github.io/Humanity/styles.css">
   <style>
     body {
       margin: 0;
@@ -13,25 +12,6 @@
       color: #fff;
       text-align: center;
       padding: 20px;
-    }
-    .nav-button {
-      background: #000;
-      color: #ff00ff;
-      border: 2px solid #ff00ff;
-      border-radius: 6px;
-      font-weight: bold;
-      text-transform: uppercase;
-      padding: 10px 20px;
-      cursor: pointer;
-      box-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff;
-      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
-      margin-bottom: 20px;
-    }
-    .nav-button:hover {
-      background: #ff00ff;
-      color: #000;
-      transform: translateY(-3px);
-      box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff;
     }
     .post-form textarea {
       width: 90%;
@@ -47,8 +27,6 @@
       margin-bottom: 10px;
     }
     .post-form button {
-      display: block;
-      margin: 0 auto;
       background: #000;
       color: #00f6ff;
       border: 2px solid #00f6ff;
@@ -63,7 +41,7 @@
     }
     .feed {
       max-width: 600px;
-      margin: 0 auto;
+      margin: 20px auto 0;
     }
     .post {
       background: #222;
@@ -77,11 +55,14 @@
     .username {
       font-weight: bold;
       color: #00f6ff;
+      display: flex;
+      align-items: center;
     }
-    .profile-link {
-      color: #ff00ff;
-      text-decoration: underline;
-      cursor: pointer;
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
     }
     .timestamp {
       font-size: 0.8em;
@@ -95,50 +76,28 @@
       cursor: pointer;
       font-weight: bold;
       font-size: 0.9em;
-      margin: 10px 0 0 0;
+      margin-top: 10px;
       padding: 6px 14px;
-      box-shadow: 0 0 8px #ff00ff33;
-      transition: background 0.2s, color 0.2s, border 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
     }
-    .like-btn.liked, .like-btn:active {
-      background: #ff00ff;
-      color: #111;
-      border: 1px solid #fff;
-    }
-    .logout-button {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: #000;
-      color: #ff00ff;
-      border: 2px solid #ff00ff;
-      border-radius: 6px;
-      padding: 10px 20px;
-      cursor: pointer;
-      font-weight: bold;
-      z-index: 10;
-    }
-    .logout-button:hover {
+    .like-btn.liked {
       background: #ff00ff;
       color: #000;
     }
   </style>
 
-  <!-- Firebase CDN & Real-Time Script -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-    import { getDatabase, ref, onChildAdded, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
       databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
       projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.firebasestorage.app",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
       messagingSenderId: "886745899016",
       appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
       measurementId: "G-3ZTCXL4374"
@@ -146,8 +105,10 @@
 
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
-    const database = getDatabase(app);
-    const postRef = ref(database, 'posts');
+    const auth = getAuth();
+    const db = getDatabase(app);
+    const firestore = getFirestore(app);
+    const postRef = ref(db, 'posts');
 
     window.submitPost = () => {
       const content = document.getElementById('newPostContent').value.trim();
@@ -156,8 +117,14 @@
         return;
       }
 
+      const user = auth.currentUser;
+      if (!user) {
+        alert("Please log in first.");
+        return;
+      }
+
       push(postRef, {
-        username: "@You",
+        userId: user.uid,
         message: content,
         timestamp: Date.now(),
         likes: 0
@@ -166,18 +133,37 @@
       document.getElementById('newPostContent').value = '';
     };
 
-    onChildAdded(postRef, (snapshot) => {
+    onChildAdded(postRef, async (snapshot) => {
       const post = snapshot.val();
+
+      let displayName = "@Unknown";
+      let photoURL = "https://via.placeholder.com/32";
+
+      if (post.userId) {
+        try {
+          const profileSnap = await getDoc(doc(firestore, "profiles", post.userId));
+          if (profileSnap.exists()) {
+            const data = profileSnap.data();
+            displayName = data.displayName || displayName;
+            photoURL = data.photoURL || photoURL;
+          }
+        } catch (error) {
+          console.warn("Profile not found", error);
+        }
+      }
+
       const postContainer = document.createElement('div');
       postContainer.className = 'post';
-      postContainer.setAttribute('data-likes', post.likes || 0);
       postContainer.innerHTML = `
-        <div class="username">${post.username}</div>
+        <div class="username">
+          <img src="${photoURL}" class="avatar" />
+          ${displayName}
+        </div>
         <div>${post.message}</div>
         <div class="timestamp">Posted just now</div>
         <button class="like-btn" onclick="likePost(this)">&#10084; <span class="like-count">${post.likes || 0}</span></button>
       `;
-      document.getElementById('feed').prepend(postContainer);
+      document.getElementById('feed').appendChild(postContainer);
     });
 
     window.likePost = (btn) => {
@@ -187,29 +173,21 @@
       count = liked ? count + 1 : count - 1;
       count = Math.max(count, 0);
       countSpan.textContent = count;
-      btn.closest('.post').setAttribute('data-likes', count);
     };
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        console.log("Not logged in");
+      }
+    });
   </script>
 </head>
 <body>
-
-  <button class="logout-button" onclick="window.location.href='index.html'">Logout</button>
-
-  <h1>Welcome to the Universe</h1>
-
-  <button class="nav-button" onclick="location.href='profile.html'">My Digital Profile</button>
-
+  <h1>#HUMANITY Universe</h1>
   <div class="post-form">
     <textarea id="newPostContent" placeholder="What's on your mind?"></textarea>
     <button onclick="submitPost()">Post</button>
   </div>
-
-  <div class="feed" id="feed">
-    <!-- 🔮 Posts will stream in live from Firebase -->
-  </div>
-
+  <div class="feed" id="feed"></div>
 </body>
 </html>
-
-
- 
