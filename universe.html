@@ -100,17 +100,6 @@
     const storage = getStorage(app);
     const postRef = ref(db, 'posts');
 
-    async function seedMockPosts() {
-      const mockPosts = [
-        { userId: 'neo', message: 'I am the One.', timestamp: Date.now(), likes: 0 },
-        { userId: 'trinity', message: 'Let’s ride.', timestamp: Date.now(), likes: 0 },
-        { userId: 'morpheus', message: 'What if I told you...', timestamp: Date.now(), likes: 0 }
-      ];
-      mockPosts.forEach(post => push(postRef, post));
-    }
-
-    seedMockPosts();
-
     document.getElementById('postButton').addEventListener('click', async () => {
       const content = document.getElementById('newPostContent').value.trim();
       const imageFile = document.getElementById('postImage').files[0];
