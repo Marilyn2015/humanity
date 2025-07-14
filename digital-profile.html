@@ -30,7 +30,7 @@
       background-position: center;
       margin: 20px auto;
     }
-    input[type="file"], textarea, button {
+    input[type="file"], input[type="text"], textarea, button {
       background: #0a0a0a;
       border: 2px solid #ff00ff;
       color: #fff;
@@ -79,7 +79,9 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
 </head>
 <body><div class="profile-container">
-  <h1>Your Digital Profile</h1>  <div class="avatar-preview" id="avatarPreview"></div>
+  <h1>Your Digital Profile</h1><input type="text" id="usernameInput" placeholder="Enter your username"><br>
+
+  <div class="avatar-preview" id="avatarPreview"></div>
   <input type="file" id="photoInput" accept="image/*">  <h3>About You</h3>
   <textarea id="bioInput" placeholder="Write about yourself..." rows="3"></textarea>
   <button onclick="saveProfile()">Save Profile</button>  <div class="button-group">
@@ -103,7 +105,6 @@
   firebase.initializeApp(firebaseConfig);
   const database = firebase.database();
   const storage = firebase.storage();
-  const userId = 'user_123';
 
   const avatarPreview = document.getElementById('avatarPreview');
   const photoInput = document.getElementById('photoInput');
@@ -111,44 +112,55 @@
 
   photoInput.addEventListener('change', async function() {
     const file = this.files[0];
-    if (file) {
-      const storageRef = storage.ref(`avatars/${userId}/${file.name}`);
+    const username = document.getElementById('usernameInput').value.trim();
+
+    if (file && username) {
+      const storageRef = storage.ref(`avatars/${username}/${file.name}`);
       await storageRef.put(file);
       const url = await storageRef.getDownloadURL();
       avatarPreview.style.backgroundImage = `url('${url}')`;
       avatarPreview.setAttribute('data-avatar-url', url);
+    } else {
+      alert('Please enter username before uploading an avatar.');
     }
   });
 
   function saveProfile() {
+    const username = document.getElementById('usernameInput').value.trim();
     const bio = document.getElementById('bioInput').value.trim();
     const avatar = avatarPreview.getAttribute('data-avatar-url') || '';
 
-    if (!bio) {
-      alert('Please write something about yourself.');
+    if (!username || !bio) {
+      alert('Please enter a username and bio.');
       return;
     }
 
-    database.ref('profiles/' + userId).set({
+    database.ref('profiles/' + username).set({
+      username: username,
       bio: bio,
       avatar: avatar
     }).then(() => {
       alert('Profile saved successfully!');
-    }).catch((error) => {
-      console.error('Error saving profile:', error);
     });
   }
 
-  function loadProfile() {
-    database.ref('profiles/' + userId).once('value').then(snapshot => {
-      const profile = snapshot.val();
-      if (profile) {
-        if (profile.avatar) {
-          avatarPreview.style.backgroundImage = `url('${profile.avatar}')`;
-          avatarPreview.setAttribute('data-avatar-url', profile.avatar);
-        }
-        document.getElementById('bioInput').value = profile.bio || '';
-      }
+  function submitPost() {
+    const username = document.getElementById('usernameInput').value.trim();
+    const content = document.getElementById('newPostContent').value.trim();
+    const avatar = avatarPreview.getAttribute('data-avatar-url') || '';
+
+    if (!username || !content) {
+      alert('Please enter your username and post content.');
+      return;
+    }
+
+    database.ref('userPosts').push({
+      username: username,
+      content: content,
+      avatar: avatar
+    }).then(() => {
+      document.getElementById('newPostContent').value = '';
+      loadPosts();
     });
   }
 
@@ -161,7 +173,7 @@
     avatarDiv.style.backgroundImage = postData.avatar || "url('https://randomuser.me/api/portraits/lego/1.jpg')";
 
     const contentDiv = document.createElement('div');
-    contentDiv.innerHTML = `<div class="username">@You</div><div>${postData.content}</div>`;
+    contentDiv.innerHTML = `<div class="username">@${postData.username || 'Anonymous'}</div><div>${postData.content}</div>`;
 
     postDiv.appendChild(avatarDiv);
     postDiv.appendChild(contentDiv);
@@ -174,33 +186,9 @@
 
     database.ref('userPosts').once('value', snapshot => {
       const posts = snapshot.val();
-      if (!posts) {
-        const mockPosts = [
-          {content: 'First mock post!', avatar: "url('https://randomuser.me/api/portraits/men/75.jpg')"},
-          {content: 'Another mock post here.', avatar: "url('https://randomuser.me/api/portraits/women/65.jpg')"},
-        ];
-        mockPosts.forEach(post => renderPost(post));
-      } else {
+      if (posts) {
         Object.values(posts).forEach(post => renderPost(post));
       }
-    });
-  }
-
-  function submitPost() {
-    const content = document.getElementById('newPostContent').value.trim();
-    if (!content) {
-      alert('Please write something to post.');
-      return;
-    }
-
-    const avatar = avatarPreview.getAttribute('data-avatar-url') || "url('https://randomuser.me/api/portraits/lego/1.jpg')";
-
-    database.ref('userPosts').push({
-      content: content,
-      avatar: avatar
-    }).then(() => {
-      document.getElementById('newPostContent').value = '';
-      loadPosts();
     });
   }
 
@@ -212,7 +200,6 @@
     alert('Showing follows (mock data)');
   }
 
-  loadProfile();
   loadPosts();
 </script></body>
 </html>
