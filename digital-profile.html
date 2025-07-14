@@ -135,21 +135,29 @@
       return;
     }
 
-    import { getFirestore, doc, setDoc } from "firebase/firestore";
-const firestore = getFirestore();
+function saveProfile() {
+  const username = document.getElementById('usernameInput').value.trim();
+  const bio = document.getElementById('bioInput').value.trim();
+  const avatar = avatarPreview.getAttribute('data-avatar-url') || '';
 
-await setDoc(doc(firestore, "profiles", username), {
-  username,
-  bio,
-  avatar
-});
-      username: username,
-      bio: bio,
-      avatar: avatar
-    }).then(() => {
-      alert('Profile saved successfully!');
-    });
+  if (!username || !bio) {
+    alert('Please enter a username and bio.');
+    return;
   }
+
+  database.ref('profiles/' + username).set({
+    username: username,
+    bio: bio,
+    avatar: avatar
+  })
+  .then(() => {
+    alert('Profile saved successfully!');
+  })
+  .catch((error) => {
+    alert('Error saving profile: ' + error.message);
+  });
+}
+
 
   function submitPost() {
     const username = document.getElementById('usernameInput').value.trim();
