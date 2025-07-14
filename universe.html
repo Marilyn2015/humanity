@@ -33,18 +33,22 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    .post-form textarea {
+    .post-form {
+      margin: 20px auto;
+      max-width: 600px;
+      background: rgba(0,0,0,0.7);
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #00ffcc;
+    }
+    .post-form textarea, .post-form input[type='file'] {
       width: 90%;
-      height: 120px;
       border-radius: 5px;
       padding: 10px;
       font-size: 16px;
-    }
-    .post-form input[type='file'] {
-      margin-top: 10px;
+      margin: 10px 0;
     }
     .post-form button {
-      margin-top: 10px;
       padding: 10px 20px;
       background-color: #00ffcc;
       border: none;
@@ -62,18 +66,28 @@
       max-width: 600px;
       text-align: left;
     }
+    .username {
+      font-weight: bold;
+      color: #00ffcc;
+      cursor: pointer;
+    }
+    .timestamp {
+      font-size: 0.8em;
+      color: #ccc;
+    }
   </style>
 </head>
 <body>  <div class="space-bg"></div>  <div class="header-buttons">
     <button onclick="window.location.href='profile.html'">My Digital Profile</button>
     <button onclick="logout()">Logout</button>
   </div>  <h1>Welcome to the Universe</h1>  <div class="post-form">
-    <textarea id="newPostContent" placeholder="What's on your mind?"></textarea><br>
-    <input type="file" id="postImage"><br>
+    <textarea id="newPostContent" placeholder="What's on your mind?"></textarea>
+    <input type="file" id="postImage">
     <button id="postButton">Post</button>
   </div>  <div class="feed" id="feed"></div>  <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getDatabase, ref, push, onChildAdded } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    import { getDatabase, ref, push, onChildAdded, set, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
@@ -87,21 +101,24 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const storage = getStorage(app);
     const postRef = ref(db, 'posts');
 
     document.getElementById('postButton').addEventListener('click', async () => {
       const content = document.getElementById('newPostContent').value.trim();
-      const fileInput = document.getElementById('postImage');
-      let imageURL = '';
+      const imageFile = document.getElementById('postImage').files[0];
 
-      if (fileInput.files.length > 0) {
-        imageURL = URL.createObjectURL(fileInput.files[0]);
+      if (!content && !imageFile) return alert('Please write something or add an image to post!');
+
+      let imageURL = '';
+      if (imageFile) {
+        const imgRef = storageRef(storage, `postImages/${Date.now()}_${imageFile.name}`);
+        await uploadBytes(imgRef, imageFile);
+        imageURL = await getDownloadURL(imgRef);
       }
 
-      if (!content && !imageURL) return alert('Write something or add an image to post!');
-
       push(postRef, {
-        userId: "user_" + Date.now(),
+        userId: 'user_' + Date.now(),
         message: content,
         image: imageURL,
         timestamp: Date.now(),
@@ -109,31 +126,39 @@
       });
 
       document.getElementById('newPostContent').value = '';
-      fileInput.value = '';
+      document.getElementById('postImage').value = '';
     });
 
     onChildAdded(postRef, (snapshot) => {
       const post = snapshot.val();
+      const key = snapshot.key;
       const postContainer = document.createElement('div');
       postContainer.className = 'post';
+
+      const date = new Date(post.timestamp).toLocaleString();
+
       postContainer.innerHTML = `
-        <strong>@${post.userId}</strong><br>
+        <div class="username">@${post.userId}</div>
         <p>${post.message}</p>
         ${post.image ? `<img src="${post.image}" alt="Post Image" style="max-width:100%"><br>` : ''}
-        <button onclick="likePost(this)">❤️ <span class="like-count">${post.likes || 0}</span></button>
+        <div class="timestamp">${date}</div>
+        <button onclick="likePost('${key}', this)">❤️ <span class="like-count">${post.likes || 0}</span></button>
       `;
       document.getElementById('feed').appendChild(postContainer);
     });
 
-    window.likePost = function(btn) {
+    window.likePost = function(postKey, btn) {
       const countSpan = btn.querySelector('.like-count');
       let count = parseInt(countSpan.textContent);
-      countSpan.textContent = count + 1;
+      count++;
+      countSpan.textContent = count;
+
+      const postLikesRef = ref(db, `posts/${postKey}`);
+      update(postLikesRef, { likes: count });
     };
 
     window.logout = function() {
       window.location.href = 'index.html';
     };
-
   </script></body>
 </html>
