@@ -2,7 +2,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>#HUMANITY Universe</title>
+  <title>#HUMANITY Universe - Debug Version</title>
   <link rel="stylesheet" href="https://marilyn2015.github.io/Humanity/styles.css">
   <style>
     body {
@@ -30,153 +30,128 @@
       color: black;
       font-size: 16px;
     }
-    .post-form {
-      margin: 20px auto;
+    .post-form, .feed {
       max-width: 600px;
+      margin: 20px auto;
       background: rgba(0,0,0,0.7);
-      padding: 20px;
-      border-radius: 10px;
       border: 1px solid #00ffcc;
-    }
-    .post-form textarea, .post-form input[type='file'] {
-      width: 90%;
-      border-radius: 5px;
-      padding: 10px;
-      font-size: 16px;
-      margin: 10px 0;
-    }
-    .post-form button {
-      padding: 10px 20px;
-      background-color: #00ffcc;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-      color: black;
+      border-radius: 10px;
+      padding: 20px;
     }
     .post {
-      background: rgba(0,0,0,0.7);
+      background: #222;
       border: 1px solid #00ffcc;
       border-radius: 8px;
       padding: 10px;
-      margin: 10px auto;
-      max-width: 600px;
+      margin-top: 10px;
       text-align: left;
-    }
-    .username {
-      font-weight: bold;
-      color: #00ffcc;
-      cursor: pointer;
-    }
-    .timestamp {
-      font-size: 0.8em;
-      color: #ccc;
     }
   </style>
 </head>
-<body>  <div class="space-bg"></div><button class="profile-button" onclick="window.location.href='profile.html'">My Digital Profile</button>
+<body><div class="space-bg"></div>
+<button class="profile-button" onclick="window.location.href='profile.html'">My Digital Profile</button>
+<h1>Welcome to the Universe</h1><div class="post-form">
+  <textarea id="newPostContent" placeholder="What's on your mind?"></textarea><br>
+  <input type="file" id="postImage"><br>
+  <button id="postButton">Post</button>
+</div><div class="feed" id="feed"></div><script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getDatabase, ref, push, onChildAdded, get, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+  import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
-  <h1>Welcome to the Universe</h1>  <div class="post-form">
-    <textarea id="newPostContent" placeholder="What's on your mind?"></textarea>
-    <input type="file" id="postImage">
-    <button id="postButton">Post</button>
-  </div>  <div class="feed" id="feed"></div>  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getDatabase, ref, push, onChildAdded, update, get, child } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-      authDomain: "hashhumanity-58b9a.firebaseapp.com",
-      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-      projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.appspot.com",
-      messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
-    };
+  console.log('Initializing Firebase...');
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const storage = getStorage(app);
+  const postRef = ref(db, 'posts');
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const storage = getStorage(app);
-    const postRef = ref(db, 'posts');
+  async function seedMockPosts() {
+    const snapshot = await get(postRef);
+    if (!snapshot.exists()) {
+      console.log('Seeding mock posts...');
+      const mockPosts = [
+        { userId: 'neo', message: 'I am the One.', timestamp: Date.now(), likes: 0 },
+        { userId: 'trinity', message: 'Let’s ride.', timestamp: Date.now(), likes: 0 },
+        { userId: 'morpheus', message: 'What if I told you...', timestamp: Date.now(), likes: 0 }
+      ];
+      mockPosts.forEach(post => push(postRef, post));
+    }
+  }
+  seedMockPosts();
 
-    async function seedMockPosts() {
-      const snapshot = await get(postRef);
-      if (!snapshot.exists()) {
-        const mockPosts = [
-          { userId: 'neo', message: 'I am the One.', timestamp: Date.now(), likes: 0 },
-          { userId: 'trinity', message: 'Let’s ride.', timestamp: Date.now(), likes: 0 },
-          { userId: 'morpheus', message: 'What if I told you...', timestamp: Date.now(), likes: 0 }
-        ];
-        mockPosts.forEach(post => push(postRef, post));
+  document.getElementById('postButton').addEventListener('click', async () => {
+    const content = document.getElementById('newPostContent').value.trim();
+    const imageFile = document.getElementById('postImage').files[0];
+
+    if (!content && !imageFile) return alert('Please write something or add an image to post!');
+
+    let imageURL = '';
+    if (imageFile) {
+      try {
+        const imgRef = storageRef(storage, `postImages/${Date.now()}_${imageFile.name}`);
+        await uploadBytes(imgRef, imageFile);
+        imageURL = await getDownloadURL(imgRef);
+        console.log('Image uploaded:', imageURL);
+      } catch (err) {
+        console.error('Image upload failed:', err);
       }
     }
 
-    seedMockPosts();
+    try {
+      await push(postRef, {
+        userId: 'user_' + Date.now(),
+        message: content,
+        image: imageURL,
+        timestamp: Date.now(),
+        likes: 0
+      });
+      console.log('Post pushed to Firebase');
+    } catch (err) {
+      console.error('Post submission failed:', err);
+    }
 
-    document.getElementById('postButton').addEventListener('click', async () => {
-      const content = document.getElementById('newPostContent').value.trim();
-      const imageFile = document.getElementById('postImage').files[0];
+    document.getElementById('newPostContent').value = '';
+    document.getElementById('postImage').value = '';
+  });
 
-      if (!content && !imageFile) return alert('Please write something or add an image to post!');
+  onChildAdded(postRef, (snapshot) => {
+    console.log('onChildAdded triggered');
+    const post = snapshot.val();
+    const key = snapshot.key;
 
-      let imageURL = '';
-      if (imageFile) {
-        try {
-          const imgRef = storageRef(storage, `postImages/${Date.now()}_${imageFile.name}`);
-          await uploadBytes(imgRef, imageFile);
-          imageURL = await getDownloadURL(imgRef);
-        } catch (err) {
-          console.error('Image upload failed:', err);
-        }
-      }
+    const postContainer = document.createElement('div');
+    postContainer.className = 'post';
+    postContainer.innerHTML = `
+      <strong>@${post.userId}</strong>
+      <p>${post.message}</p>
+      ${post.image ? `<img src="${post.image}" alt="Post Image" style="max-width:100%"><br>` : ''}
+      <small>${new Date(post.timestamp).toLocaleString()}</small><br>
+      <button onclick="likePost('${key}', this)">❤️ <span class="like-count">${post.likes || 0}</span></button>
+    `;
+    document.getElementById('feed').appendChild(postContainer);
+  }, (error) => {
+    console.error('onChildAdded error:', error);
+  });
 
-      try {
-        await push(postRef, {
-          userId: 'user_' + Date.now(),
-          message: content,
-          image: imageURL,
-          timestamp: Date.now(),
-          likes: 0
-        });
-      } catch (err) {
-        console.error('Post submission failed:', err);
-      }
+  window.likePost = function(postKey, btn) {
+    const countSpan = btn.querySelector('.like-count');
+    let count = parseInt(countSpan.textContent);
+    count++;
+    countSpan.textContent = count;
 
-      document.getElementById('newPostContent').value = '';
-      document.getElementById('postImage').value = '';
-    });
+    const postLikesRef = ref(db, `posts/${postKey}`);
+    update(postLikesRef, { likes: count });
+  };
 
-    onChildAdded(postRef, (snapshot) => {
-      const post = snapshot.val();
-      const key = snapshot.key;
-      const postContainer = document.createElement('div');
-      postContainer.className = 'post';
-
-      const date = new Date(post.timestamp).toLocaleString();
-
-      postContainer.innerHTML = `
-        <div class="username">@${post.userId}</div>
-        <p>${post.message}</p>
-        ${post.image ? `<img src="${post.image}" alt="Post Image" style="max-width:100%"><br>` : ''}
-        <div class="timestamp">${date}</div>
-        <button onclick="likePost('${key}', this)">❤️ <span class="like-count">${post.likes || 0}</span></button>
-      `;
-      document.getElementById('feed').appendChild(postContainer);
-    });
-
-    window.likePost = function(postKey, btn) {
-      const countSpan = btn.querySelector('.like-count');
-      let count = parseInt(countSpan.textContent);
-      count++;
-      countSpan.textContent = count;
-
-      const postLikesRef = ref(db, `posts/${postKey}`);
-      update(postLikesRef, { likes: count });
-    };
-
-    window.logout = function() {
-      window.location.href = 'index.html';
-    };
-  </script></body>
+</script></body>
 </html>
