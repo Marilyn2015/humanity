@@ -150,7 +150,7 @@
       let photoURL = "https://via.placeholder.com/32";
       let profileLink = "#";
 
-      if (post.userId && post.userId !== "you") {
+      if (post.userId && post.userId !== "userId") {
         try {
           const profileSnap = await getDoc(doc(firestore, "profiles", post.userId));
           if (profileSnap.exists()) {
