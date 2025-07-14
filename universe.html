@@ -20,18 +20,15 @@
       background-size: cover;
       z-index: -1;
     }
-    .header-buttons {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-    }
-    .header-buttons button {
-      margin: 0 5px;
-      padding: 5px 10px;
+    .profile-button {
+      margin-bottom: 20px;
+      padding: 10px 20px;
       background: #00ffcc;
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      color: black;
+      font-size: 16px;
     }
     .post-form {
       margin: 20px auto;
@@ -77,16 +74,15 @@
     }
   </style>
 </head>
-<body>  <div class="space-bg"></div>  <div class="header-buttons">
-    <button onclick="window.location.href='profile.html'">My Digital Profile</button>
-    <button onclick="logout()">Logout</button>
-  </div>  <h1>Welcome to the Universe</h1>  <div class="post-form">
+<body>  <div class="space-bg"></div><button class="profile-button" onclick="window.location.href='profile.html'">My Digital Profile</button>
+
+  <h1>Welcome to the Universe</h1>  <div class="post-form">
     <textarea id="newPostContent" placeholder="What's on your mind?"></textarea>
     <input type="file" id="postImage">
     <button id="postButton">Post</button>
   </div>  <div class="feed" id="feed"></div>  <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getDatabase, ref, push, onChildAdded, set, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    import { getDatabase, ref, push, onChildAdded, update } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
     import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
 
     const firebaseConfig = {
@@ -103,6 +99,17 @@
     const db = getDatabase(app);
     const storage = getStorage(app);
     const postRef = ref(db, 'posts');
+
+    async function seedMockPosts() {
+      const mockPosts = [
+        { userId: 'neo', message: 'I am the One.', timestamp: Date.now(), likes: 0 },
+        { userId: 'trinity', message: 'Let’s ride.', timestamp: Date.now(), likes: 0 },
+        { userId: 'morpheus', message: 'What if I told you...', timestamp: Date.now(), likes: 0 }
+      ];
+      mockPosts.forEach(post => push(postRef, post));
+    }
+
+    seedMockPosts();
 
     document.getElementById('postButton').addEventListener('click', async () => {
       const content = document.getElementById('newPostContent').value.trim();
