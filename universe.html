@@ -5,95 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>#HUMANITY Universe</title>
   <link rel="stylesheet" href="https://marilyn2015.github.io/Humanity/styles.css">
-  <style>
-    body {
-      margin: 0;
-      font-family: Tahoma, sans-serif;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: #fff;
-      text-align: center;
-      padding: 20px;
-    }
-    .post-form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .post-form textarea {
-      width: 90%;
-      max-width: 500px;
-      height: 120px;
-      padding: 12px 15px;
-      background: #111;
-      color: #fff;
-      border: 2px solid #ff00ff;
-      border-radius: 8px;
-      font-size: 1em;
-      box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
-      margin-bottom: 10px;
-    }
-    .post-form button {
-      background: #000;
-      color: #00f6ff;
-      border: 2px solid #00f6ff;
-      border-radius: 8px;
-      padding: 12px 20px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .post-form button:hover {
-      background: #00f6ff;
-      color: #000;
-    }
-    .feed {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .post {
-      background: #222;
-      margin: 10px 0;
-      padding: 10px;
-      border-left: 3px solid #00f6ff;
-      border-radius: 6px;
-      text-align: left;
-    }
-    .username {
-      font-weight: bold;
-      color: #00f6ff;
-      display: flex;
-      align-items: center;
-    }
-    .avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      margin-right: 8px;
-    }
-    .profile-link {
-      color: #ff00ff;
-      text-decoration: underline;
-    }
-    .timestamp {
-      font-size: 0.8em;
-      color: #aaa;
-    }
-    .like-btn {
-      background: #111;
-      color: #ff00ff;
-      border: 1px solid #ff00ff;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 0.9em;
-      margin-top: 10px;
-      padding: 6px 14px;
-    }
-    .like-btn.liked {
-      background: #ff00ff;
-      color: #000;
-    }
-  </style>
 </head>
 <body>
 
@@ -109,7 +20,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
@@ -127,71 +38,54 @@
     const firestore = getFirestore(app);
     const postRef = ref(db, 'posts');
 
-    window.submitPost = () => {
+    // Submit new post
+    window.submitPost = async () => {
       const content = document.getElementById('newPostContent').value.trim();
-      if (!content) {
-        alert('Please write something to post.');
-        return;
-      }
+      if (!content) return alert('Please write something to post.');
+
+      const userId = "user_" + Date.now(); // Simulated unique ID
+      await setDoc(doc(firestore, "profiles", userId), {
+        displayName: "You",
+        photoURL: "https://via.placeholder.com/32",
+        bio: "Just exploring the #HUMANITY Universe.",
+        socialVibes: "🌍 Real and radiant"
+      });
 
       push(postRef, {
-  userId: "neo",       // must match Firestore document ID
-  message: "I am the One.",
-  timestamp: Date.now(),
-  likes: 3
-});
+        userId,
+        message: content,
+        timestamp: Date.now(),
+        likes: 0
+      });
 
-push(postRef, {
-  userId: "trinity",
-  message: "Let’s ride.",
-  timestamp: Date.now(),
-  likes: 5
-});
-
-push(postRef, {
-  userId: "morpheus",
-  message: "What if I told you...",
-  timestamp: Date.now(),
-  likes: 9
-});
-    document.getElementById('newPostContent').value = '';
+      document.getElementById('newPostContent').value = '';
     };
 
- onChildAdded(postRef, async (snapshot) => {
-  const post = snapshot.val();
+    // Display posts
+    onChildAdded(postRef, async (snapshot) => {
+      const post = snapshot.val();
+      let displayName = "@Unknown";
+      let photoURL = "https://via.placeholder.com/32";
+      let profileLink = "#";
+      let bio = "";
+      let vibes = "";
 
-  let displayName = "@Unknown";
-  let photoURL = "https://via.placeholder.com/32";
-  let profileLink = "#";
+      if (post.userId) {
+        try {
+          const profileSnap = await getDoc(doc(firestore, "profiles", post.userId));
+          if (profileSnap.exists()) {
+            const data = profileSnap.data();
+            displayName = "@" + data.displayName;
+            photoURL = data.photoURL || photoURL;
+            bio = data.bio || "";
+            vibes = data.socialVibes || "";
+           profileLink = `profile_${post.userId}.html`;
 
-  if (post.userId) {
-    try {
-      const profileSnap = await getDoc(doc(firestore, "profiles", post.userId));
-      if (profileSnap.exists()) {
-        const data = profileSnap.data();
-        displayName = "@" + data.displayName;
-        photoURL = data.photoURL || photoURL;
-        profileLink = `https://marilyn2015.github.io/Humanity/profile_${data.displayName.toLowerCase()}.html`;
+          }
+        } catch (e) {
+          console.warn("Missing profile for", post.userId, e);
+        }
       }
-    } catch (error) {
-      console.warn("Profile not found for:", post.userId, error);
-    }
-  }
-
-  const postContainer = document.createElement('div');
-  postContainer.className = 'post';
-  postContainer.innerHTML = `
-    <div class="username">
-      <img src="${photoURL}" class="avatar" />
-      <a class="profile-link" href="${profileLink}" target="_blank">${displayName}</a>
-    </div>
-    <div>${post.message}</div>
-    <div class="timestamp">Posted just now</div>
-    <button class="like-btn" onclick="likePost(this)">&#10084; <span class="like-count">${post.likes || 0}</span></button>
-  `;
-  document.getElementById('feed').appendChild(postContainer);
-});
-
 
       const postContainer = document.createElement('div');
       postContainer.className = 'post';
@@ -201,22 +95,51 @@ push(postRef, {
           <a class="profile-link" href="${profileLink}" target="_blank">${displayName}</a>
         </div>
         <div>${post.message}</div>
+        ${bio ? `<div class="bio">${bio}</div>` : ""}
+        ${vibes ? `<div class="vibes">${vibes}</div>` : ""}
         <div class="timestamp">Posted just now</div>
         <button class="like-btn" onclick="likePost(this)">&#10084; <span class="like-count">${post.likes || 0}</span></button>
       `;
       document.getElementById('feed').appendChild(postContainer);
     });
 
+    // Like button
     window.likePost = (btn) => {
       const countSpan = btn.querySelector('.like-count');
-      let count = parseInt(countSpan.textContent, 10);
+      let count = parseInt(countSpan.textContent);
       const liked = btn.classList.toggle('liked');
-      count = liked ? count + 1 : count - 1;
-      count = Math.max(count, 0);
-      countSpan.textContent = count;
+      countSpan.textContent = Math.max(count + (liked ? 1 : -1), 0);
     };
 
-    // Add mock posts for Neo, Trinity, Morpheus
+    // Seed mock profiles
+    const profiles = {
+      neo: {
+        displayName: "Neo",
+        photoURL: "https://marilyn2015.github.io/Humanity/images/neo.jpg",
+        bio: "I know kung fu.",
+        socialVibes: "🌌 Waking the world"
+      },
+      trinity: {
+        displayName: "Trinity",
+        photoURL: "https://marilyn2015.github.io/Humanity/images/trinity.jpg",
+        bio: "I fly. I fight. I believe.",
+        socialVibes: "💫 Hacker of hearts"
+      },
+      morpheus: {
+        displayName: "Morpheus",
+        photoURL: "https://marilyn2015.github.io/Humanity/images/morpheus.jpg",
+        bio: "I offer truth, not comfort.",
+        socialVibes: "🕶️ Seeker of the One"
+      }
+    };
+
+    Object.entries(profiles).forEach(async ([id, data]) => {
+      const docRef = doc(firestore, "profiles", id);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) await setDoc(docRef, data);
+    });
+
+    // Seed mock posts
     const mockPosts = [
       { userId: "neo", message: "I am the One.", likes: 3 },
       { userId: "trinity", message: "Let’s ride.", likes: 5 },
