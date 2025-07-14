@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>#HUMANITY Universe</title>
+  <link rel="stylesheet" href="https://marilyn2015.github.io/Humanity/styles.css">
   <style>
     body {
       margin: 0;
@@ -12,6 +13,12 @@
       color: #fff;
       text-align: center;
       padding: 20px;
+    }
+    .post-form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
     }
     .post-form textarea {
       width: 90%;
@@ -41,7 +48,7 @@
     }
     .feed {
       max-width: 600px;
-      margin: 20px auto 0;
+      margin: 0 auto;
     }
     .post {
       background: #222;
@@ -50,7 +57,6 @@
       border-left: 3px solid #00f6ff;
       border-radius: 6px;
       text-align: left;
-      position: relative;
     }
     .username {
       font-weight: bold;
@@ -63,6 +69,10 @@
       height: 32px;
       border-radius: 50%;
       margin-right: 8px;
+    }
+    .profile-link {
+      color: #ff00ff;
+      text-decoration: underline;
     }
     .timestamp {
       font-size: 0.8em;
@@ -84,12 +94,21 @@
       color: #000;
     }
   </style>
+</head>
+<body>
+
+  <h1>Welcome to the Universe</h1>
+
+  <div class="post-form">
+    <textarea id="newPostContent" placeholder="What's on your mind?"></textarea>
+    <button onclick="submitPost()">Post</button>
+  </div>
+
+  <div class="feed" id="feed"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
     import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -104,8 +123,6 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const auth = getAuth();
     const db = getDatabase(app);
     const firestore = getFirestore(app);
     const postRef = ref(db, 'posts');
@@ -117,14 +134,8 @@
         return;
       }
 
-      const user = auth.currentUser;
-      if (!user) {
-        alert("Please log in first.");
-        return;
-      }
-
       push(postRef, {
-        userId: user.uid,
+        userId: "you",
         message: content,
         timestamp: Date.now(),
         likes: 0
@@ -135,17 +146,18 @@
 
     onChildAdded(postRef, async (snapshot) => {
       const post = snapshot.val();
-
-      let displayName = "@Unknown";
+      let displayName = "@You";
       let photoURL = "https://via.placeholder.com/32";
+      let profileLink = "#";
 
-      if (post.userId) {
+      if (post.userId && post.userId !== "you") {
         try {
           const profileSnap = await getDoc(doc(firestore, "profiles", post.userId));
           if (profileSnap.exists()) {
             const data = profileSnap.data();
-            displayName = data.displayName || displayName;
+            displayName = "@" + data.displayName;
             photoURL = data.photoURL || photoURL;
+            profileLink = `https://marilyn2015.github.io/Humanity/profile_${data.displayName.toLowerCase()}.html`;
           }
         } catch (error) {
           console.warn("Profile not found", error);
@@ -157,7 +169,7 @@
       postContainer.innerHTML = `
         <div class="username">
           <img src="${photoURL}" class="avatar" />
-          ${displayName}
+          <a class="profile-link" href="${profileLink}" target="_blank">${displayName}</a>
         </div>
         <div>${post.message}</div>
         <div class="timestamp">Posted just now</div>
@@ -175,19 +187,22 @@
       countSpan.textContent = count;
     };
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        console.log("Not logged in");
-      }
+    // Add mock posts for Neo, Trinity, Morpheus
+    const mockPosts = [
+      { userId: "neo", message: "I am the One.", likes: 3 },
+      { userId: "trinity", message: "Let’s ride.", likes: 5 },
+      { userId: "morpheus", message: "What if I told you...", likes: 9 }
+    ];
+
+    mockPosts.forEach(post => {
+      push(postRef, {
+        userId: post.userId,
+        message: post.message,
+        timestamp: Date.now(),
+        likes: post.likes
+      });
     });
   </script>
-</head>
-<body>
-  <h1>#HUMANITY Universe</h1>
-  <div class="post-form">
-    <textarea id="newPostContent" placeholder="What's on your mind?"></textarea>
-    <button onclick="submitPost()">Post</button>
-  </div>
-  <div class="feed" id="feed"></div>
+
 </body>
 </html>
