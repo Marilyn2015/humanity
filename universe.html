@@ -157,25 +157,41 @@ push(postRef, {
     document.getElementById('newPostContent').value = '';
     };
 
-    onChildAdded(postRef, async (snapshot) => {
-      const post = snapshot.val();
-      let displayName = "userId";
-      let photoURL = "https://via.placeholder.com/32";
-      let profileLink = "#";
+ onChildAdded(postRef, async (snapshot) => {
+  const post = snapshot.val();
 
-      if (post.userId && post.userId !== "userId") {
-        try {
-          const profileSnap = await getDoc(doc(firestore, "profiles", post.userId));
-          if (profileSnap.exists()) {
-            const data = profileSnap.data();
-            displayName = "@" + data.displayName;
-            photoURL = data.photoURL || photoURL;
-            profileLink = `https://marilyn2015.github.io/Humanity/profile_${data.displayName.toLowerCase()}.html`;
-          }
-        } catch (error) {
-          console.warn("Profile not found", error);
-        }
+  let displayName = "@Unknown";
+  let photoURL = "https://via.placeholder.com/32";
+  let profileLink = "#";
+
+  if (post.userId) {
+    try {
+      const profileSnap = await getDoc(doc(firestore, "profiles", post.userId));
+      if (profileSnap.exists()) {
+        const data = profileSnap.data();
+        displayName = "@" + data.displayName;
+        photoURL = data.photoURL || photoURL;
+        profileLink = `https://marilyn2015.github.io/Humanity/profile_${data.displayName.toLowerCase()}.html`;
       }
+    } catch (error) {
+      console.warn("Profile not found for:", post.userId, error);
+    }
+  }
+
+  const postContainer = document.createElement('div');
+  postContainer.className = 'post';
+  postContainer.innerHTML = `
+    <div class="username">
+      <img src="${photoURL}" class="avatar" />
+      <a class="profile-link" href="${profileLink}" target="_blank">${displayName}</a>
+    </div>
+    <div>${post.message}</div>
+    <div class="timestamp">Posted just now</div>
+    <button class="like-btn" onclick="likePost(this)">&#10084; <span class="like-count">${post.likes || 0}</span></button>
+  `;
+  document.getElementById('feed').appendChild(postContainer);
+});
+
 
       const postContainer = document.createElement('div');
       postContainer.className = 'post';
