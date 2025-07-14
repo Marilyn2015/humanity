@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -29,6 +30,12 @@
       background-size: cover;
       background-position: center;
       margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #00ffcc;
+      font-weight: bold;
+      font-size: 1.1em;
     }
     input[type="file"], input[type="text"], textarea, button {
       background: #0a0a0a;
@@ -38,6 +45,10 @@
       margin: 10px 0;
       width: 80%;
       border-radius: 4px;
+    }
+    input[type="file"]:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
     button {
       cursor: pointer;
@@ -78,143 +89,177 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
 </head>
-<body><div class="profile-container">
-  <h1>Your Digital Profile</h1><input type="text" id="usernameInput" placeholder="Enter your username"><br>
+<body>
+  <div class="profile-container">
+    <h1>Your Digital Profile</h1>
+    <input type="text" id="usernameInput" placeholder="Enter your username"><br>
 
-  <div class="avatar-preview" id="avatarPreview"></div>
-  <input type="file" id="photoInput" accept="image/*">  <h3>About You</h3>
-  <textarea id="bioInput" placeholder="Write about yourself..." rows="3"></textarea>
-  <button onclick="saveProfile()">Save Profile</button>  <div class="button-group">
-    <button onclick="showMessages()">Messages</button>
-    <button onclick="showFollows()">Follows</button>
-  </div>  <h3>My Posts</h3>
-  <div id="userPosts"></div>  <h3>Add New Post</h3>
-  <textarea id="newPostContent" placeholder="What's on your mind?" rows="3"></textarea><br/>
-  <button onclick="submitPost()">Post</button>
-</div><script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-    authDomain: "hashhumanity-58b9a.firebaseapp.com",
-    databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-    projectId: "hashhumanity-58b9a",
-    storageBucket: "hashhumanity-58b9a.appspot.com",
-    messagingSenderId: "886745899016",
-    appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
-  };
+    <div class="avatar-preview" id="avatarPreview">No Avatar</div>
+    <input type="file" id="photoInput" accept="image/*" disabled>
+    <h3>About You</h3>
+    <textarea id="bioInput" placeholder="Write about yourself..." rows="3"></textarea>
+    <button onclick="saveProfile()">Save Profile</button>
+    <div class="button-group">
+      <button onclick="showMessages()">Messages</button>
+      <button onclick="showFollows()">Follows</button>
+    </div>
+    <h3>My Posts</h3>
+    <div id="userPosts"></div>
+    <h3>Add New Post</h3>
+    <textarea id="newPostContent" placeholder="What's on your mind?" rows="3"></textarea><br/>
+    <button onclick="submitPost()">Post</button>
+  </div>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
+    };
 
-  firebase.initializeApp(firebaseConfig);
-  const database = firebase.database();
-  const storage = firebase.storage();
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const storage = firebase.storage();
 
-  const avatarPreview = document.getElementById('avatarPreview');
-  const photoInput = document.getElementById('photoInput');
-  const userPosts = document.getElementById('userPosts');
+    const avatarPreview = document.getElementById('avatarPreview');
+    const photoInput = document.getElementById('photoInput');
+    const usernameInput = document.getElementById('usernameInput');
+    const userPosts = document.getElementById('userPosts');
 
-  photoInput.addEventListener('change', async function() {
-    const file = this.files[0];
-    const username = document.getElementById('usernameInput').value.trim();
-
-    if (file && username) {
-      const storageRef = storage.ref(`avatars/${username}/${file.name}`);
-      await storageRef.put(file);
-      const url = await storageRef.getDownloadURL();
-      avatarPreview.style.backgroundImage = `url('${url}')`;
-      avatarPreview.setAttribute('data-avatar-url', url);
-    } else {
-      alert('Please enter username before uploading an avatar.');
-    }
-  });
-
-  function saveProfile() {
-    const username = document.getElementById('usernameInput').value.trim();
-    const bio = document.getElementById('bioInput').value.trim();
-    const avatar = avatarPreview.getAttribute('data-avatar-url') || '';
-
-    if (!username || !bio) {
-      alert('Please enter a username and bio.');
-      return;
-    }
-
-function saveProfile() {
-  const username = document.getElementById('usernameInput').value.trim();
-  const bio = document.getElementById('bioInput').value.trim();
-  const avatar = avatarPreview.getAttribute('data-avatar-url') || '';
-
-  if (!username || !bio) {
-    alert('Please enter a username and bio.');
-    return;
-  }
-
-  database.ref('profiles/' + username).set({
-    username: username,
-    bio: bio,
-    avatar: avatar
-  })
-  .then(() => {
-    alert('Profile saved successfully!');
-  })
-  .catch((error) => {
-    alert('Error saving profile: ' + error.message);
-  });
-}
-
-
-  function submitPost() {
-    const username = document.getElementById('usernameInput').value.trim();
-    const content = document.getElementById('newPostContent').value.trim();
-    const avatar = avatarPreview.getAttribute('data-avatar-url') || '';
-
-    if (!username || !content) {
-      alert('Please enter your username and post content.');
-      return;
-    }
-
-    database.ref('userPosts').push({
-      username: username,
-      content: content,
-      avatar: avatar
-    }).then(() => {
-      document.getElementById('newPostContent').value = '';
-      loadPosts();
-    });
-  }
-
-  function renderPost(postData) {
-    const postDiv = document.createElement('div');
-    postDiv.className = 'post';
-
-    const avatarDiv = document.createElement('div');
-    avatarDiv.className = 'post-avatar';
-    avatarDiv.style.backgroundImage = postData.avatar || "url('https://randomuser.me/api/portraits/lego/1.jpg')";
-
-    const contentDiv = document.createElement('div');
-    contentDiv.innerHTML = `<div class="username">@${postData.username || 'Anonymous'}</div><div>${postData.content}</div>`;
-
-    postDiv.appendChild(avatarDiv);
-    postDiv.appendChild(contentDiv);
-
-    userPosts.prepend(postDiv);
-  }
-
-  function loadPosts() {
-    userPosts.innerHTML = '';
-
-    database.ref('userPosts').once('value', snapshot => {
-      const posts = snapshot.val();
-      if (posts) {
-        Object.values(posts).forEach(post => renderPost(post));
+    // Enable photoInput only when username is entered
+    usernameInput.addEventListener('input', function() {
+      photoInput.disabled = !usernameInput.value.trim();
+      if (!photoInput.disabled) {
+        photoInput.style.opacity = 1;
+      } else {
+        photoInput.style.opacity = 0.5;
       }
     });
-  }
 
-  window.showMessages = function() {
-    alert('Showing messages (mock data)');
-  }
+    photoInput.addEventListener('change', async function() {
+      const file = this.files[0];
+      const username = usernameInput.value.trim();
 
-  window.showFollows = function() {
-    alert('Showing follows (mock data)');
-  }
+      if (!username) {
+        alert('Please enter username before uploading an avatar.');
+        photoInput.value = "";
+        return;
+      }
+      if (file) {
+        try {
+          avatarPreview.style.backgroundImage = "";
+          avatarPreview.textContent = "Uploading...";
+          // Ensure correct contentType is set for file upload
+          const storageRef = storage.ref(`avatars/${username}/${file.name}`);
+          const uploadTask = storageRef.put(file, { contentType: file.type });
+          uploadTask.on('state_changed', null, function(error) {
+            avatarPreview.textContent = "";
+            alert('Avatar upload failed: ' + error.message);
+            console.error('Avatar upload error:', error);
+          }, async function() {
+            const url = await uploadTask.snapshot.ref.getDownloadURL();
+            avatarPreview.style.backgroundImage = `url('${url}')`;
+            avatarPreview.setAttribute('data-avatar-url', url);
+            avatarPreview.textContent = "";
+            console.log('Avatar uploaded! URL:', url);
+          });
+        } catch (err) {
+          avatarPreview.textContent = "";
+          alert('Avatar upload failed: ' + err.message);
+          console.error('Avatar upload error:', err);
+        }
+      }
+    });
 
-  loadPosts();
-</script></body>
+    function saveProfile() {
+      const username = usernameInput.value.trim();
+      const bio = document.getElementById('bioInput').value.trim();
+      const avatar = avatarPreview.getAttribute('data-avatar-url') || '';
+
+      if (!username || !bio) {
+        alert('Please enter a username and bio.');
+        return;
+      }
+
+      database.ref('profiles/' + username).set({
+        username: username,
+        bio: bio,
+        avatar: avatar
+      })
+      .then(() => {
+        alert('Profile saved successfully!');
+        console.log('Profile saved:', {username, bio, avatar});
+      })
+      .catch((error) => {
+        alert('Error saving profile: ' + error.message);
+        console.error('Profile save error:', error);
+      });
+    }
+
+    function submitPost() {
+      const username = usernameInput.value.trim();
+      const content = document.getElementById('newPostContent').value.trim();
+      const avatar = avatarPreview.getAttribute('data-avatar-url') || '';
+
+      if (!username || !content) {
+        alert('Please enter your username and post content.');
+        return;
+      }
+
+      database.ref('userPosts').push({
+        username: username,
+        content: content,
+        avatar: avatar
+      }).then(() => {
+        document.getElementById('newPostContent').value = '';
+        loadPosts();
+      }).catch((err) => {
+        alert('Error saving post: ' + err.message);
+        console.error('Post save error:', err);
+      });
+    }
+
+    function renderPost(postData) {
+      const postDiv = document.createElement('div');
+      postDiv.className = 'post';
+
+      const avatarDiv = document.createElement('div');
+      avatarDiv.className = 'post-avatar';
+      avatarDiv.style.backgroundImage = postData.avatar
+        ? `url('${postData.avatar}')`
+        : "url('https://randomuser.me/api/portraits/lego/1.jpg')";
+
+      const contentDiv = document.createElement('div');
+      contentDiv.innerHTML = `<div class="username">@${postData.username || 'Anonymous'}</div><div>${postData.content}</div>`;
+
+      postDiv.appendChild(avatarDiv);
+      postDiv.appendChild(contentDiv);
+
+      userPosts.prepend(postDiv);
+    }
+
+    function loadPosts() {
+      userPosts.innerHTML = '';
+      database.ref('userPosts').once('value', snapshot => {
+        const posts = snapshot.val();
+        if (posts) {
+          Object.values(posts).forEach(post => renderPost(post));
+        }
+      });
+    }
+
+    window.showMessages = function() {
+      alert('Showing messages (mock data)');
+    }
+
+    window.showFollows = function() {
+      alert('Showing follows (mock data)');
+    }
+
+    loadPosts();
+  </script>
+</body>
 </html>
