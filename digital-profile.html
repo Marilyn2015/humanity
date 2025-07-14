@@ -135,7 +135,14 @@
       return;
     }
 
-    database.ref('profiles/' + username).set({
+    import { getFirestore, doc, setDoc } from "firebase/firestore";
+const firestore = getFirestore();
+
+await setDoc(doc(firestore, "profiles", username), {
+  username,
+  bio,
+  avatar
+});
       username: username,
       bio: bio,
       avatar: avatar
