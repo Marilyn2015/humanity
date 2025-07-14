@@ -126,6 +126,70 @@
       color: #000;
     }
   </style>
+
+  <!-- Firebase CDN & Real-Time Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+    import { getDatabase, ref, onChildAdded, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.firebasestorage.app",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
+      measurementId: "G-3ZTCXL4374"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const database = getDatabase(app);
+    const postRef = ref(database, 'posts');
+
+    window.submitPost = () => {
+      const content = document.getElementById('newPostContent').value.trim();
+      if (!content) {
+        alert('Please write something to post.');
+        return;
+      }
+
+      push(postRef, {
+        username: "@You",
+        message: content,
+        timestamp: Date.now(),
+        likes: 0
+      });
+
+      document.getElementById('newPostContent').value = '';
+    };
+
+    onChildAdded(postRef, (snapshot) => {
+      const post = snapshot.val();
+      const postContainer = document.createElement('div');
+      postContainer.className = 'post';
+      postContainer.setAttribute('data-likes', post.likes || 0);
+      postContainer.innerHTML = `
+        <div class="username">${post.username}</div>
+        <div>${post.message}</div>
+        <div class="timestamp">Posted just now</div>
+        <button class="like-btn" onclick="likePost(this)">&#10084; <span class="like-count">${post.likes || 0}</span></button>
+      `;
+      document.getElementById('feed').prepend(postContainer);
+    });
+
+    window.likePost = (btn) => {
+      const countSpan = btn.querySelector('.like-count');
+      let count = parseInt(countSpan.textContent, 10);
+      const liked = btn.classList.toggle('liked');
+      count = liked ? count + 1 : count - 1;
+      count = Math.max(count, 0);
+      countSpan.textContent = count;
+      btn.closest('.post').setAttribute('data-likes', count);
+    };
+  </script>
 </head>
 <body>
 
@@ -141,64 +205,11 @@
   </div>
 
   <div class="feed" id="feed">
-    <div class="post" data-likes="0">
-      <div class="username"><a class="profile-link" href="https://marilyn2015.github.io/Humanity/profile_neo.html" target="_blank">@Neo</a></div>
-      <div>Just cracked another layer of the simulation. Stay aware.</div>
-      <div class="timestamp">Posted 2 hours ago</div>
-      <button class="like-btn" onclick="likePost(this)">&#10084; <span class="like-count">0</span></button>
-    </div>
-
-    <div class="post" data-likes="0">
-      <div class="username"><a class="profile-link" href="https://marilyn2015.github.io/Humanity/profile_trinity.html" target="_blank">@Trinity</a></div>
-      <div>Exploring the human condition through code and connection.</div>
-      <div class="timestamp">Posted 3 hours ago</div>
-      <button class="like-btn" onclick="likePost(this)">&#10084; <span class="like-count">0</span></button>
-    </div>
-
-    <div class="post" data-likes="0">
-      <div class="username"><a class="profile-link" href="https://marilyn2015.github.io/Humanity/profile_morpheus.html" target="_blank">@Morpheus</a></div>
-      <div>The Universe is vast, but the truth is within you.</div>
-      <div class="timestamp">Posted 5 hours ago</div>
-      <button class="like-btn" onclick="likePost(this)">&#10084; <span class="like-count">0</span></button>
-    </div>
+    <!-- 🔮 Posts will stream in live from Firebase -->
   </div>
-
-  <script>
-    function submitPost() {
-      const content = document.getElementById('newPostContent').value.trim();
-      if (!content) {
-        alert('Please write something to post.');
-        return;
-      }
-
-      const postContainer = document.createElement('div');
-      postContainer.className = 'post';
-      postContainer.setAttribute('data-likes', '0');
-      postContainer.innerHTML = `
-        <div class="username">@You</div>
-        <div>${content}</div>
-        <div class="timestamp">Posted just now</div>
-        <button class="like-btn" onclick="likePost(this)">&#10084; <span class="like-count">0</span></button>
-      `;
-      document.getElementById('feed').prepend(postContainer);
-      document.getElementById('newPostContent').value = '';
-    }
-
-    function likePost(btn) {
-      const countSpan = btn.querySelector('.like-count');
-      let count = parseInt(countSpan.textContent, 10);
-      const liked = btn.classList.toggle('liked');
-      if (liked) {
-        count += 1;
-      } else {
-        count -= 1;
-      }
-      count = Math.max(count, 0);
-      countSpan.textContent = count;
-      // Optionally update data-likes attribute for future use
-      btn.closest('.post').setAttribute('data-likes', count);
-    }
-  </script>
 
 </body>
 </html>
+
+
+ 
