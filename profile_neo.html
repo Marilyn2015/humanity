@@ -78,34 +78,11 @@
       font-size: 0.8em;
       color: #aaa;
     }
-    .modal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #111;
-      border: 2px solid #00f6ff;
-      padding: 20px;
-      z-index: 1000;
-      color: #fff;
-      border-radius: 8px;
-    }
-    .modal h3 {
-      margin-top: 0;
-    }
-    .modal input, .modal textarea {
-      width: 100%;
-      margin: 5px 0;
-      padding: 8px;
-      background: #222;
-      border: 1px solid #00f6ff;
-      color: #fff;
-      border-radius: 4px;
-    }
   </style>
 </head>
 <body>
+
+  <button class="button" onclick="window.location.href='universe.html'">Back</button>
 
   <h1>Neo's Profile</h1>
 
@@ -116,8 +93,6 @@
     <div class="location"><strong>Location:</strong> Zion</div>
     <div class="interests"><strong>Interests:</strong> Simulation theory, martial arts, breaking the Matrix.</div>
     <div class="about"><strong>About:</strong> Neo, also known as Thomas Anderson, was a regular programmer by day and a hacker by night. After meeting Morpheus, his life changed when he was freed from the Matrix. Neo has since dedicated his life to freeing humanity from machine domination.</div>
-    <button class="button" onclick="showFollowers()">Followers</button>
-    <button class="button" onclick="showMessageModal()">Message</button>
   </div>
 
   <h2>Timeline</h2>
@@ -139,60 +114,6 @@
       <div class="timestamp">Posted yesterday</div>
     </div>
   </div>
-
-  <div id="messageModal" class="modal">
-    <h3>Send a Message to Neo</h3>
-    <input type="text" placeholder="Your Name">
-    <textarea placeholder="Write your message..."></textarea>
-    <button class="button" onclick="alert('Message sent!'); hideModals()">Send</button>
-    <button class="button" onclick="showInbox()">Inbox</button>
-    <button class="button" onclick="hideModals()">Close</button>
-  </div>
-
-  <div id="followersModal" class="modal">
-    <h3>Neo's Followers</h3>
-    <ul>
-      <li>Trinity</li>
-      <li>Morpheus</li>
-      <li>The Oracle</li>
-      <li>Tank</li>
-      <li>Dozer</li>
-    </ul>
-    <button class="button" onclick="hideModals()">Close</button>
-  </div>
-
-  <div id="inboxModal" class="modal">
-    <h3>Inbox</h3>
-    <ul>
-      <li>Message from Trinity: "Stay safe out there, Neo."</li>
-      <li>Message from Morpheus: "You are The One, never forget that."</li>
-      <li>Message from The Oracle: "Everything that has a beginning has an end."</li>
-    </ul>
-    <button class="button" onclick="hideModals()">Close</button>
-  </div>
-
-  <script>
-    function showMessageModal() {
-      hideModals();
-      document.getElementById('messageModal').style.display = 'block';
-    }
-
-    function showFollowers() {
-      hideModals();
-      document.getElementById('followersModal').style.display = 'block';
-    }
-
-    function showInbox() {
-      hideModals();
-      document.getElementById('inboxModal').style.display = 'block';
-    }
-
-    function hideModals() {
-      document.getElementById('messageModal').style.display = 'none';
-      document.getElementById('followersModal').style.display = 'none';
-      document.getElementById('inboxModal').style.display = 'none';
-    }
-  </script>
 
 </body>
 </html>
