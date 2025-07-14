@@ -79,8 +79,7 @@
             photoURL = data.photoURL || photoURL;
             bio = data.bio || "";
             vibes = data.socialVibes || "";
-           profileLink = `profile_${post.userId}.html`;
-
+            profileLink = `profile_${post.userId}.html`;
           }
         } catch (e) {
           console.warn("Missing profile for", post.userId, e);
@@ -114,26 +113,23 @@
     // Seed mock profiles
     const profiles = {
       neo: {
-      {
-      "displayName": "Neo",
-      "photoURL": "https://xsgames.co/randomusers/avatar.php?g=male",
-      "bio": "I know kung fu.",
-      "socialVibes": "🌌 Waking the world"
+        displayName: "Neo",
+        photoURL: "https://xsgames.co/randomusers/avatar.php?g=male",
+        bio: "I know kung fu.",
+        socialVibes: "🌌 Waking the world"
       },
       trinity: {
-  "displayName": "Trinity",
-  "photoURL": "https://xsgames.co/randomusers/avatar.php?g=female",
-  "bio": "I fly. I fight. I believe.",
-  "socialVibes": "💫 Hacker of hearts"
-}
-ts"
+        displayName: "Trinity",
+        photoURL: "https://xsgames.co/randomusers/avatar.php?g=female",
+        bio: "I fly. I fight. I believe.",
+        socialVibes: "💫 Hacker of hearts"
       },
-  "displayName": "Morpheus",
-  "photoURL": "https://xsgames.co/randomusers/avatar.php?g=male",
-  "bio": "I offer truth, not comfort.",
-  "socialVibes": "🕶️ Seeker of the One"
-}
-
+      morpheus: {
+        displayName: "Morpheus",
+        photoURL: "https://xsgames.co/randomusers/avatar.php?g=male",
+        bio: "I offer truth, not comfort.",
+        socialVibes: "🕶️ Seeker of the One"
+      }
     };
 
     Object.entries(profiles).forEach(async ([id, data]) => {
