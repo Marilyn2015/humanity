@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -75,38 +74,22 @@
       text-shadow: 0 0 8px #ff00ff;
     }
   </style>
-  <!-- Firebase scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
 </head>
-<body>
-
-<div class="profile-container">
-  <h1>Your Digital Profile</h1>
-
-  <div class="avatar-preview" id="avatarPreview"></div>
-  <input type="file" id="photoInput" accept="image/*">
-
-  <h3>About You</h3>
+<body><div class="profile-container">
+  <h1>Your Digital Profile</h1>  <div class="avatar-preview" id="avatarPreview"></div>
+  <input type="file" id="photoInput" accept="image/*">  <h3>About You</h3>
   <textarea id="bioInput" placeholder="Write about yourself..." rows="3"></textarea>
-
-  <div class="button-group">
+  <button onclick="saveProfile()">Save Profile</button>  <div class="button-group">
     <button onclick="showMessages()">Messages</button>
     <button onclick="showFollows()">Follows</button>
-  </div>
-
-  <h3>My Posts</h3>
-  <div id="userPosts">
-    <!-- Posts loaded dynamically here -->
-  </div>
-
-  <h3>Add New Post</h3>
+  </div>  <h3>My Posts</h3>
+  <div id="userPosts"></div>  <h3>Add New Post</h3>
   <textarea id="newPostContent" placeholder="What's on your mind?" rows="3"></textarea><br/>
   <button onclick="submitPost()">Post</button>
-</div>
-
-<script>
-  // Your Firebase config - replace with your own keys
+</div><script>
   const firebaseConfig = {
     apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
     authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -119,21 +102,55 @@
 
   firebase.initializeApp(firebaseConfig);
   const database = firebase.database();
+  const storage = firebase.storage();
+  const userId = 'user_123';
 
   const avatarPreview = document.getElementById('avatarPreview');
   const photoInput = document.getElementById('photoInput');
   const userPosts = document.getElementById('userPosts');
 
-  photoInput.addEventListener('change', function() {
+  photoInput.addEventListener('change', async function() {
     const file = this.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        avatarPreview.style.backgroundImage = `url('${e.target.result}')`;
-      };
-      reader.readAsDataURL(file);
+      const storageRef = storage.ref(`avatars/${userId}/${file.name}`);
+      await storageRef.put(file);
+      const url = await storageRef.getDownloadURL();
+      avatarPreview.style.backgroundImage = `url('${url}')`;
+      avatarPreview.setAttribute('data-avatar-url', url);
     }
   });
+
+  function saveProfile() {
+    const bio = document.getElementById('bioInput').value.trim();
+    const avatar = avatarPreview.getAttribute('data-avatar-url') || '';
+
+    if (!bio) {
+      alert('Please write something about yourself.');
+      return;
+    }
+
+    database.ref('profiles/' + userId).set({
+      bio: bio,
+      avatar: avatar
+    }).then(() => {
+      alert('Profile saved successfully!');
+    }).catch((error) => {
+      console.error('Error saving profile:', error);
+    });
+  }
+
+  function loadProfile() {
+    database.ref('profiles/' + userId).once('value').then(snapshot => {
+      const profile = snapshot.val();
+      if (profile) {
+        if (profile.avatar) {
+          avatarPreview.style.backgroundImage = `url('${profile.avatar}')`;
+          avatarPreview.setAttribute('data-avatar-url', profile.avatar);
+        }
+        document.getElementById('bioInput').value = profile.bio || '';
+      }
+    });
+  }
 
   function renderPost(postData) {
     const postDiv = document.createElement('div');
@@ -153,13 +170,11 @@
   }
 
   function loadPosts() {
-    userPosts.innerHTML = ''; // clear posts before loading
+    userPosts.innerHTML = '';
 
     database.ref('userPosts').once('value', snapshot => {
       const posts = snapshot.val();
-
       if (!posts) {
-        // If no posts, add some mock ones
         const mockPosts = [
           {content: 'First mock post!', avatar: "url('https://randomuser.me/api/portraits/men/75.jpg')"},
           {content: 'Another mock post here.', avatar: "url('https://randomuser.me/api/portraits/women/65.jpg')"},
@@ -178,9 +193,8 @@
       return;
     }
 
-    const avatar = avatarPreview.style.backgroundImage || "url('https://randomuser.me/api/portraits/lego/1.jpg')";
+    const avatar = avatarPreview.getAttribute('data-avatar-url') || "url('https://randomuser.me/api/portraits/lego/1.jpg')";
 
-    // Save to Firebase
     database.ref('userPosts').push({
       content: content,
       avatar: avatar
@@ -198,9 +212,7 @@
     alert('Showing follows (mock data)');
   }
 
-  // Initial load
+  loadProfile();
   loadPosts();
-</script>
-
-</body>
+</script></body>
 </html>
