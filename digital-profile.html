@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="description" content="Create Digital Profile">
   <title>Create Digital Profile</title>
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <!-- Firebase Realtime Database -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <style>
@@ -65,7 +69,6 @@
       margin-bottom: 24px;
       color: var(--text-main);
     }
-    /* Globe Canvas Circular */
     #globeCanvas {
       display: block;
       margin: 0 auto 24px;
@@ -145,6 +148,21 @@
     <button class="btn-primary" id="saveProfile" onclick="saveProfileData()">Save Profile</button>
   </div>
   <script>
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.firebasestorage.app",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e0434379d71bd"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Globe initialization
     function initGlobe() {
       const canvas = document.getElementById('globeCanvas');
       const scene = new THREE.Scene();
@@ -171,22 +189,41 @@
       animate();
     }
     window.addEventListener('DOMContentLoaded', initGlobe);
-    function saveProfileData() {
-      const u = document.getElementById('username').value.trim();
-      const a = document.getElementById('about').value.trim();
-      if (!u || !a) { alert('Please complete all fields.'); return; }
-      window.location.href = 'universe.html';
-    }
+
+    let avatarData = '';
     const photoInput = document.getElementById('photoInput');
     const avatarPreview = document.getElementById('avatarPreview');
     photoInput.addEventListener('change', () => {
       const file = photoInput.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = e => avatarPreview.style.backgroundImage = `url('${e.target.result}')`;
+        reader.onload = e => {
+          avatarData = e.target.result;
+          avatarPreview.style.backgroundImage = `url('${avatarData}')`;
+        };
         reader.readAsDataURL(file);
       }
     });
+
+    function saveProfileData() {
+      const u = document.getElementById('username').value.trim();
+      const a = document.getElementById('about').value.trim();
+      if (!u || !a) { alert('Please complete all fields.'); return; }
+      // Write to Realtime Database
+      db.ref('profiles/' + u).set({
+        username: u,
+        about: a,
+        avatar: avatarData
+      }).then(() => {
+        // Store current user in localStorage for Universe page
+        localStorage.setItem('currentUser', u);
+        localStorage.setItem('currentAvatar', avatarData);
+
+        window.location.href = 'universe.html';
+      }).catch(err => {
+        alert('Save failed: ' + err.message);
+      });
+    }
   </script>
 </body>
 </html>
