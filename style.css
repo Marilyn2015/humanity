@@ -106,17 +106,7 @@ h1 {
       --shadow-color: rgba(0,0,0,0.1);
       --accent: #000000;
     }
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: 'Roboto', sans-serif;
-      background: #fff;  /* <-- white bg */
-      position: relative;
-      min-height: 100vh;
-    }
+   
     /* Removed body::before overlay */
 
     .logout-button {
