@@ -12,12 +12,16 @@
   <style>
     :root {
       --bg-image: url('https://source.unsplash.com/1600x900/?outer-space,stars');
-      --text-color: #FFFFFF;
+      --text-color: #000000;
       --container-bg: rgba(0, 0, 0, 0.4);
       --button-bg: #FFFFFF;
       --button-text: #000000;
       --button-border: #CCCCCC;
       --button-hover: #EEEEEE;
+          --button-bg: #000000;
+      --button-text: #FFFFFF;
+      --button-border: #333333;
+      --button-hover: #222222;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -32,8 +36,8 @@
       justify-content: center;
     }
     .container {
-      background: var(--container-bg);
-      padding: 40px;
+      background: transparent; /* removed gray overlay */
+      padding: 20px 40px;
       border-radius: 8px;
       text-align: center;
       max-width: 600px;
@@ -41,7 +45,7 @@
     }
     canvas {
       width: 100%;
-      max-width: 600px;  /* Increased max width */
+      max-width: 300px;  /* Reduced max width for smaller globe */
       height: auto;
       display: block;
       margin: 0 auto 20px;
@@ -60,9 +64,9 @@
       background: var(--button-bg);
       color: var(--button-text);
       border: 1px solid var(--button-border);
-      padding: 12px 24px;
+      padding: 10px 20px;
       margin: 0 8px;
-      font-size: 1rem;
+      font-size: 0.9rem;
       text-decoration: none;
       text-transform: uppercase;
       font-weight: 500;
@@ -76,7 +80,7 @@
 </head>
 <body>
   <div class="container">
-    <canvas id="globe" width="500" height="500"></canvas>
+    <canvas id="globe" width="300" height="300"></canvas>
     <h1>#HUMANITY</h1>
     <p>Sign in or register to continue</p>
     <a href="portal.html" class="button">Log in with WorldID</a>
