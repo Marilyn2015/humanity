@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile - #HUMANITY</title>
+  <!-- Firebase + Fonts (reuse your original includes) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* Paste your CSS from universe.html here, or just link it if external */
+    :root {
+      --card-bg: #FFFFFF;
+      --text-main: #1A1A1A;
+      --text-secondary: #555555;
+      --border-color: #DDDDDD;
+      --shadow-color: rgba(0,0,0,0.1);
+      --accent: #000000;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Roboto', sans-serif; background: #fff; position: relative; min-height: 100vh; }
+    .logout-button {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: var(--accent);
+      color: #fff;
+      border: 0;
+      padding: 6px 12px;
+      font-family: 'Playfair Display', serif;
+      cursor: pointer;
+      box-shadow: 0 2px 8px var(--shadow-color);
+      z-index: 2;
+    }
+    .logout-button:hover { opacity: 0.8; }
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 500px;
+      margin: 80px auto 0 auto;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 16px var(--shadow-color);
+      padding: 32px;
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem;
+      text-align: center;
+      margin-bottom: 24px;
+      color: var(--text-main);
+    }
+    .profile-avatar {
+      display: block;
+      margin: 0 auto 16px auto;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      object-fit: cover;
+      background: #e0e0e0;
+    }
+    .profile-form input, .profile-form textarea {
+      display: block;
+      width: 100%;
+      margin-bottom: 14px;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 3px;
+    }
+    .profile-form button {
+      background: var(--accent);
+      color: #fff;
+      font-family: 'Playfair Display', serif;
+      border: 0;
+      padding: 12px;
+      width: 100%;
+      cursor: pointer;
+    }
+    .profile-form button:hover { background: #333; }
+    .back-button {
+      position: absolute;
+      top: 18px;
+      left: 24px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-family: 'Playfair Display', serif;
+      cursor: pointer;
+      font-size: 1rem;
+      z-index: 3;
+    }
+    .back-button:hover { background: #333; }
+  </style>
+</head>
+<body>
+  <button class="logout-button" onclick="window.location.href='./index.html';">Logout</button>
+  <div class="container">
+    <button class="back-button" onclick="window.location.href='universe.html'">&larr; Back</button>
+    <h1>My Profile</h1>
+    <img id="avatarPreview" class="profile-avatar" src="https://randomuser.me/api/portraits/men/50.jpg" alt="Profile Avatar" />
+    <form class="profile-form" autocomplete="off">
+      <input type="file" id="avatarUpload" accept="image/*">
+      <input type="text" id="profileName" placeholder="Your Username">
+      <textarea id="profileBio" rows="4" placeholder="Your Bio"></textarea>
+      <button type="button" id="saveProfileBtn">Save Profile</button>
+    </form>
+  </div>
+  <script>
+    // Firebase setup (reuse config)
+    const firebaseConfig = {
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.firebasestorage.app",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e0434379d71bd"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const storage = firebase.storage();
+
+    // Get user info from localStorage (or Firebase, later)
+    let currentUser = localStorage.getItem('currentUser') || '';
+    let currentAvatar = localStorage.getItem('currentAvatar') || 'https://randomuser.me/api/portraits/men/50.jpg';
+    let currentBio = localStorage.getItem('currentBio') || '';
+
+    // Set fields
+    document.getElementById('profileName').value = currentUser;
+    document.getElementById('avatarPreview').src = currentAvatar;
+    document.getElementById('profileBio').value = currentBio;
+
+    // Avatar preview
+    document.getElementById('avatarUpload').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          document.getElementById('avatarPreview').src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Save profile (localStorage + Firebase)
+    document.getElementById('saveProfileBtn').onclick = async () => {
+      const name = document.getElementById('profileName').value.trim();
+      const bio = document.getElementById('profileBio').value.trim();
+      const file = document.getElementById('avatarUpload').files[0];
+
+      let avatarUrl = currentAvatar;
+
+      if (file) {
+        // Save avatar image to Firebase Storage
+        const storageRef = storage.ref(`avatars/${Date.now()}_${file.name}`);
+        await storageRef.put(file);
+        avatarUrl = await storageRef.getDownloadURL();
+      }
+
+      // Save to localStorage
+      localStorage.setItem('currentUser', name);
+      localStorage.setItem('currentAvatar', avatarUrl);
+      localStorage.setItem('currentBio', bio);
+
+      // Save to Firebase (optional: under a "users" node by name)
+      if (name) {
+        await db.ref('users/' + name.replace(/[.#$\\[\\]]/g, '_')).set({
+          name,
+          avatar: avatarUrl,
+          bio
+        });
+      }
+
+      alert('Profile saved!');
+    };
+  </script>
+</body>
+</html>
