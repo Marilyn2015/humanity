@@ -86,3 +86,14 @@ h1 {
   font-size: 0.8em;
   color: #aaa;
 }
+#globeCanvas {
+  display: block;
+  margin: 40px auto 0 auto; /* floats above the card */
+  width: 220px;
+  height: 220px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  background: transparent !important;
+}
+.container {
+  margin-top: 0; /* keep this tight under the globe */
+}
