@@ -1,154 +1,149 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>#HUMANITY Universe - Professional UI</title>
+  <!-- Three.js for Globe -->
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+  <!-- Firebase Compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg-image: url('https://cdn.pixabay.com/photo/2017/08/31/11/55/earth-2695569_960_720.jpg');
-      --primary-color: #00ffcc;
-    }
-    body {
-      margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background: var(--bg-image) no-repeat center center fixed;
-      background-size: cover;
-      color: var(--primary-color);
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      padding-top: 20px;
-    }
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 3rem;
-      margin-bottom: 20px;
-    }
-    .btn {
-      background-color: #111;
-      border: 1px solid var(--primary-color);
-      color: var(--primary-color);
-      padding: 10px 20px;
-      font-size: 1.2rem;
-      border-radius: 8px;
-      cursor: pointer;
-      text-decoration: none;
-      margin: 5px;
-    }
-    .btn:hover {
-      background-color: var(--primary-color);
-      color: #111;
-    }
-    canvas {
-      display: block;
-      width: 300px;
-      height: 300px;
-      margin-bottom: 20px;
-    }
-    .post-box {
-      background: rgba(0, 0, 0, 0.7);
-      border: 1px solid var(--primary-color);
-      padding: 15px;
-      border-radius: 8px;
-      width: 300px;
-      margin-bottom: 20px;
-    }
-    .post-box textarea {
-      width: 100%;
-      height: 60px;
-      margin-bottom: 10px;
-      background: #111;
-      border: 1px solid var(--primary-color);
-      color: var(--primary-color);
-      border-radius: 4px;
-      padding: 5px;
-    }
-    .post {
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid var(--primary-color);
-      padding: 10px;
-      border-radius: 4px;
-      margin: 5px 0;
-    }
+    :root { --bg-image: url('https://source.unsplash.com/1600x900/?galaxy,stars'); --overlay-color: rgba(0,0,0,0.6); --card-bg: #FFFFFF; --text-main: #1A1A1A; --text-secondary: #555555; --border-color: #DDDDDD; --shadow-color: rgba(0,0,0,0.1); --accent: #000000; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Roboto', sans-serif; background: var(--bg-image) center/cover no-repeat; position: relative; min-height: 100vh; }
+    body::before { content: ''; position: absolute; inset: 0; background: var(--overlay-color); z-index: 0; }
+    .logout-button { position: fixed; top: 16px; right: 16px; background: var(--accent); color: #fff; border: 0; padding: 6px 12px; font-family: 'Playfair Display', serif; cursor: pointer; box-shadow: 0 2px 8px var(--shadow-color); z-index: 2; }
+    .logout-button:hover { opacity: 0.8; }
+    .container { position: relative; z-index: 1; max-width: 600px; margin: 40px auto; background: var(--card-bg); border: 1px solid var(--border-color); box-shadow: 0 4px 16px var(--shadow-color); padding: 32px; }
+    h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; text-align: center; margin-bottom: 24px; color: var(--text-main); }
+    #globeCanvas { display: block; margin: 0 auto 24px; width: 220px; height: 220px; box-shadow: 0 4px 12px var(--shadow-color); }
+    .post-form { background: #FAFAFA; border: 1px solid var(--border-color); padding: 20px; margin-bottom: 12px; box-shadow: inset 0 2px 4px var(--shadow-color); }
+    .post-form textarea, .post-form input[type=file] { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); }
+    .post-form button { width: 100%; padding: 12px; background: var(--accent); color: #fff; font-family: 'Playfair Display', serif; border: 0; cursor: pointer; }
+    .post-form button:hover { background: #333; }
+    .profile-button { display: block; width: 180px; margin: 16px auto; padding: 10px 0; background: var(--accent); color: #fff; border: 0; font-family: 'Playfair Display', serif; cursor: pointer; text-align: center; }
+    .profile-button:hover { background: #333; }
+    .feed .post { background: #f5f5f5; border: 1px solid var(--border-color); margin-bottom: 16px; padding: 16px; box-shadow: 0 2px 8px var(--shadow-color); }
+    .post-header { display: flex; align-items: center; margin-bottom: 8px; }
+    .post-header a { display: flex; align-items: center; text-decoration: none; }
+    .avatar { width: 50px; height: 50px; border-radius: 50%; margin-right: 12px; object-fit: cover; }
+    .username { font-family: 'Roboto', sans-serif; color: var(--text-main); font-weight: 500; font-size: 1rem; }
+    .content-image { max-width: 100%; margin-top: 8px; }
+    .timestamp { font-size: 0.8rem; color: var(--text-secondary); margin-top: 8px; }
+    .like-btn { background: none; border: 0; color: var(--accent); cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>Welcome to #HUMANITY Universe</h1>
-  <button class="btn" onclick="location.href='portal.html'">Enter the Web Portal</button>
-  <button class="btn" onclick="location.href='digital-profile.html'">My Profile</button><canvas id="globeCanvas"></canvas>
-
-  <div class="post-box">
-    <textarea id="postContent" placeholder="What's on your mind?"></textarea>
-    <button class="btn" onclick="createPost()">Post</button>
-  </div>  <div id="postFeed"></div>  <script>
+  <button class="logout-button" onclick="window.location.href='./index.html';">Logout</button>
+  <div class="container">
+    <h1>Welcome to the Universe</h1>
+    <canvas id="globeCanvas" width="220" height="220"></canvas>
+    <div class="post-form">
+      <textarea id="newPostContent" placeholder="What's on your mind?"></textarea>
+      <input type="file" id="postImage">
+      <button id="postButton">Post</button>
+    </div>
+    <button class="profile-button" onclick="window.location.href=<digital-profile.html'">My Profile</button>
+    <div class="feed" id="feed"></div>
+  </div>
+  <script>
+    // Firebase initialization
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
       databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
       projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.appspot.com",
+      storageBucket: "hashhumanity-58b9a.firebasestorage.app",
       messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e043"
+      appId: "1:886745899016:web:2b0f7e0434379d71bd"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const storage = firebase.storage();
+    const postRef = db.ref('posts');
 
-    function createPost() {
-      const content = document.getElementById('postContent').value.trim();
-      if (!content) return;
+    // Current user
+    const currentUser = localStorage.getItem('currentUser') || 'Anonymous';
+    const currentAvatar = localStorage.getItem('currentAvatar') || 'https://randomuser.me/api/portraits/men/50.jpg';
 
-      const postData = {
-        text: content,
-        timestamp: Date.now()
-      };
-
-      db.ref('posts').push(postData).then(() => {
-        addPostToFeed(postData);
-        document.getElementById('postContent').value = '';
-      });
-    }
-
-    function addPostToFeed(post) {
-      const postFeed = document.getElementById('postFeed');
-      const div = document.createElement('div');
-      div.className = 'post';
-      div.textContent = post.text;
-      postFeed.prepend(div);
-    }
-
-    db.ref('posts').limitToLast(10).once('value', snapshot => {
-      snapshot.forEach(childSnapshot => {
-        addPostToFeed(childSnapshot.val());
-      });
+    // Seed mock posts if none exist
+    postRef.once('value', snapshot => {
+      if (!snapshot.exists()) {
+        const mock = [
+          { userId: 'Neo Smith', avatar: 'https://randomuser.me/api/portraits/men/1.jpg', message: 'I am the One.', timestamp: Date.now(), likes: 0 },
+          { userId: 'Trinity Jones', avatar: 'https://randomuser.me/api/portraits/women/2.jpg', message: 'Let’s ride.', timestamp: Date.now(), likes: 0 },
+          { userId: 'Morpheus Lee', avatar: 'https://randomuser.me/api/portraits/men/3.jpg', message: 'What if I told you...', timestamp: Date.now(), likes: 0 }
+        ];
+        mock.forEach(p => postRef.push(p));
+      }
     });
 
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('globeCanvas') });
-    renderer.setSize(300, 300);
+    window.addEventListener('DOMContentLoaded', () => {
+      // Globe setup
+      const canvas = document.getElementById('globeCanvas');
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      const sphereMesh = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 32, 32),
+        new THREE.MeshStandardMaterial({ map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg') })
+      );
+      scene.add(sphereMesh);
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(5, 3, 5);
+      scene.add(light);
+      camera.position.z = 3;
+      (function animate() { requestAnimationFrame(animate); sphereMesh.rotation.y += 0.0015; renderer.render(scene, camera); })();
 
-    const geometry = new THREE.SphereGeometry(1, 32, 32);
-    const textureLoader = new THREE.TextureLoader();
-    const earthTexture = textureLoader.load('https://threejs.org/examples/textures/earth_atmos_2048.jpg');
-    const material = new THREE.MeshBasicMaterial({ map: earthTexture });
-    const earth = new THREE.Mesh(geometry, material);
-    scene.add(earth);
+      // Posts
+      document.getElementById('postButton').addEventListener('click', async () => {
+        const contentEl = document.getElementById('newPostContent');
+        const fileEl = document.getElementById('postImage');
+        const message = contentEl.value.trim();
+        const file = fileEl.files[0];
+        if (!message && !file) return alert('Enter text or select an image.');
+        let imageURL = '';
+        if (file) {
+          const imgRef = storage.ref(`postImages/${Date.now()}_${file.name}`);
+          await imgRef.put(file);
+          imageURL = await imgRef.getDownloadURL();
+        }
+        postRef.push({ userId: currentUser, avatar: currentAvatar, message, image: imageURL, timestamp: Date.now(), likes: 0 });
+        contentEl.value = '';
+        fileEl.value = '';
+      });
 
-    camera.position.z = 3;
-
-    function animate() {
-      requestAnimationFrame(animate);
-      earth.rotation.y += 0.002;
-      renderer.render(scene, camera);
-    }
-
-    animate();
-  </script></body>
+      postRef.on('value', snapshot => {
+        const feed = document.getElementById('feed'); feed.innerHTML = '';
+        snapshot.forEach(childSnapshot => {
+          const p = childSnapshot.val();
+          const div = document.createElement('div'); div.className = 'post';
+          const avatarURL = p.avatar || 'https://randomuser.me/api/portraits/men/50.jpg';
+          const profileFile = `profile_${p.userId.split(' ')[0].toLowerCase()}.html`;
+          div.innerHTML = `
+            <div class="post-header">
+              <a href="${profileFile}">
+                <img src="${avatarURL}" class="avatar" alt="avatar">
+                <div class="username">${p.userId}</div>
+              </a>
+            </div>
+            <p>${p.message}</p>
+            ${p.image ? `<img src="${p.image}" class="content-image">` : ''}
+            <div class="timestamp">${new Date(p.timestamp).toLocaleString()}</div>
+            <button class="like-btn">❤️ <span class="like-count">${p.likes}</span></button>
+          `;
+          const btn = div.querySelector('.like-btn'); btn.addEventListener('click', e => { e.stopPropagation(); postRef.child(childSnapshot.key).update({ likes: p.likes+1 }); });
+          feed.prepend(div);
+        });
+      });
+    });
+  </script>
+</body>
 </html>
