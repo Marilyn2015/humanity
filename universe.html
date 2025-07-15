@@ -1,7 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
+<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>#HUMANITY Universe - Professional UI</title>
@@ -14,101 +11,92 @@
     :root {
       --bg-image: url('https://cdn.pixabay.com/photo/2017/08/31/11/55/earth-2695569_960_720.jpg');
       --primary-color: #00ffcc;
-    }
+    }body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  background: var(--bg-image) no-repeat center center fixed;
+  background-size: cover;
+  color: var(--primary-color);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  padding-top: 20px;
+}
 
-    body {
-      margin: 0;
-      font-family: 'Roboto', sans-serif;
-      background: var(--bg-image) no-repeat center center fixed;
-      background-size: cover;
-      color: var(--primary-color);
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      padding-top: 20px;
-    }
+h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
 
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 3rem;
-      margin-bottom: 20px;
-    }
+.btn {
+  background-color: #111;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  margin: 5px;
+}
 
-    .btn {
-      background-color: #111;
-      border: 1px solid var(--primary-color);
-      color: var(--primary-color);
-      padding: 10px 20px;
-      font-size: 1.2rem;
-      border-radius: 8px;
-      cursor: pointer;
-      text-decoration: none;
-      margin: 5px;
-    }
+.btn:hover {
+  background-color: var(--primary-color);
+  color: #111;
+}
 
-    .btn:hover {
-      background-color: var(--primary-color);
-      color: #111;
-    }
+canvas {
+  display: block;
+  width: 300px;
+  height: 300px;
+  margin-bottom: 20px;
+}
 
-    canvas {
-      display: block;
-      width: 300px;
-      height: 300px;
-      margin-bottom: 20px;
-    }
+.post-box {
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid var(--primary-color);
+  padding: 15px;
+  border-radius: 8px;
+  width: 300px;
+  margin-bottom: 20px;
+}
 
-    .post-box {
-      background: rgba(0, 0, 0, 0.7);
-      border: 1px solid var(--primary-color);
-      padding: 15px;
-      border-radius: 8px;
-      width: 300px;
-      margin-bottom: 20px;
-    }
+.post-box textarea {
+  width: 100%;
+  height: 60px;
+  margin-bottom: 10px;
+  background: #111;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  border-radius: 4px;
+  padding: 5px;
+}
 
-    .post-box textarea {
-      width: 100%;
-      height: 60px;
-      margin-bottom: 10px;
-      background: #111;
-      border: 1px solid var(--primary-color);
-      color: var(--primary-color);
-      border-radius: 4px;
-      padding: 5px;
-    }
+.post {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--primary-color);
+  padding: 10px;
+  border-radius: 4px;
+  margin: 5px 0;
+}
 
-    .post {
-      background: rgba(0, 0, 0, 0.6);
-      border: 1px solid var(--primary-color);
-      padding: 10px;
-      border-radius: 4px;
-      margin: 5px 0;
-    }
   </style>
-</head>
-
-<body>
+</head><body>
   <h1>Welcome to #HUMANITY Universe</h1>
   <button class="btn" onclick="location.href='portal.html'">Enter the Web Portal</button>
-  <button class="btn" onclick="location.href='profile.html'">My Profile</button>
-
-  <canvas id="globeCanvas"></canvas>
+  <button class="btn" onclick="location.href='profile.html'">My Profile</button><canvas id="globeCanvas"></canvas>
 
   <div class="post-box">
     <textarea id="postContent" placeholder="What's on your mind?"></textarea>
     <button class="btn" onclick="createPost()">Post</button>
-  </div>
-
-  <div id="postFeed">
+  </div>  <div id="postFeed">
     <div class="post">Mock Post 1: Welcome to the #HUMANITY feed!</div>
     <div class="post">Mock Post 2: Share your thoughts with the world.</div>
-  </div>
-
-  <script>
+  </div>  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -172,7 +160,4 @@
     }
 
     animate();
-  </script>
-</body>
-
-</html>
+  </script></body></html>
