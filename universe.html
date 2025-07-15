@@ -92,7 +92,7 @@
 </head>
 <body>
   <div class="header-buttons">
-    <button onclick="window.location.href='profile.html'">My Digital Profile</button>
+    <button onclick="window.location.href='digital-profile.html'">My Digital Profile</button>
     <button onclick="window.location.href='index.html'">Logout</button>
   </div>
   <h1>Welcome to the Universe</h1>
@@ -102,13 +102,11 @@
     <button id="postButton">Post</button>
   </div>
   <div class="feed" id="feed"></div>
-
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getDatabase, ref, push, onChildAdded, update, onValue, get, child } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
     import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
     import { getAnalytics } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js';
-
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -119,31 +117,21 @@
       appId: "1:886745899016:web:2b0f2025d71bd",
       measurementId: "G-3ZTCXL4374"
     };
-
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const db = getDatabase(app);
     const storage = getStorage(app);
     const postRef = ref(db, 'posts');
-
     const mockPosts = [
       { userId: 'neo', message: 'I am the One.', timestamp: Date.now(), likes: 0 },
       { userId: 'trinity', message: 'Let’s ride.', timestamp: Date.now(), likes: 0 },
       { userId: 'morpheus', message: 'What if I told you...', timestamp: Date.now(), likes: 0 }
     ];
-
-    function seedMockPosts() {
-      mockPosts.forEach(post => push(postRef, post));
-    }
-
+    function seedMockPosts() { mockPosts.forEach(post => push(postRef, post)); }
     let seeded = false;
     onValue(postRef, snapshot => {
-      if ((!snapshot.exists() || snapshot.size === 0) && !seeded) {
-        seedMockPosts();
-        seeded = true;
-      }
+      if ((!snapshot.exists() || snapshot.size === 0) && !seeded) { seedMockPosts(); seeded = true; }
     });
-
     document.getElementById('postButton').addEventListener('click', async () => {
       const content = document.getElementById('newPostContent').value.trim();
       const imageFile = document.getElementById('postImage').files[0];
@@ -158,19 +146,12 @@
       document.getElementById('newPostContent').value = '';
       document.getElementById('postImage').value = '';
     });
-
     onChildAdded(postRef, async (snapshot) => {
-      const post = snapshot.val();
-      const key = snapshot.key;
-      const profileLink = `profile_${post.userId}.html`;
+      const post = snapshot.val(); const key = snapshot.key;
+      const profileLink = `digital-profile.html?user=${encodeURIComponent(post.userId)}`;
       let avatarURL = 'https://via.placeholder.com/30';
-      try {
-        const avatarSnap = await get(child(ref(db), `users/${post.userId}/avatar`));
-        if (avatarSnap.exists()) avatarURL = avatarSnap.val();
-      } catch(e) { console.error('Avatar fetch error', e); }
-
-      const postContainer = document.createElement('div');
-      postContainer.className = 'post';
+      try { const avatarSnap = await get(child(ref(db), `users/${post.userId}/avatar`)); if (avatarSnap.exists()) avatarURL = avatarSnap.val(); } catch(e) { console.error('Avatar fetch error', e); }
+      const postContainer = document.createElement('div'); postContainer.className = 'post';
       postContainer.innerHTML = `
         <div class="post-header">
           <img src="${avatarURL}" class="avatar" alt="avatar" />
@@ -179,21 +160,13 @@
         <p>${post.message}</p>
         ${post.image ? `<img src="${post.image}" class="content-image" /><br>` : ''}
         <div class="timestamp">${new Date(post.timestamp).toLocaleString()}</div>
-        <button onclick="likePost('${key}', this)">❤️ <span class="like-count">${post.likes || 0}</span></button>
+        <button class="like-btn">❤️ <span class="like-count">${post.likes || 0}</span></button>
       `;
-      // Make entire post clickable
-      postContainer.addEventListener('click', () => window.location.href = profileLink);
+      postContainer.addEventListener('click', (e) => { if (!e.target.classList.contains('like-btn') && !e.target.closest('.like-btn')) window.location.href = profileLink; });
+      const likeBtn = postContainer.querySelector('.like-btn');
+      likeBtn.addEventListener('click', async (e) => { e.stopPropagation(); const countSpan = likeBtn.querySelector('.like-count'); let count = parseInt(countSpan.textContent); count++; countSpan.textContent = count; await update(ref(db, `posts/${key}`), { likes: count }); });
       document.getElementById('feed').appendChild(postContainer);
     });
-
-    window.likePost = function(postKey, btn) {
-      btn.stopPropagation && btn.stopPropagation();
-      const countSpan = btn.querySelector('.like-count');
-      let count = parseInt(countSpan.textContent);
-      count++;
-      countSpan.textContent = count;
-      update(ref(db, `posts/${postKey}`), { likes: count });
-    };
   </script>
 </body>
 </html>
