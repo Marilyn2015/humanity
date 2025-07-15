@@ -1,100 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to the Universe</title>
+  <title>#HUMANITY Universe - Professional UI</title>
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-image: url('https://cdn.pixabay.com/photo/2017/08/31/11/55/earth-2695569_960_720.jpg');
+      --primary-color: #00ffcc;
+    }
+
     body {
       margin: 0;
-      background-color: #000;
-      color: #fff;
       font-family: 'Roboto', sans-serif;
+      background: var(--bg-image) no-repeat center center fixed;
+      background-size: cover;
+      color: var(--primary-color);
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding-top: 20px;
     }
+
     h1 {
       font-family: 'Playfair Display', serif;
       font-size: 3rem;
-      margin: 20px 0;
+      margin-bottom: 20px;
     }
+
     .btn {
-      background: #222;
-      border: 1px solid #888;
-      color: #fff;
+      background-color: #111;
+      border: 1px solid var(--primary-color);
+      color: var(--primary-color);
       padding: 10px 20px;
-      margin: 5px;
-      border-radius: 5px;
+      font-size: 1.2rem;
+      border-radius: 8px;
       cursor: pointer;
+      text-decoration: none;
+      margin: 5px;
     }
+
     .btn:hover {
-      background: #444;
+      background-color: var(--primary-color);
+      color: #111;
     }
+
     canvas {
       display: block;
-      margin: 20px auto;
+      width: 300px;
+      height: 300px;
+      margin-bottom: 20px;
     }
+
     .post-box {
-      background: #111;
-      border: 1px solid #333;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid var(--primary-color);
       padding: 15px;
       border-radius: 8px;
       width: 300px;
-      margin: 0 auto 20px;
+      margin-bottom: 20px;
     }
+
     .post-box textarea {
       width: 100%;
-      background: #222;
-      color: #fff;
-      border: 1px solid #555;
+      height: 60px;
+      margin-bottom: 10px;
+      background: #111;
+      border: 1px solid var(--primary-color);
+      color: var(--primary-color);
       border-radius: 4px;
-      padding: 8px;
+      padding: 5px;
     }
-    .feed {
-      width: 320px;
-      margin: 0 auto;
-    }
+
     .post {
-      background: #1a1a1a;
-      border: 1px solid #333;
-      margin: 10px 0;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid var(--primary-color);
       padding: 10px;
-      border-radius: 5px;
-      text-align: left;
-      color: #fff;
-    }
-    .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      vertical-align: middle;
-      margin-right: 10px;
-    }
-    .like-btn {
-      background: none;
-      border: none;
-      color: #ccc;
-      cursor: pointer;
+      border-radius: 4px;
+      margin: 5px 0;
     }
   </style>
 </head>
+
 <body>
-  <h1>Welcome to the Universe</h1>
-  <canvas id="globeCanvas" width="300" height="300"></canvas>
+  <h1>Welcome to #HUMANITY Universe</h1>
+  <button class="btn" onclick="location.href='portal.html'">Enter the Web Portal</button>
+  <button class="btn" onclick="location.href='profile.html'">My Profile</button>
+
+  <canvas id="globeCanvas"></canvas>
 
   <div class="post-box">
-    <textarea id="postContent" placeholder="What's on your mind?"></textarea><br>
+    <textarea id="postContent" placeholder="What's on your mind?"></textarea>
     <button class="btn" onclick="createPost()">Post</button>
   </div>
 
-  <div class="feed" id="postFeed"></div>
-
-  <button class="btn" onclick="location.href='portal.html'">Enter the Web Portal</button>
-  <button class="btn" onclick="location.href='digital-profile.html'">My Profile</button>
-  <button class="btn" onclick="logout()">Logout</button>
+  <div id="postFeed">
+    <div class="post">Mock Post 1: Welcome to the #HUMANITY feed!</div>
+    <div class="post">Mock Post 2: Share your thoughts with the world.</div>
+  </div>
 
   <script>
     const firebaseConfig = {
@@ -106,53 +118,38 @@
       messagingSenderId: "886745899016",
       appId: "1:886745899016:web:2b0f7e043"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     function createPost() {
       const content = document.getElementById('postContent').value.trim();
       if (!content) return;
+
       const postData = {
-        userId: 'Anonymous',
-        avatar: 'https://randomuser.me/api/portraits/lego/1.jpg',
         text: content,
-        likes: 0,
         timestamp: Date.now()
       };
-      db.ref('posts').push(postData);
-      document.getElementById('postContent').value = '';
+
+      db.ref('posts').push(postData).then(() => {
+        addPostToFeed(postData);
+        document.getElementById('postContent').value = '';
+      });
     }
 
-    db.ref('posts').once('value').then(snapshot => {
-      snapshot.forEach(child => {
-        displayPost(child.key, child.val());
-      });
-    });
-
-    db.ref('posts').on('child_added', snapshot => {
-      displayPost(snapshot.key, snapshot.val());
-    });
-
-    function displayPost(key, post) {
+    function addPostToFeed(post) {
       const postFeed = document.getElementById('postFeed');
       const div = document.createElement('div');
       div.className = 'post';
-      div.innerHTML = `
-        <img src="${post.avatar}" class="avatar"> <strong>${post.userId}</strong><br>
-        <p>${post.text}</p>
-        <button class="like-btn" onclick="likePost('${key}', ${post.likes})">❤️ ${post.likes}</button>
-      `;
+      div.textContent = post.text;
       postFeed.prepend(div);
     }
 
-    function likePost(postId, currentLikes) {
-      db.ref('posts/' + postId).update({ likes: currentLikes + 1 });
-    }
-
-    function logout() {
-      alert('You have been logged out.');
-      location.href = 'index.html';
-    }
+    db.ref('posts').limitToLast(10).once('value', snapshot => {
+      snapshot.forEach(childSnapshot => {
+        addPostToFeed(childSnapshot.val());
+      });
+    });
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
@@ -160,8 +157,9 @@
     renderer.setSize(300, 300);
 
     const geometry = new THREE.SphereGeometry(1, 32, 32);
-    const texture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg');
-    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const textureLoader = new THREE.TextureLoader();
+    const earthTexture = textureLoader.load('https://threejs.org/examples/textures/earth_atmos_2048.jpg');
+    const material = new THREE.MeshBasicMaterial({ map: earthTexture });
     const earth = new THREE.Mesh(geometry, material);
     scene.add(earth);
 
@@ -172,7 +170,9 @@
       earth.rotation.y += 0.002;
       renderer.render(scene, camera);
     }
+
     animate();
   </script>
 </body>
+
 </html>
