@@ -5,14 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="#HUMANITY Portal">
-  <title>#HUMANITY Web Portal</title>
+  <title>#HUMANITY</title>
   <style>
+    :root { --bg-base: #FFFFFF; --text-main: #1A1A1A; --button-bg: #F5F5F5; --button-border: #CCCCCC; --button-hover: #EEEEEE; }
     body {
       margin: 0;
-      font-family: 'Orbitron', Tahoma, sans-serif;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: #00f6ff;
-      text-align: center;
+      font-family: 'Roboto', sans-serif;
+      background: var(--bg-base);
+      color: var(--text-main);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -20,39 +20,33 @@
       min-height: 100vh;
     }
     h1 {
-      font-size: 3em;
-      text-shadow: 0 0 15px #00f6ff;
-      margin-bottom: 30px;
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
     }
     .button {
-      background: #000;
-      color: #ff00ff;
-      border: 2px solid #ff00ff;
-      border-radius: 6px;
-      font-weight: bold;
-      text-transform: uppercase;
-      padding: 15px 40px;
-      margin: 12px 0;
-      font-size: 1em;
-      cursor: pointer;
+      background: var(--button-bg);
+      color: var(--text-main);
+      border: 1px solid var(--button-border);
+      padding: 1rem 2rem;
+      margin: 0.5rem;
+      font-size: 1rem;
       text-decoration: none;
-      box-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff;
-      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+      text-transform: uppercase;
+      font-weight: 500;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: background 0.2s, box-shadow 0.2s;
+      border-radius: 4px;
     }
     .button:hover {
-      background: #ff00ff;
-      color: #000;
-      transform: translateY(-3px);
-      box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+      background: var(--button-hover);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
   </style>
 </head>
 <body>
-
-  <h1>Welcome to the #HUMANITY Web Portal</h1>
-
+  <h1>Welcome to #HUMANITY</h1>
   <a href="#" class="button">Register World ID</a>
-  <a href="https://marilyn2015.github.io/Humanity/digital-profile.html" class="button">Connect via World ID</a>
-
+  <a href="digital-profile.html" class="button">Connect via World ID</a>
 </body>
 </html>
