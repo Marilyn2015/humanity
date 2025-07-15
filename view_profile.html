@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>View Profile - #HUMANITY</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --card-bg: #fff; --text-main: #1A1A1A; --accent: #000; --border-color: #DDD; --shadow-color: rgba(0,0,0,0.1);}
+    body { font-family: 'Roboto', sans-serif; background: #fff; min-height: 100vh; }
+    .container {
+      max-width: 500px; margin: 80px auto 0 auto; background: var(--card-bg);
+      border: 1px solid var(--border-color); box-shadow: 0 4px 16px var(--shadow-color); padding: 32px;
+    }
+    h1 { font-family: 'Playfair Display', serif; font-size: 1.7rem; text-align: center; color: var(--text-main);}
+    .profile-avatar { display: block; margin: 0 auto 16px auto; width: 120px; height: 120px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
+    .profile-bio { background: #f9f9f9; padding: 16px; border-radius: 8px; border: 1px solid #ececec; margin: 16px 0;}
+    .edit-btn { display: block; width: 100%; margin: 16px auto 0; background: var(--accent); color: #fff; border: 0; font-family: 'Playfair Display', serif; padding: 12px; cursor: pointer;}
+    .edit-btn:hover { background: #222;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 id="profileName"></h1>
+    <img id="avatarPreview" class="profile-avatar" src="https://randomuser.me/api/portraits/men/50.jpg" alt="Profile Avatar" />
+    <div id="profileBio" class="profile-bio"></div>
+    <button id="editProfileBtn" class="edit-btn" style="display:none;">Edit Profile</button>
+  </div>
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.firebasestorage.app",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e0434379d71bd"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Get username from URL: view_profile.html?user=SomeUser
+    function getQueryParam(key) {
+      return new URLSearchParams(window.location.search).get(key);
+    }
+    const viewedUser = getQueryParam('user');
+    const loggedInUser = localStorage.getItem('currentUser') || '';
+
+    // Load profile data
+    async function loadProfile() {
+      if (!viewedUser) { document.getElementById('profileName').innerText = 'User Not Found'; return; }
+      const snapshot = await db.ref('users/' + viewedUser.replace(/[.#$\\[\\]]/g, '_')).get();
+      const data = snapshot.val();
+      if (!data) {
+        document.getElementById('profileName').innerText = 'User Not Found';
+        return;
+      }
+      document.getElementById('profileName').innerText = data.name || viewedUser;
+      document.getElementById('avatarPreview').src = data.avatar || 'https://randomuser.me/api/portraits/men/50.jpg';
+      document.getElementById('profileBio').innerText = data.bio || '';
+      // If this is MY profile, show Edit button
+      if (viewedUser === loggedInUser) {
+        document.getElementById('editProfileBtn').style.display = '';
+        document.getElementById('editProfileBtn').onclick = function() {
+          window.location.href = 'edit_profile.html';
+        };
+      }
+    }
+    loadProfile();
+  </script>
+</body>
+</html>
