@@ -9,86 +9,92 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --primary-color: #fff;
-      --secondary-color: #ccc;
-      --accent-color: #00ffcc;
-      --bg-color: #000;
-    }
     body {
-      background-color: var(--bg-color);
-      color: var(--primary-color);
+      margin: 0;
+      background-color: #000;
+      color: #fff;
       font-family: 'Roboto', sans-serif;
       text-align: center;
-      margin: 0;
-      padding: 20px;
     }
     h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 2.5rem;
-      margin-bottom: 20px;
+      font-size: 3rem;
+      margin: 20px 0;
     }
     .btn {
-      background: var(--bg-color);
-      color: var(--primary-color);
-      border: 1px solid var(--accent-color);
+      background: #222;
+      border: 1px solid #888;
+      color: #fff;
       padding: 10px 20px;
       margin: 5px;
+      border-radius: 5px;
       cursor: pointer;
-      font-weight: bold;
     }
     .btn:hover {
-      background: var(--accent-color);
-      color: var(--bg-color);
+      background: #444;
     }
     canvas {
       display: block;
-      margin: 0 auto 20px;
+      margin: 20px auto;
     }
-    .post-box, .post {
-      background: #1a1a1a;
-      border: 1px solid var(--secondary-color);
-      border-radius: 5px;
-      padding: 10px;
+    .post-box {
+      background: #111;
+      border: 1px solid #333;
+      padding: 15px;
+      border-radius: 8px;
       width: 300px;
-      margin: 10px auto;
-      text-align: left;
+      margin: 0 auto 20px;
     }
     .post-box textarea {
       width: 100%;
-      background: #111;
-      color: var(--primary-color);
-      border: 1px solid var(--secondary-color);
-      padding: 5px;
+      background: #222;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 4px;
+      padding: 8px;
+    }
+    .feed {
+      width: 320px;
+      margin: 0 auto;
+    }
+    .post {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: left;
+      color: #fff;
     }
     .avatar {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      margin-right: 10px;
       vertical-align: middle;
+      margin-right: 10px;
     }
     .like-btn {
       background: none;
       border: none;
-      color: var(--accent-color);
+      color: #ccc;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
   <h1>Welcome to the Universe</h1>
-  <button class="btn" onclick="location.href='portal.html'">Enter the Web Portal</button>
-  <button class="btn" onclick="location.href='digital-profile.html'">My Profile</button>
-
   <canvas id="globeCanvas" width="300" height="300"></canvas>
 
   <div class="post-box">
-    <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+    <textarea id="postContent" placeholder="What's on your mind?"></textarea><br>
     <button class="btn" onclick="createPost()">Post</button>
   </div>
 
-  <div id="postFeed"></div>
+  <div class="feed" id="postFeed"></div>
+
+  <button class="btn" onclick="location.href='portal.html'">Enter the Web Portal</button>
+  <button class="btn" onclick="location.href='digital-profile.html'">My Profile</button>
+  <button class="btn" onclick="logout()">Logout</button>
 
   <script>
     const firebaseConfig = {
@@ -117,9 +123,14 @@
       document.getElementById('postContent').value = '';
     }
 
+    db.ref('posts').once('value').then(snapshot => {
+      snapshot.forEach(child => {
+        displayPost(child.key, child.val());
+      });
+    });
+
     db.ref('posts').on('child_added', snapshot => {
-      const post = snapshot.val();
-      displayPost(snapshot.key, post);
+      displayPost(snapshot.key, snapshot.val());
     });
 
     function displayPost(key, post) {
@@ -136,6 +147,11 @@
 
     function likePost(postId, currentLikes) {
       db.ref('posts/' + postId).update({ likes: currentLikes + 1 });
+    }
+
+    function logout() {
+      alert('You have been logged out.');
+      location.href = 'index.html';
     }
 
     const scene = new THREE.Scene();
