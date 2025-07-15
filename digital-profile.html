@@ -1,129 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="stylesheet" href="https://marilyn2015.github.io/Humanity/styles.css">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="description" content="Create Digital Profile">
   <title>Create Digital Profile</title>
-  <script>
-    async function saveProfileData() {
-      const usernameInput = document.getElementById('username');
-      const aboutInput = document.getElementById('about');
-
-      if (!usernameInput.value.trim() || !aboutInput.value.trim()) {
-        alert('Please complete all fields before proceeding.');
-        return;
-      }
-
-      try {
-        console.log('Profile data ready to be saved.');
-        // Redirect to universe.html after validation
-        window.location.href = 'universe.html';
-      } catch (error) {
-        console.error('Unexpected error:', error);
-        alert('An error occurred while processing your profile.');
-      }
-    }
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <style>
+    :root {
+      --bg-image: url('https://source.unsplash.com/1600x900/?space,stars');
+      --overlay-color: rgba(0, 0, 0, 0.6);
+      --card-bg: #FFFFFF;
+      --text-main: #1A1A1A;
+      --text-secondary: #555555;
+      --border-color: #DDDDDD;
+      --shadow-color: rgba(0, 0, 0, 0.1);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
-      font-family: 'Orbitron', Tahoma, sans-serif;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: #00f6ff;
-      text-align: center;
+      font-family: 'Roboto', sans-serif;
+      background: var(--bg-image) center/cover no-repeat;
+      position: relative;
+      height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      padding: 20px;
+      justify-content: center;
     }
+    body::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--overlay-color);
+      z-index: 0;
+    }
+    .card {
+      position: relative;
+      z-index: 1;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 40px 32px;
+      width: 380px;
+      box-shadow: 0 4px 16px var(--shadow-color);
+    }
+    .nav-button {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      background: #000000;
+      color: #FFFFFF;
+      border: 0;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-family: 'Playfair Display', serif;
+      cursor: pointer;
+      box-shadow: 0 2px 8px var(--shadow-color);
+      z-index: 2;
+    }
+    .nav-button:hover { opacity: 0.8; }
     h1 {
-      font-size: 3em;
-      margin-bottom: 30px;
-      text-shadow: 0 0 10px #00f6ff;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      text-align: center;
+      margin-bottom: 24px;
+      color: var(--text-main);
     }
-    .avatar-preview {
+    /* Globe Canvas Circular */
+    #globeCanvas {
+      display: block;
+      margin: 0 auto 24px;
       width: 220px;
       height: 220px;
-      border: 3px solid #00f6ff;
       border-radius: 50%;
-      background-color: #333;
-      background-size: cover;
-      background-position: center;
-      margin: 25px 0;
-      box-shadow: 0 0 15px #00f6ff;
     }
-    input, textarea {
-      width: 100%;
-      max-width: 350px;
-      padding: 12px;
-      margin: 12px 0;
-      border: 1px solid #ff00ff;
-      border-radius: 6px;
-      background: #222;
-      color: #fff;
-      font-size: 1em;
-    }
-    textarea {
+    .avatar-preview {
+      width: 120px;
       height: 120px;
+      background: #EEEEEE center/cover no-repeat;
+      margin: 0 auto 24px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 8px var(--shadow-color);
     }
-    button {
-      background: #000;
-      color: #ff00ff;
-      border: 2px solid #ff00ff;
-      border-radius: 6px;
-      font-weight: bold;
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 0.9rem;
+      border: 1px solid var(--border-color);
+      background: #FAFAFA;
+      color: var(--text-main);
+      box-shadow: inset 0 2px 4px var(--shadow-color);
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #000000;
+    }
+    .btn-primary {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: #000000;
+      color: #FFFFFF;
+      font-size: 0.9rem;
+      font-family: 'Playfair Display', serif;
       text-transform: uppercase;
+      border: 0;
+      box-shadow: 0 4px 12px var(--shadow-color);
       cursor: pointer;
-      padding: 12px 20px;
-      margin: 10px;
-      box-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff;
-      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+      transition: background 0.2s;
     }
-    button:hover {
-      background: #ff00ff;
-      color: #000;
-      transform: translateY(-3px);
-      box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+    .btn-primary:hover {
+      background: #333333;
     }
   </style>
 </head>
 <body>
-
-  <button class="nav-button" style="position:absolute;top:20px;right:20px;z-index:10;padding:10px 20px;"
-          onclick="window.location.href='universe.html'">
-    Back &#8594;
-  </button>
-
-
-  <h1>Create Your Digital Profile</h1>
-
-  <div class="avatar-preview" id="avatarPreview"></div>
-
-  <input type="file" id="photoInput" accept="image/*">
-  <input type="text" id="username" placeholder="Enter your username" required>
-  <textarea id="about" placeholder="Write something about yourself..." required></textarea>
-  <button id="saveProfile" onclick="saveProfileData()">Save Profile</button>
-
+  <button class="nav-button" onclick="window.location.href='universe.html'">Back →</button>
+  <div class="card">
+    <canvas id="globeCanvas" width="220" height="220"></canvas>
+    <h1>Create Profile</h1>
+    <div class="avatar-preview" id="avatarPreview"></div>
+    <div class="form-group">
+      <label for="photoInput">Upload Avatar</label>
+      <input type="file" id="photoInput" accept="image/*">
+    </div>
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Enter your username" required>
+    </div>
+    <div class="form-group">
+      <label for="about">About You</label>
+      <textarea id="about" rows="4" placeholder="Write something about yourself..." required></textarea>
+    </div>
+    <button class="btn-primary" id="saveProfile" onclick="saveProfileData()">Save Profile</button>
+  </div>
   <script>
+    function initGlobe() {
+      const canvas = document.getElementById('globeCanvas');
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      const geometry = new THREE.SphereGeometry(1, 32, 32);
+      const loader = new THREE.TextureLoader();
+      loader.crossOrigin = '';
+      const texture = loader.load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg');
+      const material = new THREE.MeshStandardMaterial({ map: texture });
+      const sphere = new THREE.Mesh(geometry, material);
+      scene.add(sphere);
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(5, 3, 5);
+      scene.add(light);
+      camera.position.z = 3;
+      function animate() {
+        requestAnimationFrame(animate);
+        sphere.rotation.y += 0.0015;
+        renderer.render(scene, camera);
+      }
+      animate();
+    }
+    window.addEventListener('DOMContentLoaded', initGlobe);
+    function saveProfileData() {
+      const u = document.getElementById('username').value.trim();
+      const a = document.getElementById('about').value.trim();
+      if (!u || !a) { alert('Please complete all fields.'); return; }
+      window.location.href = 'universe.html';
+    }
     const photoInput = document.getElementById('photoInput');
     const avatarPreview = document.getElementById('avatarPreview');
-
-    photoInput.addEventListener('change', function() {
-      const file = this.files[0];
+    photoInput.addEventListener('change', () => {
+      const file = photoInput.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-          avatarPreview.style.backgroundImage = `url('${e.target.result}')`;
-        };
+        reader.onload = e => avatarPreview.style.backgroundImage = `url('${e.target.result}')`;
         reader.readAsDataURL(file);
       }
     });
   </script>
-
 </body>
 </html>
-    
