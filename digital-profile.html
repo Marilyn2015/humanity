@@ -1,255 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="stylesheet" href="https://marilyn2015.github.io/Humanity/styles.css">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>My Digital Profile</title>
+  <meta name="description" content="Create Digital Profile">
+  <title>Create Digital Profile</title>
+  <script>
+    async function saveProfileData() {
+      const usernameInput = document.getElementById('username');
+      const aboutInput = document.getElementById('about');
+
+      if (!usernameInput.value.trim() || !aboutInput.value.trim()) {
+        alert('Please complete all fields before proceeding.');
+        return;
+      }
+
+      try {
+        console.log('Profile data ready to be saved.');
+        // Redirect to universe.html after validation
+        window.location.href = 'universe.html';
+      } catch (error) {
+        console.error('Unexpected error:', error);
+        alert('An error occurred while processing your profile.');
+      }
+    }
+  </script>
   <style>
-    body { background: #000; font-family: 'Orbitron', sans-serif; color: #00ffcc; text-align: center; margin: 0; padding: 0; }
-    .profile-container { background: #111; border: 2px solid #00ffcc; padding: 20px; max-width: 600px; margin: 60px auto 20px; box-shadow: 0 0 25px #00ffcc; }
-    .avatar-preview { width: 120px; height: 120px; border: 2px solid #00ffcc; border-radius: 50%; background-color: #1a1a1a; background-size: cover; background-position: center; margin: 20px auto; display: flex; align-items: center; justify-content: center; color: #00ffcc; font-weight: bold; font-size: 1.1em; }
-    input[type="file"], input[type="text"], textarea, button { background: #0a0a0a; border: 2px solid #ff00ff; color: #fff; padding: 10px; margin: 10px 0; width: 80%; border-radius: 4px; }
-    input[type="file"]:disabled { opacity: 0.5; cursor: not-allowed; }
-    button { cursor: pointer; font-weight: bold; text-transform: uppercase; appearance: none; }
-    button:hover { background: #ff00ff; color: #000; }
-    #userPosts { max-width: 400px; margin: 0 auto; text-align: left; }
-    #userPosts .post { background: #1c1c1c; border-left: 3px solid #00ffcc; margin: 8px 0; padding: 10px; display: flex; align-items: center; }
-    .post-avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; background-size: cover; background-position: center; border: 1px solid #00ffcc; }
-    h1, h3 { text-shadow: 0 0 8px #ff00ff; }
-    /* Back button outside modal */
-    #backBtn { position: fixed; top: 8px; right: 8px; width: 32px; height: 32px; background: #0a0a0a; border: 1px solid #ff00ff; color: #fff; padding: 0; margin: 0; border-radius: 0; font-size: 1.2em; line-height: 32px; text-align: center; z-index: 100; }
-    #backBtn:hover { background: #ff00ff; color: #000; }
-    /* Modal styles */
-    .modal { display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8); }
-    .modal-content { background: #111; margin: 10% auto; padding: 20px; border: 2px solid #00ffcc; width: 80%; max-width: 500px; color: #fff; position: relative; }
-    .close-btn { position: absolute; top: 8px; right: 8px; background: none; border: none; color: #fff; font-size: 1.5em; cursor: pointer; }
-    .modal-back-btn { position: absolute; bottom: 8px; right: 8px; width: 32px; height: 32px; background: #0a0a0a; border: 1px solid #00ffcc; color: #fff; padding: 0; margin: 0; border-radius: 0; font-size: 1.2em; line-height: 32px; text-align: center; cursor: pointer; }
-    .modal-back-btn:hover { background: #00ffcc; color: #000; }
-    .tab-buttons { display: flex; justify-content: center; margin-bottom: 10px; }
-    .tab-buttons button { flex: 1; margin: 0 5px; padding: 8px; border: 1px solid #00ffcc; background: #1a1a1a; color: #00ffcc; font-size: 0.9em; }
-    .tab-buttons button.active { background: #00ffcc; color: #000; }
-    .tab-content, #followList { max-height: 300px; overflow-y: auto; text-align: left; margin-bottom: 40px; }
-    .message-item { border-bottom: 1px solid #00ffcc; padding: 5px 0; }
+    body {
+      margin: 0;
+      font-family: 'Orbitron', Tahoma, sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #00f6ff;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 3em;
+      margin-bottom: 30px;
+      text-shadow: 0 0 10px #00f6ff;
+    }
+    .avatar-preview {
+      width: 220px;
+      height: 220px;
+      border: 3px solid #00f6ff;
+      border-radius: 50%;
+      background-color: #333;
+      background-size: cover;
+      background-position: center;
+      margin: 25px 0;
+      box-shadow: 0 0 15px #00f6ff;
+    }
+    input, textarea {
+      width: 100%;
+      max-width: 350px;
+      padding: 12px;
+      margin: 12px 0;
+      border: 1px solid #ff00ff;
+      border-radius: 6px;
+      background: #222;
+      color: #fff;
+      font-size: 1em;
+    }
+    textarea {
+      height: 120px;
+    }
+    button {
+      background: #000;
+      color: #ff00ff;
+      border: 2px solid #ff00ff;
+      border-radius: 6px;
+      font-weight: bold;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 12px 20px;
+      margin: 10px;
+      box-shadow: 0 0 12px #ff00ff, 0 0 24px #ff00ff;
+      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+    button:hover {
+      background: #ff00ff;
+      color: #000;
+      transform: translateY(-3px);
+      box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+    }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
 </head>
 <body>
-  <button id="backBtn" type="button" onclick="window.location.href='universe.html'">←</button>
-  <div class="profile-container">
-    <h1>Your Digital Profile</h1>
-    <input type="text" id="usernameInput" placeholder="Enter your username"><br>
-    <div class="avatar-preview" id="avatarPreview">No Avatar</div>
-    <input type="file" id="photoInput" accept="image/*" disabled>
-    <h3>About You</h3>
-    <textarea id="bioInput" placeholder="Write about yourself..." rows="3"></textarea>
-    <button type="button" onclick="saveProfile()">Save Profile</button>
-    <div class="button-group">
-      <button type="button" onclick="openMessages()">Messages</button>
-      <button type="button" onclick="openFollows()">Follows</button>
-    </div>
-    <h3>My Posts</h3>
-    <div id="userPosts"></div>
-  </div>
 
-  <!-- Messages Modal -->
-  <div id="messageModal" class="modal">
-    <div class="modal-content">
-      <button class="close-btn" onclick="closeMessages()">×</button>
-      <div class="tab-buttons">
-        <button id="inboxTab" class="active" onclick="showInbox()">Inbox</button>
-        <button id="outboxTab" onclick="showOutbox()">Outbox</button>
-      </div>
-      <div id="tabContent" class="tab-content"></div>
-      <button class="modal-back-btn" onclick="closeMessages()">←</button>
-    </div>
-  </div>
+  <button class="nav-button" style="position:absolute;top:20px;right:20px;z-index:10;padding:10px 20px;"
+          onclick="window.location.href='universe.html'">
+    Back &#8594;
+  </button>
 
-  <!-- Follows Modal -->
-  <div id="followModal" class="modal">
-    <div class="modal-content">
-      <button class="close-btn" onclick="closeFollows()">×</button>
-      <h3>Following</h3>
-      <div id="followList"></div>
-      <button class="modal-back-btn" onclick="closeFollows()">←</button>
-    </div>
-  </div>
+
+  <h1>Create Your Digital Profile</h1>
+
+  <div class="avatar-preview" id="avatarPreview"></div>
+
+  <input type="file" id="photoInput" accept="image/*">
+  <input type="text" id="username" placeholder="Enter your username" required>
+  <textarea id="about" placeholder="Write something about yourself..." required></textarea>
+  <button id="saveProfile" onclick="saveProfileData()">Save Profile</button>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-      authDomain: "hashhumanity-58b9a.firebaseapp.com",
-      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-      projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.firebasestorage.app",
-      messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e0434379d71bd"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database(), storage = firebase.storage();
-    const avatarPreviewElem = document.getElementById('avatarPreview');
-    const photoInputElem = document.getElementById('photoInput');
-    const usernameInputElem = document.getElementById('usernameInput');
-    const bioInputElem = document.getElementById('bioInput');
-    const userPostsElem = document.getElementById('userPosts');
-    const mockInbox = [{ from: 'Alice', text: 'Hello!' }, { from: 'Bob', text: 'How are you?' }];
-    const mockOutbox = [{ to: 'Charlie', text: 'Hey there' }, { to: 'Dana', text: "What's up?" }];
+    const photoInput = document.getElementById('photoInput');
+    const avatarPreview = document.getElementById('avatarPreview');
 
-    function openMessages() { document.getElementById('messageModal').style.display = 'block'; showInbox(); }
-    function closeMessages() { document.getElementById('messageModal').style.display = 'none'; }
-    function showInbox() { toggleTab('inbox'); renderMessages(mockInbox, 'from'); }
-    function showOutbox() { toggleTab('outbox'); renderMessages(mockOutbox, 'to'); }
-
-    function openFollows() { document.getElementById('followModal').style.display = 'block'; loadFollows(); }
-    function closeFollows() { document.getElementById('followModal').style.display = 'none'; }
-
-    async function loadFollows() {
-      const u = usernameInputElem.value.trim();
-      const container = document.getElementById('followList');
-      container.innerHTML = '';
-      if (!u) {
-        container.textContent = 'Enter username to load follows.';
-        return;
-      }
-      try {
-        const snap = await db.ref(`follows/${u}`).once('value');
-        const data = snap.val();
-        if (data) {
-          Object.values(data).forEach(name => {
-            const div = document.createElement('div');
-            div.className = 'message-item';
-            div.textContent = name;
-            container.appendChild(div);
-          });
-        } else {
-          container.textContent = 'No follows found.';
-        }
-      } catch (e) {
-        console.error(e);
-        container.textContent = 'Error loading follows.';
-      }
-    }
-
-    function toggleTab(tab) {
-      document.getElementById('inboxTab').classList.toggle('active', tab === 'inbox');
-      document.getElementById('outboxTab').classList.toggle('active', tab === 'outbox');
-    }
-
-    function renderMessages(list, key) {
-      const c = document.getElementById('tabContent');
-      c.innerHTML = '';
-      list.forEach(msg => {
-        const d = document.createElement('div');
-        d.className = 'message-item';
-        d.textContent = `${key === 'from' ? 'From' : 'To'} ${msg[key]}: ${msg.text}`;
-        c.appendChild(d);
-      });
-    }
-
-    usernameInputElem.addEventListener('input', loadProfile);
-    async function loadProfile() {
-      const u = usernameInputElem.value.trim();
-      if (!u) { resetProfile(); return; }
-      photoInputElem.disabled = false;
-      photoInputElem.style.opacity = 1;
-      try {
-        const snap = await db.ref(`profiles/${u}`).once('value');
-        const d = snap.val();
-        if (d) {
-          bioInputElem.value = d.bio || '';
-          d.avatar ? setAvatar(d.avatar) : resetAvatar();
-        } else {
-          bioInputElem.value = '';
-          resetAvatar();
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    function resetProfile() {
-      bioInputElem.value = '';
-      photoInputElem.disabled = true;
-      photoInputElem.style.opacity = 0.5;
-      resetAvatar();
-    }
-
-    function resetAvatar() {
-      avatarPreviewElem.style.backgroundImage = '';
-      avatarPreviewElem.textContent = 'No Avatar';
-      avatarPreviewElem.removeAttribute('data-avatar-url');
-    }
-
-    function setAvatar(url) {
-      avatarPreviewElem.style.backgroundImage = `url('${url}')`;
-      avatarPreviewElem.textContent = '';
-      avatarPreviewElem.setAttribute('data-avatar-url', url);
-    }
-
-    photoInputElem.addEventListener('change', async () => {
-      const f = photoInputElem.files[0];
-      const u = usernameInputElem.value.trim();
-      if (!f || !u) return;
-      avatarPreviewElem.textContent = 'Uploading...';
-      const p = `avatars/${u}/${Date.now()}_${f.name}`;
-      try {
-        const t = await storage.ref(p).put(f);
-        const url = await t.ref.getDownloadURL();
-        setAvatar(url);
-      } catch (e) {
-        console.error(e);
-        resetAvatar();
-        alert('Upload failed: ' + e.message);
+    photoInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          avatarPreview.style.backgroundImage = `url('${e.target.result}')`;
+        };
+        reader.readAsDataURL(file);
       }
     });
-
-    async function saveProfile() {
-      const u = usernameInputElem.value.trim();
-      const b = bioInputElem.value.Trim();
-      const a = avatarPreviewElem.getAttribute('data-avatar-url') || '';
-      if (!u || !b) {
-        alert('Username and bio are required.');
-        return;
-      }
-      try {
-        await db.ref(`profiles/${u}`).set({ username: u, bio: b, avatar: a });
-        alert('Profile saved successfully!');
-        loadProfile();
-      } catch (e) {
-        console.error(e);
-        alert('Save failed: ' + e.message);
-      }
-    }
-
-    async function loadPosts() {
-      userPosts.innerHTML = '';
-      try {
-        const snap = await db.ref('userPosts').once('value');
-        const v = snap.val();
-        if (v) Object.values(v).forEach(renderPost);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    function renderPost(p) {
-      const d = document.createElement('div');
-      d.className = 'post';
-      const i = document.createElement('div');
-      i.className = 'post-avatar';
-      i.style.backgroundImage = p.avatar ? `url('${p.avatar}')` : "url('https://randomuser.me/api/portraits/lego/1.jpg')";
-      const t = document.createElement('div');
-      t.innerHTML = `<strong>@${p.username}</strong><p>${p.content}</p>`;
-      d.append(i, t);
-      userPosts.prepend(d);
-    }
-
-    window.openMessages = openMessages;
-    window.openFollows = openFollows;
-
-    loadProfile();
-    loadPosts();
   </script>
+
 </body>
 </html>
+    
