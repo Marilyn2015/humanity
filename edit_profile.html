@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile - #HUMANITY</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Roboto', sans-serif; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+    .container { width: 800px; padding: 40px; text-align: center; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
+    .avatar { width: 300px; height: 300px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 3px solid #000; box-shadow: 0 0 12px rgba(0, 212, 255, 0.27), 0 1px 5px rgba(0,0,0,0.1); cursor: pointer; }
+    input, textarea { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
+    button { padding: 10px 20px; font-size: 16px; border: none; background: #000; color: #fff; border-radius: 4px; cursor: pointer; margin-top: 15px; }
+    button:hover { background: #333; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Edit Your Profile</h1>
+    <img id="avatarPreview" class="avatar" src="https://randomuser.me/api/portraits/lego/1.jpg" alt="Profile Avatar">
+    <input type="file" id="avatarUpload" accept="image/*" style="display:none;">
+
+    <input type="text" id="username" placeholder="Username">
+    <textarea id="bio" placeholder="Bio"></textarea>
+    <input type="text" id="github" placeholder="GitHub URL">
+    <input type="text" id="website" placeholder="Website URL">
+
+    <button id="saveBtn">Save Profile</button>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e0434379d71bd"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const storage = firebase.storage();
+
+    document.getElementById('avatarPreview').addEventListener('click', () => {
+      document.getElementById('avatarUpload').click();
+    });
+
+    let avatarDataUrl = '';
+
+    document.getElementById('avatarUpload').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          avatarDataUrl = e.target.result;
+          document.getElementById('avatarPreview').src = avatarDataUrl;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      const username = document.getElementById('username').value.trim();
+      const bio = document.getElementById('bio').value.trim();
+      const github = document.getElementById('github').value.trim();
+      const website = document.getElementById('website').value.trim();
+
+      if (!username) {
+        alert('Username is required.');
+        return;
+      }
+
+      db.ref('users/' + username.replace(/[.#$\[\]]/g, '_')).set({
+        username,
+        bio,
+        github,
+        website,
+        avatar: avatarDataUrl
+      }).then(() => {
+        alert('Profile updated successfully!');
+      }).catch(error => {
+        console.error('Error saving profile:', error);
+      });
+    });
+  </script>
+</body>
+</html>
