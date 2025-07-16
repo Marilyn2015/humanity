@@ -1,318 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Profile - #HUMANITY</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Profile - #HUMANITY</title>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --card-bg: #fff;
-      --text-main: #1A1A1A;
-      --text-secondary: #555;
-      --border-color: #ebebeb;
-      --shadow-color: rgba(0,0,0,0.07);
-      --accent: #000;
-      --divider: #e1e3e8;
-      --primary-glow: #00d4ff44;
-      --btn-radius: 0px;
-      --btn-font: 'Playfair Display', serif;
-      --btn-bg: #111;
-      --btn-color: #fff;
-      --btn-shadow: 0 1px 4px #0001;
-      --btn-hover-bg: #fff;
-      --btn-hover-color: #000;
-      --btn-border: 2px solid #111;
-    }
-    body {
-      font-family: 'Roboto', sans-serif;
-      background: #f7f8fa;
-      min-height: 100vh;
-      color: var(--text-main);
-      overflow-x: hidden;
-    }
-    .container {
-      position: relative;
-      max-width: 480px;
-      margin: 70px auto 30px auto;
-      background: var(--card-bg);
-      border-radius: 18px;
-      border: 1.5px solid var(--border-color);
-      box-shadow: 0 8px 32px 0 var(--shadow-color);
-      padding: 34px 32px 26px 32px;
-      overflow: visible;
-    }
-    .display-username {
-      font-family: 'Roboto', sans-serif;
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #151515;
-      margin-bottom: 0.2em;
-      letter-spacing: 0.02em;
-      margin-top: 22px;
-      text-align: center;
-    }
-    .profile-form {
-      margin: 0 auto;
-      margin-top: 13px;
-      max-width: 100%;
-      text-align: center;
-      display: block;
-      background: #f8fafd;
-      border: 1.7px solid #c7d6ea;
-      border-radius: 12px;
-      box-shadow: 0 1px 8px #00e0ff08;
-      padding: 20px 18px 20px 18px;
-    }
-    .profile-form input,
-    .profile-form textarea {
-      width: 100%;
-      font-size: 1.05rem;
-      font-family: 'Roboto', sans-serif;
-      border: 1.6px solid #111;
-      border-radius: 0;
-      background: #fafcfd;
-      margin-bottom: 14px;
-      padding: 13px 11px;
-      resize: vertical;
-      outline: none;
-      box-sizing: border-box;
-    }
-    .profile-form input[type="text"] {
-      font-weight: 600;
-      background: #f7faff;
-    }
-    .profile-form .profile-link {
-      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
-    }
-    .profile-form .profile-link label {
-      min-width: 66px;
-      font-size: 0.98rem;
-      color: #444;
-      font-family: 'Roboto', sans-serif;
-      text-align: right;
-      padding-right: 7px;
-    }
-    .profile-form .profile-link input {
-      flex: 1 1 0%;
-      padding: 9px 8px;
-      font-size: 0.98rem;
-      border-radius: 0;
-      border: 1.4px solid #bbb;
-      background: #fcfdfe;
-      margin-bottom: 0;
-    }
-    .profile-form .edit-btn, .profile-form .save-btn {
-      background: var(--btn-bg);
-      color: var(--btn-color);
-      border-radius: var(--btn-radius);
-      border: var(--btn-border);
-      font-family: var(--btn-font);
-      font-weight: bold;
-      text-transform: uppercase;
-      width: 120px;
-      font-size: 1.05rem;
-      padding: 11px 0;
-      display: inline-block;
-      cursor: pointer;
-      letter-spacing: 0.04em;
-      box-shadow: var(--btn-shadow);
-      margin: 0 11px 0 11px;
-      transition: all 0.14s;
-      outline: none;
-    }
-    .profile-form .edit-btn:hover, .profile-form .save-btn:hover {
-      background: var(--btn-hover-bg);
-      color: var(--btn-hover-color);
-      border: var(--btn-border);
-      box-shadow: 0 2px 12px #0002;
-    }
-    .globe-avatar-wrap {
-      display: flex; flex-direction: column; align-items: center; margin-bottom: 14px; position: relative; min-height: 230px;
-    }
-    #globeCanvas {
-      width: 210px; height: 210px; display: block;
-      background: transparent; border-radius: 50%; margin-bottom: -100px; z-index: 1;
-      box-shadow: 0 0 24px var(--primary-glow), 0 2px 10px #0001;
-      filter: blur(0.1px) contrast(1.08);
-    }
-    .avatar-upload-label {
-      width: 210px;
-      height: 210px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: absolute;
-      z-index: 2;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      border-radius: 50%;
-      overflow: hidden;
-      border: 3px solid #fff;
-      background: transparent;
-      box-shadow: 0 4px 18px #00e0ff13, 0 1.5px 8px #0001;
-      transition: box-shadow 0.18s;
-    }
-    .profile-avatar {
-      width: 210px;
-      height: 210px;
-      border-radius: 50%;
-      object-fit: cover;
-      background: #e0e0e0;
-      display: block;
-      border: none;
-      box-shadow: 0 1.5px 9px #00fff310;
-      transition: box-shadow 0.18s;
-    }
-    .upload-overlay {
-      position: absolute; bottom: 0; left: 0; width: 100%;
-      background: rgba(0,0,0,0.38); color: #fff; font-size: 0.94rem;
-      text-align: center; padding: 5px 0 2px 0;
-      border-radius: 0 0 50% 50%; opacity: 0.8; pointer-events: none;
-      letter-spacing: 0.04em;
-    }
+    body { font-family: 'Roboto', sans-serif; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+    .container { width: 800px; padding: 40px; text-align: center; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
+    .avatar { width: 300px; height: 300px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 3px solid #000; box-shadow: 0 0 12px rgba(0, 212, 255, 0.27), 0 1px 5px rgba(0,0,0,0.1); }
+    h1 { font-family: 'Playfair Display', serif; font-size: 2.5em; margin-bottom: 10px; color: #111; }
+    .profile-info { text-align: center; background: #f8fafd; border: 1.5px solid #c7d6ea; border-radius: 12px; padding: 20px; box-shadow: 0 1px 8px #00e0ff08; }
+    .profile-info p { font-size: 1.1em; margin: 10px 0; color: #333; }
+    .profile-info a { color: #0077cc; text-decoration: none; }
+    .profile-info a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="globe-avatar-wrap">
-      <canvas id="globeCanvas" width="210" height="210"></canvas>
-      <label for="avatarUpload" class="avatar-upload-label">
-        <img id="avatarPreview" class="profile-avatar" src="" alt="Profile Avatar" />
-        <div class="upload-overlay" id="uploadText">Tap Image or Button</div>
-        <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
-      </label>
+    <img id="avatar" class="avatar" src="https://randomuser.me/api/portraits/lego/1.jpg" alt="Profile Avatar">
+    <h1 id="username">Loading...</h1>
+    <div class="profile-info">
+      <p><strong>Bio:</strong> <span id="bio"></span></p>
+      <p><strong>GitHub:</strong> <a id="github" href="#" target="_blank">N/A</a></p>
+      <p><strong>Website:</strong> <a id="website" href="#" target="_blank">N/A</a></p>
     </div>
-    <div class="display-username" id="displayUser"></div>
-    <form class="profile-form" id="profileForm" autocomplete="off">
-      <input type="text" id="profileName" placeholder="Username" maxlength="30" value="" />
-      <textarea id="profileBio" rows="4" placeholder="Your bio..."></textarea>
-      <div class="profile-link"><label for="profileGithub">GitHub:</label><input type="text" id="profileGithub" placeholder="github.com/yourhandle" value="" /></div>
-      <div class="profile-link"><label for="profileWebsite">Website:</label><input type="text" id="profileWebsite" placeholder="https://yourwebsite.com" value="" /></div>
-      <div style="display:flex;justify-content:center;gap:18px;margin-top:12px;">
-        <button type="button" class="edit-btn" id="editProfileBtn">Edit</button>
-        <button type="button" class="save-btn" id="saveProfileBtn">Save</button>
-      </div>
-    </form>
   </div>
-  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+
   <script>
-    // Firebase setup
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
       databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
       projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.firebasestorage.app",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
       messagingSenderId: "886745899016",
       appId: "1:886745899016:web:2b0f7e0434379d71bd"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const storage = firebase.storage();
 
-    // Leave everything blank on load (new profile)
-    let currentUser = '';
-    let currentAvatar = '';
-    let currentBio = '';
-    let currentGithub = '';
-    let currentWebsite = '';
+    const queryParams = new URLSearchParams(window.location.search);
+    const username = queryParams.get('user');
 
-    document.getElementById('profileName').value = '';
-    document.getElementById('avatarPreview').src = '';
-    document.getElementById('profileBio').value = '';
-    document.getElementById('profileGithub').value = '';
-    document.getElementById('profileWebsite').value = '';
-    document.getElementById('displayUser').textContent = '';
+    function displayDefaultProfile() {
+      document.getElementById('username').textContent = 'Pleb';
+      document.getElementById('bio').textContent = "I'm just like you!";
+      document.getElementById('github').textContent = 'N/A';
+      document.getElementById('github').href = '#';
+      document.getElementById('website').textContent = 'N/A';
+      document.getElementById('website').href = '#';
+    }
 
-    // Avatar preview
-    document.getElementById('avatarUpload').addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = ev => {
-          document.getElementById('avatarPreview').src = ev.target.result;
-          document.getElementById('uploadText').style.display = 'none';
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-    // Edit/Save buttons
-    document.getElementById('editProfileBtn').onclick = () => {
-      document.getElementById('profileName').disabled = false;
-      document.getElementById('profileBio').disabled = false;
-      document.getElementById('profileGithub').disabled = false;
-      document.getElementById('profileWebsite').disabled = false;
-      document.getElementById('avatarUpload').disabled = false;
-      document.getElementById('profileName').focus();
-    };
-    document.getElementById('profileName').disabled = false;
-    document.getElementById('profileBio').disabled = false;
-    document.getElementById('profileGithub').disabled = false;
-    document.getElementById('profileWebsite').disabled = false;
-    document.getElementById('avatarUpload').disabled = false;
-
-    document.getElementById('saveProfileBtn').onclick = async () => {
-      const name = document.getElementById('profileName').value.trim();
-      const bio = document.getElementById('profileBio').value.trim();
-      const github = document.getElementById('profileGithub').value.trim();
-      const website = document.getElementById('profileWebsite').value.trim();
-      const file = document.getElementById('avatarUpload').files[0];
-      let avatarUrl = currentAvatar;
-      if (file) {
-        const storageRef = storage.ref(`avatars/${Date.now()}_${file.name}`);
-        await storageRef.put(file);
-        avatarUrl = await storageRef.getDownloadURL();
-        document.getElementById('avatarPreview').src = avatarUrl;
-        document.getElementById('uploadText').style.display = 'none';
-        localStorage.setItem('currentAvatar', avatarUrl);
-      }
-      localStorage.setItem('currentUser', name);
-      localStorage.setItem('currentBio', bio);
-      localStorage.setItem('currentGithub', github);
-      localStorage.setItem('currentWebsite', website);
-      if (name) {
-        await db.ref('users/' + name.replace(/[.#$\\[\\]]/g, '_')).update({
-          name,
-          bio,
-          avatar: avatarUrl,
-          github,
-          website
-        });
-      }
-      currentUser = name;
-      currentAvatar = avatarUrl;
-      currentBio = bio;
-      currentGithub = github;
-      currentWebsite = website;
-      document.getElementById('displayUser').textContent = currentUser || '';
-    };
-    // 3D spinning globe
-    window.addEventListener('DOMContentLoaded', () => {
-      const canvas = document.getElementById('globeCanvas');
-      if (!canvas) return;
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
-      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-      const sphereMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(1, 32, 32),
-        new THREE.MeshStandardMaterial({ map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg') })
-      );
-      scene.add(sphereMesh);
-      const light = new THREE.DirectionalLight(0xffffff, 1);
-      light.position.set(5, 3, 5);
-      scene.add(light);
-      camera.position.z = 3;
-      (function animate() { requestAnimationFrame(animate); sphereMesh.rotation.y += 0.0015; renderer.render(scene, camera); })();
-    });
+    if (username) {
+      db.ref('users/' + username.replace(/[.#$\[\]]/g, '_')).once('value').then(snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          document.getElementById('username').textContent = data.username;
+          document.getElementById('bio').textContent = data.bio || "I'm just like you!";
+          if (data.avatar) {
+            document.getElementById('avatar').src = data.avatar;
+          }
+          document.getElementById('github').textContent = data.github ? data.github : 'N/A';
+          document.getElementById('github').href = data.github || '#';
+          document.getElementById('website').textContent = data.website ? data.website : 'N/A';
+          document.getElementById('website').href = data.website || '#';
+        } else {
+          displayDefaultProfile();
+        }
+      }).catch(() => {
+        displayDefaultProfile();
+      });
+    } else {
+      displayDefaultProfile();
+    }
   </script>
 </body>
 </html>
