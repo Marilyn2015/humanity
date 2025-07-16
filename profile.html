@@ -4,113 +4,196 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Profile - #HUMANITY</title>
-  <!-- Firebase + Fonts (reuse your original includes) -->
+  <!-- Firebase + Fonts -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    /* Paste your CSS from universe.html here, or just link it if external */
     :root {
-      --card-bg: #FFFFFF;
+      --card-bg: #fff;
       --text-main: #1A1A1A;
-      --text-secondary: #555555;
-      --border-color: #DDDDDD;
-      --shadow-color: rgba(0,0,0,0.1);
-      --accent: #000000;
+      --text-secondary: #555;
+      --border-color: #ebebeb;
+      --shadow-color: rgba(0,0,0,0.07);
+      --accent: #000;
+      --divider: #e1e3e8;
+      --primary-glow: #00d4ff44;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Roboto', sans-serif; background: #fff; position: relative; min-height: 100vh; }
-    .logout-button {
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      background: var(--accent);
-      color: #fff;
-      border: 0;
-      padding: 6px 12px;
-      font-family: 'Playfair Display', serif;
-      cursor: pointer;
-      box-shadow: 0 2px 8px var(--shadow-color);
-      z-index: 2;
-    }
-    .logout-button:hover { opacity: 0.8; }
-    .container {
-      position: relative;
-      z-index: 1;
-      max-width: 500px;
-      margin: 80px auto 0 auto;
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      box-shadow: 0 4px 16px var(--shadow-color);
-      padding: 32px;
-    }
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.7rem;
-      text-align: center;
-      margin-bottom: 24px;
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #f7f8fa;
+      min-height: 100vh;
       color: var(--text-main);
     }
-    .profile-avatar {
-      display: block;
-      margin: 0 auto 16px auto;
-      width: 120px;
-      height: 120px;
+    .logout-button {
+      position: fixed;
+      top: 16px; right: 16px;
+      background: var(--accent); color: #fff;
+      border: 0; padding: 6px 18px;
+      font-family: 'Playfair Display', serif; font-weight: bold;
+      letter-spacing: 0.02em;
+      font-size: 1.1rem; border-radius: 6px;
+      box-shadow: 0 2px 8px var(--shadow-color);
+      cursor: pointer; z-index: 3;
+      transition: background 0.18s;
+    }
+    .logout-button:hover { background: #212121; }
+    .container {
+      position: relative;
+      max-width: 430px;
+      margin: 68px auto 0 auto;
+      background: var(--card-bg);
+      border-radius: 18px;
+      border: 1.5px solid var(--border-color);
+      box-shadow: 0 8px 32px 0 var(--shadow-color);
+      padding: 38px 32px 34px 32px;
+      overflow: visible;
+    }
+    .profile-header {
+      text-align: center; margin-bottom: 10px; margin-top: -6px;
+      letter-spacing: 0.03em;
+      font-family: 'Playfair Display', serif;
+      font-size: 2.0rem; color: #151515;
+      text-shadow: 0 2px 18px #00d4ff12;
+    }
+    .globe-avatar-wrap {
+      display: flex; flex-direction: column; align-items: center; margin-bottom: 16px; position: relative; min-height: 260px;
+    }
+    #globeCanvas {
+      width: 260px; height: 260px; display: block;
+      background: transparent; border-radius: 50%; margin-bottom: -120px; z-index: 1;
+      box-shadow: 0 0 24px var(--primary-glow), 0 2px 10px #0001;
+      filter: blur(0.1px) contrast(1.08);
+    }
+    .avatar-upload-label {
+      width: 260px;
+      height: 260px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      z-index: 2;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
       border-radius: 50%;
-      border: 2px solid var(--accent);
+      overflow: hidden;
+      border: 4px solid #fff;
+      background: transparent;
+      box-shadow: 0 6px 28px #00e0ff26, 0 1.5px 8px #0002;
+      transition: box-shadow 0.18s;
+    }
+    .avatar-upload-label:hover { box-shadow: 0 8px 36px #00e0ff55, 0 2px 12px #0003; }
+    .profile-avatar {
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
       object-fit: cover;
       background: #e0e0e0;
+      display: block;
+      border: none;
+      box-shadow: 0 1.5px 9px #00fff340;
+      transition: box-shadow 0.18s;
+    }
+    .upload-overlay {
+      position: absolute; bottom: 0; left: 0; width: 100%;
+      background: rgba(0,0,0,0.44); color: #fff; font-size: 0.94rem;
+      text-align: center; padding: 6px 0 3px 0;
+      border-radius: 0 0 50% 50%; opacity: 0.83; pointer-events: none;
+      letter-spacing: 0.04em;
+    }
+    .divider {
+      height: 1.2px; width: 100%;
+      background: linear-gradient(90deg,#fff,#dde5f2,#fff);
+      border-radius: 2px; margin: 24px 0 16px 0;
+      border: none;
+    }
+    .user-details-card {
+      background: #fafcff;
+      border-radius: 9px;
+      padding: 18px 16px 11px 16px;
+      box-shadow: 0 1.5px 6px #0001;
+      border: 1.5px solid #ecf1f6;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .username-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.11rem;
+      letter-spacing: 0.01em;
+      color: #222;
+      margin-bottom: 2px;
+    }
+    .display-username {
+      font-family: 'Roboto', sans-serif;
+      font-size: 1.23rem;
+      font-weight: 500;
+      color: #111;
+      background: #f7fbff;
+      padding: 4px 15px;
+      border-radius: 16px;
+      display: inline-block;
+      border: 1.3px solid #d7e1ea;
+      margin-bottom: 5px;
+      letter-spacing: 0.03em;
+    }
+    .profile-form {
+      margin: 0 auto;
+      margin-top: 10px;
+      max-width: 100%;
+      text-align: center;
     }
     .profile-form input, .profile-form textarea {
-      display: block;
-      width: 100%;
-      margin-bottom: 14px;
-      padding: 10px;
-      font-size: 1rem;
+      display: block; width: 100%; margin-bottom: 14px;
+      padding: 10px; font-size: 1rem;
       border: 1px solid var(--border-color);
       border-radius: 3px;
+      background: #f5f7fa;
     }
-    .profile-form button {
-      background: var(--accent);
-      color: #fff;
-      font-family: 'Playfair Display', serif;
-      border: 0;
-      padding: 12px;
-      width: 100%;
-      cursor: pointer;
+    .profile-form .back-to-universe {
+      background: #000; color: #fff; border: none; border-radius: 5px;
+      font-family: 'Playfair Display', serif; font-weight: bold;
+      text-transform: uppercase; width: 130px; font-size: 0.98rem;
+      padding: 7px 0 7px 0; margin: 13px auto 0 auto; display: block;
+      cursor: pointer; letter-spacing: 0.05em; box-shadow: none;
+      transition: background 0.16s;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
     }
-    .profile-form button:hover { background: #333; }
-    .back-button {
-      position: absolute;
-      top: 18px;
-      left: 24px;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 5px 12px;
-      border-radius: 6px;
-      font-family: 'Playfair Display', serif;
-      cursor: pointer;
-      font-size: 1rem;
-      z-index: 3;
+    .profile-form .back-to-universe:hover { background: #222; }
+    @media (max-width: 520px) {
+      .container { padding: 12vw 3vw 8vw 3vw; }
+      .user-details-card { padding: 13px 5vw 9px 5vw; }
+      .profile-form .back-to-universe { width: 85vw; min-width: 110px; }
     }
-    .back-button:hover { background: #333; }
   </style>
 </head>
 <body>
   <button class="logout-button" onclick="window.location.href='./index.html';">Logout</button>
   <div class="container">
-    <button class="back-button" onclick="window.location.href='universe.html'">&larr; Back</button>
-    <h1>My Profile</h1>
-    <img id="avatarPreview" class="profile-avatar" src="https://randomuser.me/api/portraits/men/50.jpg" alt="Profile Avatar" />
-    <form class="profile-form" autocomplete="off">
-      <input type="file" id="avatarUpload" accept="image/*">
+    <div class="globe-avatar-wrap">
+      <canvas id="globeCanvas" width="260" height="260"></canvas>
+      <label for="avatarUpload" class="avatar-upload-label">
+        <img id="avatarPreview" class="profile-avatar" src="" alt="Profile Avatar" />
+        <div class="upload-overlay">Tap Image or Button</div>
+        <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+      </label>
+    </div>
+    <div class="profile-header">My Profile</div>
+    <div class="user-details-card">
+      <div class="username-title">Username</div>
+      <div class="display-username" id="displayUser"></div>
+    </div>
+    <div class="divider"></div>
+    <form class="profile-form" id="profileForm" autocomplete="off">
       <input type="text" id="profileName" placeholder="Your Username">
-      <textarea id="profileBio" rows="4" placeholder="Your Bio"></textarea>
-      <button type="button" id="saveProfileBtn">Save Profile</button>
+      <textarea id="profileBio" rows="4" placeholder="Tell us about yourself..."></textarea>
+      <button type="button" class="back-to-universe" onclick="window.location.href='universe.html'">&larr; Back to Universe</button>
     </form>
   </div>
+  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <script>
     // Firebase setup (reuse config)
     const firebaseConfig = {
@@ -136,6 +219,12 @@
     document.getElementById('avatarPreview').src = currentAvatar;
     document.getElementById('profileBio').value = currentBio;
 
+    // Live display of saved profile details
+    function updateProfileDisplay() {
+      document.getElementById('displayUser').textContent = currentUser || 'No username set';
+    }
+    updateProfileDisplay();
+
     // Avatar preview
     document.getElementById('avatarUpload').addEventListener('change', e => {
       const file = e.target.files[0];
@@ -148,37 +237,26 @@
       }
     });
 
-    // Save profile (localStorage + Firebase)
-    document.getElementById('saveProfileBtn').onclick = async () => {
-      const name = document.getElementById('profileName').value.trim();
-      const bio = document.getElementById('profileBio').value.trim();
-      const file = document.getElementById('avatarUpload').files[0];
-
-      let avatarUrl = currentAvatar;
-
-      if (file) {
-        // Save avatar image to Firebase Storage
-        const storageRef = storage.ref(`avatars/${Date.now()}_${file.name}`);
-        await storageRef.put(file);
-        avatarUrl = await storageRef.getDownloadURL();
-      }
-
-      // Save to localStorage
-      localStorage.setItem('currentUser', name);
-      localStorage.setItem('currentAvatar', avatarUrl);
-      localStorage.setItem('currentBio', bio);
-
-      // Save to Firebase (optional: under a "users" node by name)
-      if (name) {
-        await db.ref('users/' + name.replace(/[.#$\\[\\]]/g, '_')).set({
-          name,
-          avatar: avatarUrl,
-          bio
-        });
-      }
-
-      alert('Profile saved!');
-    };
+    // 3D spinning globe
+    window.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('globeCanvas');
+      if (!canvas) return;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+      const sphereMesh = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 32, 32),
+        new THREE.MeshStandardMaterial({ map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg') })
+      );
+      scene.add(sphereMesh);
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(5, 3, 5);
+      scene.add(light);
+      camera.position.z = 3;
+      (function animate() { requestAnimationFrame(animate); sphereMesh.rotation.y += 0.0015; renderer.render(scene, camera); })();
+    });
   </script>
 </body>
 </html>
