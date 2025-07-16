@@ -149,3 +149,23 @@ h1 {
   color: var(--accent);
   cursor: pointer;
 }
+.back-btn {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 7px 16px;
+  font-size: 1rem;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 1px 4px #0001;
+  opacity: 0.93;
+  transition: background 0.18s;
+}
+.back-btn:hover {
+  background: var(--primary);
+}
