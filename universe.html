@@ -39,14 +39,20 @@
       background: var(--accent);
       color: #fff;
       border: 0;
-      padding: 6px 12px;
+      padding: 6px 18px;
       font-family: 'Playfair Display', serif;
+      border-radius: 8px;
+      font-size: 1.03rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
       cursor: pointer;
       box-shadow: 0 2px 8px var(--shadow-color);
       z-index: 2;
+      transition: background 0.16s, box-shadow 0.14s;
     }
     .logout-button:hover {
-      opacity: 0.8;
+      background: #212121;
+      box-shadow: 0 2px 20px #0002;
     }
     #globeCanvas {
       display: block;
@@ -87,6 +93,27 @@
       justify-content: center;
       margin-bottom: 20px;
     }
+    .profile-button, .create-profile-button {
+      display: block;
+      min-width: 140px;
+      padding: 9px 0 9px 0;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-family: 'Playfair Display', serif;
+      font-weight: bold;
+      letter-spacing: 0.03em;
+      font-size: 1.06rem;
+      border-radius: 8px;
+      box-shadow: 0 2.5px 16px #e6e6e6a0;
+      transition: background 0.13s, box-shadow 0.16s;
+      text-align: center;
+      cursor: pointer;
+    }
+    .profile-button:hover, .create-profile-button:hover {
+      background: #191919;
+      box-shadow: 0 5px 26px #d1d1d1cc;
+    }
     .post-form {
       background: #FAFAFA;
       border: 1px solid var(--border-color);
@@ -122,25 +149,6 @@
     .post-form button:hover {
       background: #333;
     }
-    .profile-button, .create-profile-button {
-      display: block;
-      width: 180px;
-      padding: 10px 0;
-      background: var(--accent);
-      color: #fff;
-      border: 0;
-      font-family: 'Playfair Display', serif;
-      cursor: pointer;
-      border-radius: 7px;
-      text-align: center;
-      font-weight: bold;
-      letter-spacing: 0.03em;
-      font-size: 1.04rem;
-      transition: background 0.18s;
-    }
-    .profile-button:hover, .create-profile-button:hover {
-      background: #333;
-    }
     .feed .post {
       background: #f7f7fa;
       border: 1px solid var(--border-color);
@@ -169,6 +177,7 @@
       object-fit: cover;
       border: 2px solid #dedede;
       background: #f3f3f3;
+      box-shadow: 0 1.5px 10px #e2e2e240;
     }
     .username {
       font-family: 'Roboto', sans-serif;
@@ -252,13 +261,27 @@
     const currentUser = localStorage.getItem('currentUser') || 'Anonymous';
     const currentAvatar = localStorage.getItem('currentAvatar') || 'https://randomuser.me/api/portraits/men/50.jpg';
 
+    // Avatars for mock posts (cycle through a set)
+    const demoAvatars = [
+      'https://randomuser.me/api/portraits/men/12.jpg',
+      'https://randomuser.me/api/portraits/women/15.jpg',
+      'https://randomuser.me/api/portraits/men/14.jpg',
+      'https://randomuser.me/api/portraits/women/26.jpg',
+      'https://randomuser.me/api/portraits/men/23.jpg',
+      'https://randomuser.me/api/portraits/women/18.jpg',
+      'https://randomuser.me/api/portraits/men/34.jpg',
+      'https://randomuser.me/api/portraits/women/29.jpg',
+      'https://randomuser.me/api/portraits/men/45.jpg',
+      'https://randomuser.me/api/portraits/women/36.jpg'
+    ];
+
     // Seed mock posts if none exist
     postRef.once('value', snapshot => {
       if (!snapshot.exists()) {
         const mock = [
-          { userId: 'Neo Smith', avatar: 'https://randomuser.me/api/portraits/men/1.jpg', message: 'I am the One.', timestamp: Date.now(), likes: 0 },
-          { userId: 'Trinity Jones', avatar: 'https://randomuser.me/api/portraits/women/2.jpg', message: 'Let’s ride.', timestamp: Date.now(), likes: 0 },
-          { userId: 'Morpheus Lee', avatar: 'https://randomuser.me/api/portraits/men/3.jpg', message: 'What if I told you...', timestamp: Date.now(), likes: 0 }
+          { userId: 'Neo Smith', avatar: demoAvatars[0], message: 'I am the One.', timestamp: Date.now(), likes: 0 },
+          { userId: 'Trinity Jones', avatar: demoAvatars[1], message: 'Let’s ride.', timestamp: Date.now(), likes: 0 },
+          { userId: 'Morpheus Lee', avatar: demoAvatars[2], message: 'What if I told you...', timestamp: Date.now(), likes: 0 }
         ];
         mock.forEach(p => postRef.push(p));
       }
@@ -303,11 +326,17 @@
 
       postRef.on('value', snapshot => {
         const feed = document.getElementById('feed'); feed.innerHTML = '';
+        let idx = 0;
         snapshot.forEach(childSnapshot => {
           const p = childSnapshot.val();
-          const div = document.createElement('div'); div.className = 'post';
-          const avatarURL = p.avatar || 'https://randomuser.me/api/portraits/men/50.jpg';
+          // Randomize avatar for demo if avatar is a demo
+          let avatarURL = p.avatar;
+          if (!avatarURL || avatarURL.includes('/men/50.jpg')) {
+            avatarURL = demoAvatars[idx % demoAvatars.length];
+          }
+          idx++;
           const profileFile = `profile_${p.userId.split(' ')[0].toLowerCase()}.html`;
+          const div = document.createElement('div'); div.className = 'post';
           div.innerHTML = `
             <div class="post-header">
               <a href="${profileFile}">
