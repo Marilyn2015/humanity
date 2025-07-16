@@ -27,19 +27,26 @@
       min-height: 100vh;
       color: var(--text-main);
     }
-    .logout-button {
+    .back-to-universe {
       position: fixed;
-      top: 16px; right: 16px;
-      background: var(--accent); color: #fff;
-      border: 0; padding: 6px 18px;
-      font-family: 'Playfair Display', serif; font-weight: bold;
+      top: 16px;
+      right: 16px;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Playfair Display', serif;
+      font-weight: bold;
       letter-spacing: 0.02em;
-      font-size: 1.1rem; border-radius: 6px;
+      font-size: 1.07rem;
+      padding: 7px 20px;
       box-shadow: 0 2px 8px var(--shadow-color);
-      cursor: pointer; z-index: 3;
+      cursor: pointer;
+      z-index: 10;
       transition: background 0.18s;
+      text-transform: uppercase;
     }
-    .logout-button:hover { background: #212121; }
+    .back-to-universe:hover { background: #232323; }
     .container {
       position: relative;
       max-width: 430px;
@@ -153,25 +160,25 @@
       border-radius: 3px;
       background: #f5f7fa;
     }
-    .profile-form .back-to-universe {
+    .profile-form .edit-btn, .profile-form .save-btn {
       background: #000; color: #fff; border: none; border-radius: 5px;
       font-family: 'Playfair Display', serif; font-weight: bold;
-      text-transform: uppercase; width: 130px; font-size: 0.98rem;
-      padding: 7px 0 7px 0; margin: 13px auto 0 auto; display: block;
+      text-transform: uppercase; width: 120px; font-size: 0.96rem;
+      padding: 7px 0; margin: 10px 6px 0 6px; display: inline-block;
       cursor: pointer; letter-spacing: 0.05em; box-shadow: none;
       transition: background 0.16s;
-      display: flex; align-items: center; justify-content: center; gap: 7px;
     }
-    .profile-form .back-to-universe:hover { background: #222; }
+    .profile-form .edit-btn:hover, .profile-form .save-btn:hover { background: #222; }
     @media (max-width: 520px) {
       .container { padding: 12vw 3vw 8vw 3vw; }
       .user-details-card { padding: 13px 5vw 9px 5vw; }
-      .profile-form .back-to-universe { width: 85vw; min-width: 110px; }
+      .profile-form .edit-btn, .profile-form .save-btn { width: 42vw; min-width: 90px; }
+      .back-to-universe { top: 5vw; right: 5vw; }
     }
   </style>
 </head>
 <body>
-  <button class="logout-button" onclick="window.location.href='./index.html';">Logout</button>
+  <button class="back-to-universe" onclick="window.location.href='universe.html'">&larr; Back to Universe</button>
   <div class="container">
     <div class="globe-avatar-wrap">
       <canvas id="globeCanvas" width="260" height="260"></canvas>
@@ -190,7 +197,8 @@
     <form class="profile-form" id="profileForm" autocomplete="off">
       <input type="text" id="profileName" placeholder="Your Username">
       <textarea id="profileBio" rows="4" placeholder="Tell us about yourself..."></textarea>
-      <button type="button" class="back-to-universe" onclick="window.location.href='universe.html'">&larr; Back to Universe</button>
+      <button type="button" class="edit-btn" id="editProfileBtn">Edit Profile</button>
+      <button type="button" class="save-btn" id="saveProfileBtn">Save</button>
     </form>
   </div>
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
@@ -237,6 +245,54 @@
       }
     });
 
+    // Edit Profile: Enable form inputs
+    document.getElementById('editProfileBtn').onclick = () => {
+      document.getElementById('profileName').disabled = false;
+      document.getElementById('profileBio').disabled = false;
+      document.getElementById('avatarUpload').disabled = false;
+      document.getElementById('profileName').focus();
+    };
+    // Initially disable inputs (view only)
+    document.getElementById('profileName').disabled = true;
+    document.getElementById('profileBio').disabled = true;
+    document.getElementById('avatarUpload').disabled = true;
+
+    // Save profile (localStorage + Firebase)
+    document.getElementById('saveProfileBtn').onclick = async () => {
+      const name = document.getElementById('profileName').value.trim();
+      const bio = document.getElementById('profileBio').value.trim();
+      const file = document.getElementById('avatarUpload').files[0];
+      let avatarUrl = currentAvatar;
+      if (file) {
+        const storageRef = storage.ref(`avatars/${Date.now()}_${file.name}`);
+        await storageRef.put(file);
+        avatarUrl = await storageRef.getDownloadURL();
+      }
+      // Save to localStorage
+      localStorage.setItem('currentUser', name);
+      localStorage.setItem('currentAvatar', avatarUrl);
+      localStorage.setItem('currentBio', bio);
+      // Save to Firebase
+      if (name) {
+        await db.ref('users/' + name.replace(/[.#$\\[\\]]/g, '_')).set({
+          name,
+          avatar: avatarUrl,
+          bio
+        });
+      }
+      // Update display and lock form again
+      currentUser = name;
+      currentAvatar = avatarUrl;
+      currentBio = bio;
+      updateProfileDisplay();
+      document.getElementById('profileName').disabled = true;
+      document.getElementById('profileBio').disabled = true;
+      document.getElementById('avatarUpload').disabled = true;
+      document.getElementById('saveProfileBtn').textContent = 'Saved!';
+      setTimeout(()=>{
+        document.getElementById('saveProfileBtn').textContent = 'Save';
+      }, 1300);
+    };
     // 3D spinning globe
     window.addEventListener('DOMContentLoaded', () => {
       const canvas = document.getElementById('globeCanvas');
