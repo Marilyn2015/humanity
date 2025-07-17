@@ -126,11 +126,8 @@
         <label for="websiteLink">Website URL</label>
         <input type="text" id="websiteLink" placeholder="https://yourwebsite.com">
       </div>
-        <input type="text" id="nameInput" placeholder="Name">
-        <input type="text" id="roleInput" placeholder="Role">
-        <button type="button" id="createProfileBtn">Create Profile</button>
-
-    </form>
+         <button type="button" id="createProfileBtn">Create Profile</button>
+       </form>
   </div>
 
   <script>
@@ -202,7 +199,6 @@
       alert('Profile created successfully!');
       window.location.href = `view_profile.html?user=${encodeURIComponent(name)}`;
     });
-  </script>
   <script>
   document.getElementById("createProfileBtn").addEventListener("click", async () => {
     const name = document.getElementById("nameInput").value.trim();
@@ -213,7 +209,7 @@
     const userData = { name, role, joined: new Date().toISOString() };
 
     try {
-      const userRef = await firebase.firestore().collection("users").add(userData);
+      const userRef = await firebase.database().collection("users").add(userData);
       localStorage.setItem("userId", userRef.id);
       window.location.href = "view_profile.html";
     } catch (error) {
