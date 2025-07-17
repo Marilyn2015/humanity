@@ -1,193 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Profile - #HUMANITY</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --card-bg: #fff;
-      --text-main: #1A1A1A;
-      --text-secondary: #555;
-      --border-color: #ebebeb;
-      --shadow-color: rgba(0,0,0,0.07);
-      --accent: #000;
-    }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Roboto', sans-serif;
-      background: #f7f8fa;
-      min-height: 100vh;
-      color: var(--text-main);
+      background: #f0f0f0;
+      text-align: center;
+      padding: 40px;
+      color: #000;
     }
-    .back-btn {
-      position: fixed; top: 20px; left: 22px;
-      background: #000; color: #fff;
-      border: none; border-radius: 8px;
-      padding: 7px 15px; font-size: 1rem;
+    .profile-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      max-width: 500px;
+      margin: auto;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      color: #333;
+    }
+    h1 {
       font-family: 'Playfair Display', serif;
-      cursor: pointer; z-index: 2;
-      letter-spacing: 0.02em; box-shadow: 0 1.5px 9px #ccc2;
-      transition: background 0.13s;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      color: #000;
     }
-    .back-btn:hover { background: #232323; }
-    .container {
-      position: relative;
-      max-width: 480px;
-      margin: 90px auto 0 auto;
-      background: var(--card-bg);
-      border-radius: 18px;
-      border: 1.5px solid var(--border-color);
-      box-shadow: 0 8px 32px 0 var(--shadow-color);
-      padding: 38px 32px 34px 32px;
-      overflow: visible;
-    }
-    .profile-header {
-      text-align: center; margin-bottom: 22px;
-      letter-spacing: 0.03em;
-      font-family: 'Playfair Display', serif;
-      font-size: 2.0rem; color: #151515;
-      text-shadow: 0 2px 18px #00d4ff12;
-      font-weight: 700;
-    }
-    .avatar-wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 18px;
-    }
-    .avatar-label {
-      display: block;
+    .avatar-container {
       position: relative;
       width: 180px;
       height: 180px;
-      margin: 0 auto 18px auto;
-      border-radius: 50%;
-      overflow: hidden;
-      cursor: pointer;
-      border: 3.5px solid #fff;
-      box-shadow: 0 10px 36px #00e0ff28, 0 2.5px 12px #0003;
-      background: #e0e0e0;
-      transition: box-shadow 0.18s, border 0.14s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      margin: 0 auto 20px;
     }
-    .avatar-label:hover {
-      box-shadow: 0 12px 44px #00e0ff44, 0 4px 20px #0003;
-      border-color: #00e0ff;
-    }
-    .profile-avatar {
+    .avatar-preview {
       width: 100%;
       height: 100%;
       border-radius: 50%;
+      border: 3px solid #000;
       object-fit: cover;
-      display: none; /* Hidden by default */
+      display: block;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-    .avatar-placeholder {
-      width: 70%;
-      height: 70%;
-      border-radius: 50%;
-      background: repeating-linear-gradient(135deg, #e0e0e0 0px, #f5f5f5 14px, #e0e0e0 30px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3.3rem;
-      color: #aaa;
-      font-family: 'Playfair Display', serif;
-      letter-spacing: 0.03em;
-      font-weight: bold;
-      transition: background 0.12s;
-      z-index: 1;
+    .upload-btn {
       position: absolute;
-      left: 15%;
-      top: 15%;
-      right: 0; bottom: 0;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 12px;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-weight: bold;
     }
-    .avatar-overlay {
-      position: absolute; bottom: 0; left: 0; width: 100%;
-      background: rgba(0,0,0,0.42); color: #fff; font-size: 1.1rem;
-      text-align: center; padding: 10px 0 10px 0; border-radius: 0 0 90px 90px;
-      letter-spacing: 0.04em; pointer-events: none; opacity: 0.92;
-      font-family: 'Playfair Display', serif; font-weight: bold;
-      z-index: 2;
-      transition: opacity 0.2s;
+    .form-group {
+      margin: 15px 0;
+      text-align: center;
     }
-    .profile-form {
-      margin: 0 auto;
-      margin-top: 10px;
-      max-width: 100%;
+    input, textarea {
+      width: 80%;
+      padding: 12px;
+      margin: 5px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #000;
+      font-size: 1rem;
     }
-    .profile-form input, .profile-form textarea {
-      display: block; width: 100%; margin-bottom: 16px;
-      padding: 11px; font-size: 1rem;
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      background: #f5f7fa;
-    }
-    .profile-form button.create-btn {
-      background: #000; color: #fff; border: none; border-radius: 6px;
-      font-family: 'Playfair Display', serif; font-weight: bold;
-      text-transform: uppercase; width: 135px; font-size: 1.01rem;
-      padding: 9px 0; margin: 18px auto 0 auto; display: block;
-      cursor: pointer; letter-spacing: 0.04em; box-shadow: none;
-      transition: background 0.15s;
-    }
-    .profile-form button.create-btn:hover { background: #232323; }
-    .details-label {
+    button {
+      padding: 12px 30px;
+      border: none;
+      background-color: #000;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
       font-family: 'Playfair Display', serif;
-      font-size: 1.08rem;
-      color: #222;
-      margin-bottom: 5px;
-      letter-spacing: 0.03em;
-      margin-top: 7px;
+      font-size: 1.1rem;
+      transition: background 0.3s, color 0.3s;
+      font-weight: bold;
     }
-    .profile-form textarea.more-details {
-      min-height: 68px;
-      background: #f9fafd;
+    button:hover {
+      background-color: #fff;
+      color: #000;
+      border: 1px solid #000;
     }
-    #avatarUpload { display: none; }
+    label {
+      font-family: 'Playfair Display', serif;
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      color: #555;
+    }
   </style>
 </head>
 <body>
-  <button class="back-btn" onclick="window.location.href='universe.html'">&larr; Back</button>
-  <div class="container">
-    <div class="profile-header">Create Your Profile</div>
-    <form class="profile-form" id="profileForm" autocomplete="off">
-      <div class="avatar-wrap">
-        <label for="avatarUpload" class="avatar-label">
-          <span id="avatarPlaceholder" class="avatar-placeholder">+</span>
-          <img id="avatarPreview" class="profile-avatar" style="display:none" alt="Profile Avatar" />
-          <div class="avatar-overlay" id="avatarOverlay">Click to Upload Photo</div>
-        </label>
-        <input type="file" id="avatarUpload" accept="image/*" />
+  <div class="profile-container">
+    <h1>Create Your Profile</h1>
+    <form id="profileForm">
+      <div class="avatar-container">
+        <img id="avatarPreview" class="avatar-preview" src="https://via.placeholder.com/180" alt="Profile Avatar">
+        <button type="button" class="upload-btn" onclick="document.getElementById('avatarUpload').click()">Upload Photo</button>
       </div>
-      <div class="details-label">Username</div>
-      <input type="text" id="profileName" placeholder="Choose a username" required maxlength="32">
-      <div class="details-label">About Me</div>
-      <textarea id="profileBio" rows="3" placeholder="Tell us about yourself..." maxlength="300"></textarea>
-      <div class="details-label">GitHub Link</div>
-      <input type="url" id="githubLink" placeholder="https://github.com/yourprofile" maxlength="120">
-      <div class="details-label">Website Link</div>
-      <input type="url" id="websiteLink" placeholder="https://yourwebsite.com" maxlength="120">
-      <div class="details-label">More Details</div>
-      <textarea id="moreDetails" class="more-details" placeholder="Add more details about yourself, skills, projects, or anything you want!" maxlength="400"></textarea>
-      <button type="button" class="create-btn" id="createProfileBtn">Create Profile</button>
+      <input type="file" id="avatarUpload" accept="image/*" style="display:none"><br>
+
+      <div class="form-group">
+        <label for="profileName">Username</label>
+        <input type="text" id="profileName" placeholder="Username" required>
+      </div>
+      <div class="form-group">
+        <label for="profileBio">Bio</label>
+        <textarea id="profileBio" placeholder="Tell us about yourself..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="githubLink">GitHub Profile</label>
+        <input type="text" id="githubLink" placeholder="https://github.com/yourprofile">
+      </div>
+      <div class="form-group">
+        <label for="websiteLink">Website URL</label>
+        <input type="text" id="websiteLink" placeholder="https://yourwebsite.com">
+      </div>
+      <button type="button" id="createProfileBtn">Create Profile</button>
     </form>
   </div>
+
   <script>
-    // Firebase setup
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
       databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
       projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.firebasestorage.app",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
       messagingSenderId: "886745899016",
       appId: "1:886745899016:web:2b0f7e0434379d71bd"
     };
@@ -195,65 +144,61 @@
     const db = firebase.database();
     const storage = firebase.storage();
 
-    // Avatar preview: clicking the avatar triggers upload
     let avatarFile = null;
+
     document.getElementById('avatarUpload').addEventListener('change', e => {
       avatarFile = e.target.files[0];
       if (avatarFile) {
         const reader = new FileReader();
         reader.onload = ev => {
-          document.getElementById('avatarPlaceholder').style.display = 'none';
-          document.getElementById('avatarPreview').style.display = 'block';
           document.getElementById('avatarPreview').src = ev.target.result;
-          document.getElementById('avatarOverlay').style.display = 'none'; // Hide the overlay text
         };
         reader.readAsDataURL(avatarFile);
       }
     });
 
-    document.getElementById('createProfileBtn').onclick = async () => {
+    async function isUsernameAvailable(username) {
+      const snapshot = await db.ref('users/' + username.replace(/[.#$\[\]]/g, '_')).once('value');
+      return !snapshot.exists();
+    }
+
+    document.getElementById('createProfileBtn').addEventListener('click', async () => {
       const name = document.getElementById('profileName').value.trim();
       const bio = document.getElementById('profileBio').value.trim();
       const github = document.getElementById('githubLink').value.trim();
       const website = document.getElementById('websiteLink').value.trim();
-      const moreDetails = document.getElementById('moreDetails').value.trim();
-      let avatarUrl = '';
 
       if (!name) {
-        alert('Please choose a username.');
+        alert('Username is required.');
         return;
       }
 
+      if (!await isUsernameAvailable(name)) {
+        alert('Username is already taken. Please choose another.');
+        return;
+      }
+
+      let avatarUrl = '';
       if (avatarFile) {
-        // Save avatar image to Firebase Storage
-        const storageRef = storage.ref(`avatars/${Date.now()}_${avatarFile.name}`);
+        const storageRef = storage.ref('avatars/' + Date.now() + '_' + avatarFile.name);
         await storageRef.put(avatarFile);
         avatarUrl = await storageRef.getDownloadURL();
       }
 
-      // Save to localStorage as new current user
-      localStorage.setItem('currentUser', name);
-      localStorage.setItem('currentAvatar', avatarUrl);
-      localStorage.setItem('currentBio', bio);
-      localStorage.setItem('githubLink', github);
-      localStorage.setItem('websiteLink', website);
-      localStorage.setItem('moreDetails', moreDetails);
-
-      // Save to Firebase
       await db.ref('users/' + name.replace(/[.#$\[\]]/g, '_')).set({
         name,
-        avatar: avatarUrl,
         bio,
         github,
         website,
-        moreDetails
+        avatar: avatarUrl
       });
 
-      alert('Profile created!');
-      // Redirect to the profile.html for this user
-      window.location.href = `profile.html?user=${encodeURIComponent(name)}`;
-    };
+      localStorage.setItem('currentUser', name);
+      localStorage.setItem('currentAvatar', avatarUrl);
+
+      alert('Profile created successfully!');
+      window.location.href = `view_profile.html?user=${encodeURIComponent(name)}`;
+    });
   </script>
 </body>
 </html>
-
