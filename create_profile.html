@@ -186,8 +186,10 @@
         avatarUrl = await storageRef.getDownloadURL();
       }
 
-      await db.ref('users/' + name.replace(/[.#$\[\]]/g, '_')).set({
-        name,
+      await db.ref('users/' + name.replace(/[.#$
+      \[\]]
+      /g, '_')).set({
+        username: name,
         bio,
         github,
         website,
