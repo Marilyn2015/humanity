@@ -129,7 +129,7 @@
          <button type="button" id="createProfileBtn">Create Profile</button>
        </form>
   </div>
-  <script>
+ <script>
   const firebaseConfig = {
     apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
     authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -218,9 +218,7 @@
       alert("Couldn’t save profile.");
     }
   });
-
-    <script>
-     try {
+  try {
       const userRef = await firebase.database().collection("users").add(userData);
       localStorage.setItem("userId", userRef.id);
       window.location.href = "view_profile.html";
