@@ -144,18 +144,18 @@
     const db = firebase.database();
     const storage = firebase.storage();
 
-    let avatarFile = null;
+  let avatarUrl = '';
+if (avatarFile) {
+  try {
+    const storageRef = storage.ref('avatars/' + Date.now() + '_' + avatarFile.name);
+    const snapshot = await storageRef.put(avatarFile);
+    avatarUrl = await snapshot.ref.getDownloadURL();
+  } catch (error) {
+    console.error("Avatar upload failed:", error);
+    alert("Could not upload profile picture.");
+  }
+}
 
-    document.getElementById('avatarUpload').addEventListener('change', e => {
-      avatarFile = e.target.files[0];
-      if (avatarFile) {
-        const reader = new FileReader();
-        reader.onload = ev => {
-          document.getElementById('avatarPreview').src = ev.target.result;
-        };
-        reader.readAsDataURL(avatarFile);
-      }
-    });
 
     async function isUsernameAvailable(username) {
       const snapshot = await db.ref('users/' + username.replace(/[.#$\[\]]/g, '_')).once('value');
