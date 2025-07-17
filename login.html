@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login via World ID - #HUMANITY</title>
+  <title>Login - #HUMANITY</title>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <style>
     body { font-family: Arial, sans-serif; background: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
     .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; width: 300px; }
@@ -16,22 +17,25 @@
 </head>
 <body>
   <div class="container">
-    <h2>Login via World ID</h2>
+    <h2>Login</h2>
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
     <button id="loginButton">Login</button>
+    <button id="registerButton">Register</button>
   </div>
 
   <script>
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
       projectId: "YOUR_PROJECT_ID",
       appId: "APP_ID"
     };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    const database = firebase.database();
 
     document.getElementById('loginButton').addEventListener('click', () => {
       const email = document.getElementById('email').value;
@@ -46,6 +50,30 @@
         .catch((error) => {
           console.error('Login failed:', error);
           alert('Login failed: ' + error.message);
+        });
+    });
+
+    document.getElementById('registerButton').addEventListener('click', () => {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log('User registered:', user);
+
+          database.ref('users/' + user.uid).set({
+            email: user.email,
+            uid: user.uid,
+            createdAt: new Date().toISOString()
+          }).then(() => {
+            alert('User registered and data saved!');
+            window.location.href = 'universe.html';
+          });
+        })
+        .catch((error) => {
+          console.error('Registration failed:', error);
+          alert('Registration failed: ' + error.message);
         });
     });
   </script>
