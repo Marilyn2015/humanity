@@ -205,13 +205,6 @@ alert('Profile created successfully!');
 window.location.href = `view_profile.html?user=${encodeURIComponent(username)}`;
 });
     <script>
-    const realName = document.getElementById('nameInput').value.trim();
-    const role = document.getElementById('roleInput').value.trim();
-
-
-    if (!name || !role) return alert("Fill out both fields.");
-
-    const userData = { name, role, joined: new Date().toISOString() };
 
     try {
       const userRef = await firebase.database().collection("users").add(userData);
