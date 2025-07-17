@@ -62,32 +62,7 @@
     });
 
     document.getElementById('registerButton').addEventListener('click', () => {
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-
-      if (!email || !password) {
-        alert('Please enter both email and password to register.');
-        return;
-      }
-
-      auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          console.log('User registered:', user);
-
-          database.ref('users/' + user.uid).set({
-            email: user.email,
-            uid: user.uid,
-            createdAt: new Date().toISOString()
-          }).then(() => {
-            alert('User registered and data saved!');
-            window.location.href = 'universe.html';
-          });
-        })
-        .catch((error) => {
-          console.error('Registration failed:', error);
-          alert('Registration failed: ' + error.message);
-        });
+      window.location.href = 'create_profile.html';
     });
   </script>
 </body>
