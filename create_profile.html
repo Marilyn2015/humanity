@@ -203,5 +203,24 @@
       window.location.href = `view_profile.html?user=${encodeURIComponent(name)}`;
     });
   </script>
+  <script>
+  document.getElementById("createProfileBtn").addEventListener("click", async () => {
+    const name = document.getElementById("nameInput").value.trim();
+    const role = document.getElementById("roleInput").value.trim();
+
+    if (!name || !role) return alert("Fill out both fields.");
+
+    const userData = { name, role, joined: new Date().toISOString() };
+
+    try {
+      const userRef = await firebase.firestore().collection("users").add(userData);
+      localStorage.setItem("userId", userRef.id);
+      window.location.href = "view_profile.html";
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Couldn’t save profile.");
+    }
+  });
+</script>
 </body>
 </html>
