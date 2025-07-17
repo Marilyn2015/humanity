@@ -194,20 +194,17 @@
   bio,
   github,
   website,
-  avatar: avatarUrl,
-  realName,      // ← pulled from nameInput
-  role,          // ← pulled from roleInput
+  avatar: avatarUrl,          // ← pulled from roleInput
   joined: new Date().toISOString()
 });
 
-      localStorage.setItem('currentUser', name);
-      localStorage.setItem('currentAvatar', avatarUrl);
+   localStorage.setItem('currentUser', username);
+localStorage.setItem('currentAvatar', avatarUrl);
 
-      alert('Profile created successfully!');
-      window.location.href = `view_profile.html?user=${encodeURIComponent(name)}`;
-    });
-  <script>
-  document.getElementById("createProfileBtn").addEventListener("click", async () => {
+alert('Profile created successfully!');
+window.location.href = `view_profile.html?user=${encodeURIComponent(username)}`;
+});
+    <script>
     const realName = document.getElementById('nameInput').value.trim();
     const role = document.getElementById('roleInput').value.trim();
 
