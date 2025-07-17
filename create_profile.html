@@ -185,13 +185,20 @@
         avatarUrl = await storageRef.getDownloadURL();
       }
 
-      await db.ref('users/' + name.replace(/[.#$\[\]]/g, '_')).set({
-        name,
-        bio,
-        github,
-        website,
-        avatar: avatarUrl
-      });
+    await db.ref('users/' + name.replace(/[.#$
+
+\[\]
+
+]/g, '_')).set({
+  name,
+  bio,
+  github,
+  website,
+  avatar: avatarUrl,
+  realName,      // ← pulled from nameInput
+  role,          // ← pulled from roleInput
+  joined: new Date().toISOString()
+});
 
       localStorage.setItem('currentUser', name);
       localStorage.setItem('currentAvatar', avatarUrl);
@@ -201,8 +208,9 @@
     });
   <script>
   document.getElementById("createProfileBtn").addEventListener("click", async () => {
-    const name = document.getElementById("nameInput").value.trim();
-    const role = document.getElementById("roleInput").value.trim();
+    const realName = document.getElementById('nameInput').value.trim();
+    const role = document.getElementById('roleInput').value.trim();
+
 
     if (!name || !role) return alert("Fill out both fields.");
 
