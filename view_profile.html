@@ -10,12 +10,14 @@
   <style>
     body { font-family: 'Roboto', sans-serif; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
     .container { width: 800px; padding: 40px; text-align: center; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 8px; }
-    .avatar { width: 300px; height: 300px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 3px solid #000; box-shadow: 0 0 12px rgba(0, 212, 255, 0.27), 0 1px 5px rgba(0,0,0,0.1); }
-    h1 { font-family: 'Playfair Display', serif; font-size: 2.5em; margin-bottom: 10px; color: #111; }
+    .avatar { width: 300px; height: 300px; border-radius: 50%; object-fit: cover; margin-bottom: 20px; border: 3px solid #000; box-shadow: 0 0 12px rgba(0, 212, 255, 0.27), 0 1px 5px rgba(0,0,0,0.1); cursor: pointer; }
+    h1 { font-family: 'Playfair Display', serif; font-size: 2.5em; margin-bottom: 10px; color: #111; cursor: pointer; }
     .profile-info { text-align: center; background: #f8fafd; border: 1.5px solid #c7d6ea; border-radius: 12px; padding: 20px; box-shadow: 0 1px 8px #00e0ff08; }
     .profile-info p { font-size: 1.1em; margin: 10px 0; color: #333; }
-    .profile-info a { color: #0077cc; text-decoration: none; }
+    .profile-info a { color: #0077cc; text-decoration: none; font-weight: bold; }
     .profile-info a:hover { text-decoration: underline; }
+    .posts-section { margin-top: 30px; text-align: left; }
+    .post-item { background: #fff; border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
   </style>
 </head>
 <body>
@@ -24,8 +26,12 @@
     <h1 id="username">Loading...</h1>
     <div class="profile-info">
       <p><strong>Bio:</strong> <span id="bio"></span></p>
-      <p><strong>GitHub:</strong> <a id="github" href="#" target="_blank">N/A</a></p>
-      <p><strong>Website:</strong> <a id="website" href="#" target="_blank">N/A</a></p>
+      <p><strong>GitHub:</strong> <a id="github" href="#" target="_blank">View GitHub Profile</a></p>
+      <p><strong>Website:</strong> <a id="website" href="#" target="_blank">Visit Personal Website</a></p>
+    </div>
+    <div class="posts-section">
+      <h2>Previous Posts</h2>
+      <div id="userPosts"></div>
     </div>
   </div>
 
@@ -45,13 +51,37 @@
     const queryParams = new URLSearchParams(window.location.search);
     const username = queryParams.get('user');
 
+    function redirectToViewProfile(user) {
+      window.location.href = `view_profile.html?user=${encodeURIComponent(user)}`;
+    }
+
     function displayDefaultProfile() {
       document.getElementById('username').textContent = 'Pleb';
       document.getElementById('bio').textContent = "I'm just like you!";
-      document.getElementById('github').textContent = 'N/A';
+      document.getElementById('github').textContent = 'View GitHub Profile';
       document.getElementById('github').href = '#';
-      document.getElementById('website').textContent = 'N/A';
+      document.getElementById('website').textContent = 'Visit Personal Website';
       document.getElementById('website').href = '#';
+    }
+
+    function loadUserPosts(username) {
+      const postsRef = db.ref('posts/' + username.replace(/[.#$\[\]]/g, '_'));
+      postsRef.once('value').then(snapshot => {
+        const posts = snapshot.val();
+        const postsContainer = document.getElementById('userPosts');
+        postsContainer.innerHTML = '';
+
+        if (posts) {
+          Object.values(posts).forEach(post => {
+            const postElement = document.createElement('div');
+            postElement.className = 'post-item';
+            postElement.textContent = post.content;
+            postsContainer.appendChild(postElement);
+          });
+        } else {
+          postsContainer.textContent = 'No previous posts available.';
+        }
+      });
     }
 
     if (username) {
@@ -63,10 +93,15 @@
           if (data.avatar) {
             document.getElementById('avatar').src = data.avatar;
           }
-          document.getElementById('github').textContent = data.github ? data.github : 'N/A';
+          document.getElementById('github').textContent = data.github ? 'View GitHub Profile' : 'View GitHub Profile';
           document.getElementById('github').href = data.github || '#';
-          document.getElementById('website').textContent = data.website ? data.website : 'N/A';
+          document.getElementById('website').textContent = data.website ? 'Visit Personal Website' : 'Visit Personal Website';
           document.getElementById('website').href = data.website || '#';
+
+          document.getElementById('avatar').addEventListener('click', () => redirectToViewProfile(data.username));
+          document.getElementById('username').addEventListener('click', () => redirectToViewProfile(data.username));
+
+          loadUserPosts(data.username);
         } else {
           displayDefaultProfile();
         }
@@ -75,6 +110,15 @@
       });
     } else {
       displayDefaultProfile();
+    }
+
+    // Injected savePost function for Universe
+    function saveUniversePost(username, postContent) {
+      const postRef = db.ref('posts/' + username.replace(/[.#$\[\]]/g, '_')).push();
+      postRef.set({
+        content: postContent,
+        timestamp: Date.now()
+      });
     }
   </script>
 </body>
