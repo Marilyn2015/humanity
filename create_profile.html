@@ -205,10 +205,9 @@
 
     try {
       await db.ref('users/' + username.replace(/[.#$
-
 \[\]
-
 ]/g, '_')).set(userData);
+
       localStorage.setItem('currentUser', username);
       localStorage.setItem('currentAvatar', avatarUrl);
       alert('Profile created successfully!');
