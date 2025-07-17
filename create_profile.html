@@ -129,84 +129,98 @@
          <button type="button" id="createProfileBtn">Create Profile</button>
        </form>
   </div>
-
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-      authDomain: "hashhumanity-58b9a.firebaseapp.com",
-      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-      projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.appspot.com",
-      messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e0434379d71bd"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const storage = firebase.storage();
+  const firebaseConfig = {
+    apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+    authDomain: "hashhumanity-58b9a.firebaseapp.com",
+    databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+    projectId: "hashhumanity-58b9a",
+    storageBucket: "hashhumanity-58b9a.appspot.com",
+    messagingSenderId: "886745899016",
+    appId: "1:886745899016:web:2b0f7e0434379d71bd"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const storage = firebase.storage();
 
-  let avatarUrl = '';
-if (avatarFile) {
-  try {
-    const storageRef = storage.ref('avatars/' + Date.now() + '_' + avatarFile.name);
-    const snapshot = await storageRef.put(avatarFile);
-    avatarUrl = await snapshot.ref.getDownloadURL();
-  } catch (error) {
-    console.error("Avatar upload failed:", error);
-    alert("Could not upload profile picture.");
-  }
-}
+  let avatarFile = null;
 
-
-    async function isUsernameAvailable(username) {
-      const snapshot = await db.ref('users/' + username.replace(/[.#$\[\]]/g, '_')).once('value');
-      return !snapshot.exists();
+  document.getElementById('avatarUpload').addEventListener('change', e => {
+    avatarFile = e.target.files[0];
+    if (avatarFile) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        document.getElementById('avatarPreview').src = ev.target.result;
+      };
+      reader.readAsDataURL(avatarFile);
     }
+  });
 
-    document.getElementById('createProfileBtn').addEventListener('click', async () => {
-      const name = document.getElementById('profileName').value.trim();
-      const bio = document.getElementById('profileBio').value.trim();
-      const github = document.getElementById('githubLink').value.trim();
-      const website = document.getElementById('websiteLink').value.trim();
-
-      if (!name) {
-        alert('Username is required.');
-        return;
-      }
-
-      if (!await isUsernameAvailable(name)) {
-        alert('Username is already taken. Please choose another.');
-        return;
-      }
-
-      let avatarUrl = '';
-      if (avatarFile) {
-        const storageRef = storage.ref('avatars/' + Date.now() + '_' + avatarFile.name);
-        await storageRef.put(avatarFile);
-        avatarUrl = await storageRef.getDownloadURL();
-      }
-
-    await db.ref('users/' + name.replace(/[.#$
+  async function isUsernameAvailable(username) {
+    const snapshot = await db.ref('users/' + username.replace(/[.#$
 
 \[\]
 
-]/g, '_')).set({
-  name,
-  bio,
-  github,
-  website,
-  avatar: avatarUrl,          // ← pulled from roleInput
-  joined: new Date().toISOString()
-});
+]/g, '_')).once('value');
+    return !snapshot.exists();
+  }
 
-   localStorage.setItem('currentUser', username);
-localStorage.setItem('currentAvatar', avatarUrl);
+  document.getElementById('createProfileBtn').addEventListener('click', async () => {
+    const username = document.getElementById('profileName').value.trim();
+    const bio = document.getElementById('profileBio').value.trim();
+    const github = document.getElementById('githubLink').value.trim();
+    const website = document.getElementById('websiteLink').value.trim();
 
-alert('Profile created successfully!');
-window.location.href = `view_profile.html?user=${encodeURIComponent(username)}`;
-});
-    <script>
+    if (!username) {
+      alert('Username is required.');
+      return;
+    }
+
+    if (!await isUsernameAvailable(username)) {
+      alert('Username is already taken. Please choose another.');
+      return;
+    }
+
+    let avatarUrl = '';
+    if (avatarFile) {
+      try {
+        const storageRef = storage.ref('avatars/' + Date.now() + '_' + avatarFile.name);
+        const snapshot = await storageRef.put(avatarFile);
+        avatarUrl = await snapshot.ref.getDownloadURL();
+      } catch (error) {
+        console.error("Avatar upload failed:", error);
+        alert("Could not upload profile picture.");
+        return;
+      }
+    }
+
+    const userData = {
+      username,
+      bio,
+      github,
+      website,
+      avatar: avatarUrl,
+      joined: new Date().toISOString()
+    };
 
     try {
+      await db.ref('users/' + username.replace(/[.#$
+
+\[\]
+
+]/g, '_')).set(userData);
+      localStorage.setItem('currentUser', username);
+      localStorage.setItem('currentAvatar', avatarUrl);
+      alert('Profile created successfully!');
+      window.location.href = `view_profile.html?user=${encodeURIComponent(username)}`;
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      alert("Couldn’t save profile.");
+    }
+  });
+
+    <script>
+     try {
       const userRef = await firebase.database().collection("users").add(userData);
       localStorage.setItem("userId", userRef.id);
       window.location.href = "view_profile.html";
