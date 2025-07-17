@@ -4,204 +4,168 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Create Profile - #HUMANITY</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
   <style>
     body {
       font-family: 'Roboto', sans-serif;
-      background: #f0f0f0;
+      background: #ffffff;
       text-align: center;
       padding: 40px;
       color: #000;
     }
     .profile-container {
-      background: #fff;
+      background: #e0e0e0;
       padding: 30px;
       border-radius: 15px;
       max-width: 500px;
       margin: auto;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-      color: #333;
-    }
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.5em;
-      margin-bottom: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
       color: #000;
     }
-    .avatar-container {
-      position: relative;
-      width: 180px;
-      height: 180px;
-      margin: 0 auto 20px;
-    }
     .avatar-preview {
-      width: 100%;
-      height: 100%;
+      width: 140px;
+      height: 140px;
       border-radius: 50%;
-      border: 3px solid #000;
       object-fit: cover;
-      display: block;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      border: 3px solid #000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      margin-bottom: 15px;
     }
-    .upload-btn {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 6px 12px;
+    .upload-btn, button {
+      display: inline-block;
+      margin: 10px;
+      padding: 8px 16px;
       background: #000;
       color: #fff;
       border: none;
-      border-radius: 6px;
-      font-size: 0.9rem;
+      border-radius: 5px;
       cursor: pointer;
       font-weight: bold;
-    }
-    .form-group {
-      margin: 15px 0;
-      text-align: center;
     }
     input, textarea {
       width: 80%;
-      padding: 12px;
-      margin: 5px 0;
-      border-radius: 5px;
+      margin: 8px 0;
+      padding: 10px;
       border: 1px solid #ccc;
-      background: #fff;
-      color: #000;
-      font-size: 1rem;
-    }
-    button {
-      padding: 12px 30px;
-      border: none;
-      background-color: #000;
-      color: #fff;
       border-radius: 5px;
-      cursor: pointer;
-      font-family: 'Playfair Display', serif;
-      font-size: 1.1rem;
-      transition: background 0.3s, color 0.3s;
-      font-weight: bold;
-    }
-    button:hover {
-      background-color: #fff;
+      background: #f5f5f5;
       color: #000;
-      border: 1px solid #000;
     }
-    label {
+    h1 {
       font-family: 'Playfair Display', serif;
-      display: block;
-      margin-top: 10px;
-      font-weight: bold;
-      color: #555;
+      color: #000;
     }
   </style>
+
+  <!-- Firebase SDK imports -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 </head>
 <body>
   <div class="profile-container">
     <h1>Create Your Profile</h1>
-    <form id="profileForm">
-      <div class="avatar-container">
-        <img id="avatarPreview" class="avatar-preview" src="https://via.placeholder.com/180" alt="Profile Avatar">
-        <button type="button" class="upload-btn" onclick="document.getElementById('avatarUpload').click()">Upload Photo</button>
-      </div>
-      <input type="file" id="avatarUpload" accept="image/*" style="display:none"><br>
-
-      <div class="form-group">
-        <label for="profileName">Username</label>
-        <input type="text" id="profileName" placeholder="Username" required>
-      </div>
-      <div class="form-group">
-        <label for="profileBio">Bio</label>
-        <textarea id="profileBio" placeholder="Tell us about yourself..."></textarea>
-      </div>
-      <div class="form-group">
-        <label for="githubLink">GitHub Profile</label>
-        <input type="text" id="githubLink" placeholder="https://github.com/yourprofile">
-      </div>
-      <div class="form-group">
-        <label for="websiteLink">Website URL</label>
-        <input type="text" id="websiteLink" placeholder="https://yourwebsite.com">
-      </div>
-        <button type="button" id="createProfileBtn">Create Profile</button>
-
-    </form>
+    <img id="avatarPreview" class="avatar-preview" src="https://via.placeholder.com/140" alt="Profile Avatar">
+    <br>
+    <input type="file" id="avatarUpload" accept="image/*">
+    <br>
+    <input type="text" id="profileName" placeholder="Username">
+    <textarea id="profileBio" placeholder="Tell us about yourself..."></textarea>
+    <input type="text" id="githubLink" placeholder="GitHub Profile URL">
+    <input type="text" id="websiteLink" placeholder="Website URL">
+    <button id="createProfileBtn">Create Profile</button>
   </div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-      authDomain: "hashhumanity-58b9a.firebaseapp.com",
-      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-      projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.appspot.com",
-      messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e0434379d71bd"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const storage = firebase.storage();
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+    authDomain: "hashhumanity-58b9a.firebaseapp.com",
+    databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+    projectId: "hashhumanity-58b9a",
+    storageBucket: "hashhumanity-58b9a.appspot.com",
+    messagingSenderId: "886745899016",
+    appId: "1:886745899016:web:2b0f7e0434379d71bd"
+  };
 
-    let avatarFile = null;
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const storage = firebase.storage();
 
-    document.getElementById('avatarUpload').addEventListener('change', e => {
-      avatarFile = e.target.files[0];
-      if (avatarFile) {
-        const reader = new FileReader();
-        reader.onload = ev => {
-          document.getElementById('avatarPreview').src = ev.target.result;
-        };
-        reader.readAsDataURL(avatarFile);
-      }
-    });
+  let avatarFile = null;
 
-    async function isUsernameAvailable(username) {
+  document.getElementById('avatarUpload').addEventListener('change', e => {
+    avatarFile = e.target.files[0];
+    if (avatarFile) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        document.getElementById('avatarPreview').src = event.target.result;
+      };
+      reader.readAsDataURL(avatarFile);
+    }
+  });
+
+  async function isUsernameAvailable(username) {
+    try {
       const snapshot = await db.ref('users/' + username.replace(/[.#$\[\]]/g, '_')).once('value');
+      console.log('Username check snapshot:', snapshot.exists());
       return !snapshot.exists();
+    } catch (error) {
+      console.error('Error checking username availability:', error);
+      return false;
+    }
+  }
+
+  document.getElementById('createProfileBtn').addEventListener('click', async () => {
+    const name = document.getElementById('profileName').value.trim();
+    const bio = document.getElementById('profileBio').value.trim();
+    const github = document.getElementById('githubLink').value.trim();
+    const website = document.getElementById('websiteLink').value.trim();
+
+    if (!name) {
+      alert('Username is required.');
+      return;
     }
 
-    document.getElementById('createProfileBtn').addEventListener('click', async () => {
-      const name = document.getElementById('profileName').value.trim();
-      const bio = document.getElementById('profileBio').value.trim();
-      const github = document.getElementById('githubLink').value.trim();
-      const website = document.getElementById('websiteLink').value.trim();
+    console.log('Checking username availability for:', name);
+    const available = await isUsernameAvailable(name);
+    console.log('Username available:', available);
+    if (!available) {
+      alert('Username is already taken. Please choose another.');
+      return;
+    }
 
-      if (!name) {
-        alert('Username is required.');
-        return;
-      }
-
-      if (!await isUsernameAvailable(name)) {
-        alert('Username is already taken. Please choose another.');
-        return;
-      }
-
-      let avatarUrl = '';
-      if (avatarFile) {
+    let avatarUrl = '';
+    if (avatarFile) {
+      try {
+        console.log('Uploading avatar to storage...');
         const storageRef = storage.ref('avatars/' + Date.now() + '_' + avatarFile.name);
         await storageRef.put(avatarFile);
         avatarUrl = await storageRef.getDownloadURL();
+        console.log('Avatar uploaded, URL:', avatarUrl);
+      } catch (error) {
+        console.error('Error uploading avatar:', error);
       }
+    }
 
-      await db.ref('users/' + name.replace(/[.#$
-      \[\]]
-      /g, '_')).set({
-        username: name,
-        bio,
-        github,
-        website,
-        avatar: avatarUrl
-      });
+    const userData = {
+      username: name,
+      bio,
+      github,
+      website,
+      avatar: avatarUrl
+    };
 
-      localStorage.setItem('currentUser', name);
-      localStorage.setItem('currentAvatar', avatarUrl);
-
+    console.log('Saving user data to Firebase:', userData);
+    try {
+      await db.ref('users/' + name.replace(/[.#$\[\]]/g, '_')).set(userData);
+      console.log('User data saved successfully to Firebase.');
+      localStorage.setItem('currentUser', JSON.stringify(userData));
       alert('Profile created successfully!');
       window.location.href = `view_profile.html?user=${encodeURIComponent(name)}`;
-    });
-  </script>
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      alert('Failed to create profile. Please try again.');
+    }
+  });
+</script>
 </body>
 </html>
