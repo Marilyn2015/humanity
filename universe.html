@@ -1,359 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>#HUMANITY Universe - Professional UI</title>
-  <!-- Three.js for Globe -->
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
-  <!-- Firebase Compat SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --card-bg: #FFFFFF;
-      --text-main: #1A1A1A;
-      --text-secondary: #555555;
-      --border-color: #DDDDDD;
-      --shadow-color: rgba(0,0,0,0.1);
-      --accent: #000000;
-    }
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: 'Roboto', sans-serif;
-      background: #fff;
-      position: relative;
-      min-height: 100vh;
-    }
-    .logout-button {
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      background: var(--accent);
-      color: #fff;
-      border: 0;
-      padding: 6px 18px;
-      font-family: 'Playfair Display', serif;
-      border-radius: 8px;
-      font-size: 1.03rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-      box-shadow: 0 2px 8px var(--shadow-color);
-      z-index: 2;
-      transition: background 0.16s, box-shadow 0.14s;
-    }
-    .logout-button:hover {
-      background: #212121;
-      box-shadow: 0 2px 20px #0002;
-    }
-    #globeCanvas {
-      display: block;
-      margin: 40px auto 0 auto;
-      width: 220px;
-      height: 220px;
-      background: transparent !important;
-      z-index: 2;
-      position: relative;
-      border-radius: 50%;
-      overflow: hidden;
-      box-shadow: none !important;
-    }
-    .container {
-      position: relative;
-      z-index: 1;
-      max-width: 600px;
-      margin: 0 auto 40px auto;
-      background: var(--card-bg);
-      border: 1px solid var(--border-color);
-      box-shadow: 0 4px 16px var(--shadow-color);
-      padding: 32px;
-      margin-top: 0;
-    }
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.2rem;
-      text-align: center;
-      margin-bottom: 26px;
-      color: var(--text-main);
-      letter-spacing: 0.02em;
-      font-weight: 700;
-      text-shadow: 0 2px 16px #e2e2e2;
-    }
-    .button-row {
-      display: flex;
-      gap: 14px;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-    .profile-button, .create-profile-button {
-      display: block;
-      min-width: 140px;
-      padding: 9px 0 9px 0;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      font-family: 'Playfair Display', serif;
-      font-weight: bold;
-      letter-spacing: 0.03em;
-      font-size: 1.06rem;
-      border-radius: 8px;
-      box-shadow: 0 2.5px 16px #e6e6e6a0;
-      transition: background 0.13s, box-shadow 0.16s;
-      text-align: center;
-      cursor: pointer;
-    }
-    .profile-button:hover, .create-profile-button:hover {
-      background: #191919;
-      box-shadow: 0 5px 26px #d1d1d1cc;
-    }
-    .post-form {
-      background: #FAFAFA;
-      border: 1px solid var(--border-color);
-      padding: 24px 20px 18px 20px;
-      margin-bottom: 14px;
-      border-radius: 14px;
-      box-shadow: 0 1px 8px #ededed30;
-    }
-    .post-form textarea,
-    .post-form input[type=file] {
-      width: 100%;
-      padding: 13px;
-      margin-bottom: 13px;
-      border: 1px solid var(--border-color);
-      border-radius: 7px;
-      font-size: 1.07rem;
-      font-family: 'Roboto', sans-serif;
-    }
-    .post-form button {
-      width: 100%;
-      padding: 13px 0;
-      background: var(--accent);
-      color: #fff;
-      font-family: 'Playfair Display', serif;
-      border: 0;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1.08rem;
-      letter-spacing: 0.04em;
-      font-weight: bold;
-      transition: background 0.18s;
-    }
-    .post-form button:hover {
-      background: #333;
-    }
-    .feed .post {
-      background: #f7f7fa;
-      border: 1px solid var(--border-color);
-      margin-bottom: 18px;
-      border-radius: 10px;
-      padding: 17px 16px 12px 16px;
-      box-shadow: 0 2px 9px var(--shadow-color);
-      position: relative;
-    }
-    .post-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 9px;
-      gap: 8px;
-    }
-    .post-header a {
-      display: flex;
-      align-items: center;
-      text-decoration: none;
-    }
-    .avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      margin-right: 11px;
-      object-fit: cover;
-      border: 2px solid #dedede;
-      background: #f3f3f3;
-      box-shadow: 0 1.5px 10px #e2e2e240;
-    }
-    .username {
-      font-family: 'Roboto', sans-serif;
-      color: var(--text-main);
-      font-weight: 600;
-      font-size: 1.01rem;
-      letter-spacing: 0.02em;
-    }
-    .content-image {
-      max-width: 100%;
-      margin-top: 8px;
-      border-radius: 8px;
-      box-shadow: 0 1px 5px #cccccc50;
-    }
-    .timestamp {
-      font-size: 0.83rem;
-      color: var(--text-secondary);
-      margin-top: 8px;
-    }
-    .like-btn {
-      background: none;
-      border: 0;
-      color: var(--accent);
-      cursor: pointer;
-      font-size: 1.18rem;
-      font-weight: bold;
-      margin-top: 6px;
-      transition: color 0.16s;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .like-btn:hover {
-      color: #0051ff;
-    }
-    @media (max-width: 700px) {
-      .container {
-        max-width: 96vw;
-        padding: 12vw 2vw 8vw 2vw;
-      }
-      #globeCanvas {
-        width: 80vw; height: 80vw;
-        min-width: 140px; min-height: 140px;
-      }
-    }
+    body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background: #fff; }
+    .logout-button { position: fixed; top: 16px; right: 16px; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .feed { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+    .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 300px; text-align: center; }
+    #globeCanvas { display: block; margin: 20px auto; }
   </style>
 </head>
 <body>
   <button class="logout-button" onclick="window.location.href='./index.html';">Logout</button>
   <canvas id="globeCanvas" width="220" height="220"></canvas>
+
   <div class="container">
     <h1>Welcome to the Universe</h1>
-    <div class="button-row">
-      <button class="profile-button" onclick="window.location.href='view_profile.html'">My Profile</button>
-      <button class="create-profile-button" onclick="window.location.href='create_profile.html'">Create Profile</button>
+    <button id="postNoteButton">Post Note</button>
+
+    <div class="feed" id="feed">
+      <!-- Universe thread content will load here -->
     </div>
-    <div class="post-form">
-      <textarea id="newPostContent" placeholder="What's on your mind?"></textarea>
-      <input type="file" id="postImage">
-      <button id="postButton">Post</button>
-    </div>
-    <div class="feed" id="feed"></div>
   </div>
+
+  <div class="modal" id="postModal">
+    <div class="modal-content">
+      <h2>New Note</h2>
+      <textarea id="noteContent" placeholder="What's on your mind?"></textarea>
+      <br>
+      <button id="submitNote">Submit</button>
+      <button onclick="toggleModal()">Cancel</button>
+    </div>
+  </div>
+
   <script>
-    // Firebase initialization
-    const firebaseConfig = {
-      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-      authDomain: "hashhumanity-58b9a.firebaseapp.com",
-      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-      projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.firebasestorage.app",
-      messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e0434379d71bd"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const storage = firebase.storage();
-    const postRef = db.ref('posts');
-
-    // Current user
-    const currentUser = localStorage.getItem('currentUser') || 'Anonymous';
-    const currentAvatar = localStorage.getItem('currentAvatar') || 'https://randomuser.me/api/portraits/men/50.jpg';
-
-    // Avatars for mock posts (cycle through a set)
-    const demoAvatars = [
-      'https://randomuser.me/api/portraits/men/12.jpg',
-      'https://randomuser.me/api/portraits/women/15.jpg',
-      'https://randomuser.me/api/portraits/men/14.jpg',
-      'https://randomuser.me/api/portraits/women/26.jpg',
-      'https://randomuser.me/api/portraits/men/23.jpg',
-      'https://randomuser.me/api/portraits/women/18.jpg',
-      'https://randomuser.me/api/portraits/men/34.jpg',
-      'https://randomuser.me/api/portraits/women/29.jpg',
-      'https://randomuser.me/api/portraits/men/45.jpg',
-      'https://randomuser.me/api/portraits/women/36.jpg'
-    ];
-
-    // Seed mock posts if none exist
-    postRef.once('value', snapshot => {
-      if (!snapshot.exists()) {
-        const mock = [
-          { userId: 'Neo Smith', avatar: demoAvatars[0], message: 'I am the One.', timestamp: Date.now(), likes: 0 },
-          { userId: 'Trinity Jones', avatar: demoAvatars[1], message: 'Let’s ride.', timestamp: Date.now(), likes: 0 },
-          { userId: 'Morpheus Lee', avatar: demoAvatars[2], message: 'What if I told you...', timestamp: Date.now(), likes: 0 }
-        ];
-        mock.forEach(p => postRef.push(p));
+    document.getElementById('postNoteButton').addEventListener('click', toggleModal);
+    document.getElementById('submitNote').addEventListener('click', () => {
+      const content = document.getElementById('noteContent').value.trim();
+      if (content) {
+        // Save note logic here
+        const feed = document.getElementById('feed');
+        const newPost = document.createElement('div');
+        newPost.textContent = content;
+        feed.prepend(newPost);
+        toggleModal();
+        document.getElementById('noteContent').value = '';
       }
     });
 
-    window.addEventListener('DOMContentLoaded', () => {
-      // Globe setup
-      const canvas = document.getElementById('globeCanvas');
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
-      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-      const sphereMesh = new THREE.Mesh(
-        new THREE.SphereGeometry(1, 32, 32),
-        new THREE.MeshStandardMaterial({ map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg') })
-      );
-      scene.add(sphereMesh);
-      const light = new THREE.DirectionalLight(0xffffff, 1);
-      light.position.set(5, 3, 5);
-      scene.add(light);
-      camera.position.z = 3;
-      (function animate() { requestAnimationFrame(animate); sphereMesh.rotation.y += 0.0015; renderer.render(scene, camera); })();
-
-      // Posts
-      document.getElementById('postButton').addEventListener('click', async () => {
-        const contentEl = document.getElementById('newPostContent');
-        const fileEl = document.getElementById('postImage');
-        const message = contentEl.value.trim();
-        const file = fileEl.files[0];
-        if (!message && !file) return alert('Enter text or select an image.');
-        let imageURL = '';
-        if (file) {
-          const imgRef = storage.ref(`postImages/${Date.now()}_${file.name}`);
-          await imgRef.put(file);
-          imageURL = await imgRef.getDownloadURL();
-        }
-        postRef.push({ userId: currentUser, avatar: currentAvatar, message, image: imageURL, timestamp: Date.now(), likes: 0 });
-        contentEl.value = '';
-        fileEl.value = '';
-      });
-
-      postRef.on('value', snapshot => {
-        const feed = document.getElementById('feed'); feed.innerHTML = '';
-        let idx = 0;
-        snapshot.forEach(childSnapshot => {
-          const p = childSnapshot.val();
-          // Randomize avatar for demo if avatar is a demo
-          let avatarURL = p.avatar;
-          if (!avatarURL || avatarURL.includes('/men/50.jpg')) {
-            avatarURL = demoAvatars[idx % demoAvatars.length];
-          }
-          idx++;
-          const profileFile = `profile_${p.userId.split(' ')[0].toLowerCase()}.html`;
-          const div = document.createElement('div'); div.className = 'post';
-          div.innerHTML = `
-            <div class="post-header">
-              <a href="${profileFile}">
-                <img src="${avatarURL}" class="avatar" alt="avatar">
-                <div class="username">${p.userId}</div>
-              </a>
-            </div>
-            <p>${p.message}</p>
-            ${p.image ? `<img src="${p.image}" class="content-image">` : ''}
-            <div class="timestamp">${new Date(p.timestamp).toLocaleString()}</div>
-            <button class="like-btn">❤️ <span class="like-count">${p.likes}</span></button>
-          `;
-          const btn = div.querySelector('.like-btn'); btn.addEventListener('click', e => { e.stopPropagation(); postRef.child(childSnapshot.key).update({ likes: p.likes+1 }); });
-          feed.prepend(div);
-        });
-      });
-    });
+    function toggleModal() {
+      const modal = document.getElementById('postModal');
+      modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+    }
   </script>
 </body>
 </html>
