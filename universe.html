@@ -10,12 +10,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background: #fff; }
+    body { font-family: 'Roboto', sans-serif; background: #fff; margin: 0; padding: 0; }
     .logout-button { position: fixed; top: 16px; right: 16px; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; }
     .feed { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-    .modal-content { background: #fff; padding: 20px; border-radius: 8px; width: 300px; text-align: center; }
     #globeCanvas { display: block; margin: 20px auto; }
   </style>
 </head>
@@ -25,6 +23,8 @@
 
   <div class="container">
     <h1>Welcome to the Universe</h1>
+    <button onclick="window.location.href='view_profile.html'">My Profile</button>
+    <button onclick="window.location.href='create_profile.html'">Create Profile</button>
     <button id="postNoteButton">Post Note</button>
 
     <div class="feed" id="feed">
@@ -32,11 +32,11 @@
     </div>
   </div>
 
-  <div class="modal" id="postModal">
-    <div class="modal-content">
+  <div class="modal" id="postModal" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;">
+    <div style="background: #fff; padding: 20px; border-radius: 8px; width: 300px; text-align: center;">
       <h2>New Note</h2>
-      <textarea id="noteContent" placeholder="What's on your mind?"></textarea>
-      <br>
+      <textarea id="noteContent" placeholder="What's on your mind?" style="width:100%; height:80px;"></textarea>
+      <br><br>
       <button id="submitNote">Submit</button>
       <button onclick="toggleModal()">Cancel</button>
     </div>
@@ -47,7 +47,6 @@
     document.getElementById('submitNote').addEventListener('click', () => {
       const content = document.getElementById('noteContent').value.trim();
       if (content) {
-        // Save note logic here
         const feed = document.getElementById('feed');
         const newPost = document.createElement('div');
         newPost.textContent = content;
@@ -59,8 +58,33 @@
 
     function toggleModal() {
       const modal = document.getElementById('postModal');
-      modal.style.display = modal.style.display === 'flex' ? 'none' : 'flex';
+      modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'flex' : 'none';
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('globeCanvas');
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+
+      const sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 32, 32),
+        new THREE.MeshStandardMaterial({ map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg') })
+      );
+      scene.add(sphere);
+
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(5, 3, 5);
+      scene.add(light);
+
+      camera.position.z = 3;
+      (function animate() {
+        requestAnimationFrame(animate);
+        sphere.rotation.y += 0.0015;
+        renderer.render(scene, camera);
+      })();
+    });
   </script>
 </body>
 </html>
