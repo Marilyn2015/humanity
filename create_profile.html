@@ -56,12 +56,12 @@
     }
   </style>
 
-  <!-- Firebase SDK imports -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 </head>
 <body>
+  <button onclick="window.location.href='login.html'" style="position: absolute; top: 10px; right: 10px; background: #000; color: #fff; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer;">Back to Login</button>
   <div class="profile-container">
     <h1>Create Your Profile</h1>
     <img id="avatarPreview" class="avatar-preview" src="https://via.placeholder.com/140" alt="Profile Avatar">
@@ -96,7 +96,7 @@
     avatarFile = e.target.files[0];
     if (avatarFile) {
       const reader = new FileReader();
-      reader.onload = function(event) {
+      reader.onload = event => {
         document.getElementById('avatarPreview').src = event.target.result;
       };
       reader.readAsDataURL(avatarFile);
@@ -106,7 +106,6 @@
   async function isUsernameAvailable(username) {
     try {
       const snapshot = await db.ref('users/' + username.replace(/[.#$\[\]]/g, '_')).once('value');
-      console.log('Username check snapshot:', snapshot.exists());
       return !snapshot.exists();
     } catch (error) {
       console.error('Error checking username availability:', error);
@@ -125,9 +124,7 @@
       return;
     }
 
-    console.log('Checking username availability for:', name);
     const available = await isUsernameAvailable(name);
-    console.log('Username available:', available);
     if (!available) {
       alert('Username is already taken. Please choose another.');
       return;
@@ -136,11 +133,9 @@
     let avatarUrl = '';
     if (avatarFile) {
       try {
-        console.log('Uploading avatar to storage...');
         const storageRef = storage.ref('avatars/' + Date.now() + '_' + avatarFile.name);
         await storageRef.put(avatarFile);
         avatarUrl = await storageRef.getDownloadURL();
-        console.log('Avatar uploaded, URL:', avatarUrl);
       } catch (error) {
         console.error('Error uploading avatar:', error);
       }
@@ -154,13 +149,13 @@
       avatar: avatarUrl
     };
 
-    console.log('Saving user data to Firebase:', userData);
     try {
       await db.ref('users/' + name.replace(/[.#$\[\]]/g, '_')).set(userData);
-      console.log('User data saved successfully to Firebase.');
       localStorage.setItem('currentUser', JSON.stringify(userData));
-      alert('Profile created successfully!');
-      window.location.href = `view_profile.html?user=${encodeURIComponent(name)}`;
+      console.log('Redirecting to view_profile.html for user:', name);
+setTimeout(() => {
+  window.location.href = `view_profile.html?user=${encodeURIComponent(name)}`;
+}, 300);
     } catch (error) {
       console.error('Error saving profile:', error);
       alert('Failed to create profile. Please try again.');
