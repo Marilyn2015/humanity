@@ -7,108 +7,165 @@
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Roboto', sans-serif; background: #fff; margin: 0; padding: 0; text-align: center; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .feed { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
-    .note { background: #f0f0f0; border: 1px solid #ccc; margin-bottom: 10px; padding: 10px; border-radius: 5px; text-align: left; }
-    #globeCanvas { display: block; margin: 20px auto; }
+    #globeCanvas { display: block; margin: 20px auto; width: 400px; height: 400px; }
+    h1 { font-size: 2rem; margin: 20px 0; color: #333; }
+    .modal {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      top: 65%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ffffff;
+      color: #000000;
+      font-family: 'Playfair Display', serif;
+      width: 400px;
+      height: 250px;
+      padding: 30px;
+      border: 2px solid #000000;
+      border-radius: 4px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
-  <canvas id="globeCanvas" width="220" height="220"></canvas>
+  <canvas id="globeCanvas" width="400" height="400"></canvas>
+  <h1>The Universe</h1>
+  <button id="newPostBtn" style="background: #ffffff; color: #000000; border: none; padding: 12px 24px; font-weight: bold; font-size: 1rem; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); cursor: pointer; transition: background 0.3s, transform 0.2s;">New Post</button>
+  <button id="profileBtn" style="background: #ffffff; color: #000000; border: none; padding: 12px 24px; font-weight: bold; font-size: 1rem; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); cursor: pointer; transition: background 0.3s, transform 0.2s;" onclick="window.location.href='view_profile.html'">My Profile</button>
 
-  <div class="container">
-    <h1>Welcome to the Universe</h1>
-    <button id="postNoteButton">Post Note</button>
-
-    <div class="feed" id="feed"></div>
+  <div id="postModal" class="modal">
+    <h2 style="display: none;">Feed the Human Feed...</h2>
+    <textarea id="noteContent" placeholder="Feed the Human Feed..." style="width: 80%; height: 100px; margin: 10px 0; padding: 10px;"></textarea><br>
+    <button id="submitNote" style="background: #ffffff; color: #000000; border: none; padding: 12px 24px; font-weight: bold; font-size: 1rem; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); cursor: pointer; transition: background 0.3s, transform 0.2s;">Submit</button>
+    <button id="closeModal" style="background: #ffffff; color: #000000; border: none; padding: 12px 24px; font-weight: bold; font-size: 1rem; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); cursor: pointer; transition: background 0.3s, transform 0.2s;">Cancel</button>
   </div>
+  <div id="postsContainer"></div>
 
-  <div class="modal" id="postModal" style="display:none;">
-    <textarea id="noteContent" placeholder="What's on your mind?"></textarea>
-    <button id="submitNote">Submit</button>
-    <button onclick="toggleModal()">Cancel</button>
-  </div>
+<script>
+  const canvas = document.getElementById('globeCanvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-      authDomain: "hashhumanity-58b9a.firebaseapp.com",
-      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-      projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.appspot.com",
-      messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
-    };
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+  camera.position.z = 3;
 
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const notesRef = database.ref('posts');
+  const textureLoader = new THREE.TextureLoader();
+  const earthTexture = textureLoader.load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg');
 
-    document.getElementById('postNoteButton').addEventListener('click', toggleModal);
-    document.getElementById('submitNote').addEventListener('click', () => {
-      const content = document.getElementById('noteContent').value.trim();
-      if (content) {
-        notesRef.push({
-          content,
-          timestamp: Date.now()
-        });
-        document.getElementById('noteContent').value = '';
-        toggleModal();
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(1, 32, 32),
+    new THREE.MeshStandardMaterial({ map: earthTexture })
+  );
+  scene.add(sphere);
+
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(5, 3, 5);
+  scene.add(light);
+
+  function animate() {
+    requestAnimationFrame(animate);
+    sphere.rotation.y += 0.002;
+    renderer.render(scene, camera);
+  }
+  animate();
+const firebaseConfig = {
+  apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+  authDomain: "hashhumanity-58b9a.firebaseapp.com",
+  databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+  projectId: "hashhumanity-58b9a",
+  storageBucket: "hashhumanity-58b9a.appspot.com",
+  messagingSenderId: "886745899016",
+  appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
+};
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const notesRef = database.ref('posts');
+
+const newPostBtn = document.getElementById('newPostBtn');
+const modal = document.getElementById('postModal');
+const closeModal = document.getElementById('closeModal');
+const submitNote = document.getElementById('submitNote');
+const noteContent = document.getElementById('noteContent');
+const postsContainer = document.getElementById('postsContainer');
+
+newPostBtn.addEventListener('click', () => {
+  modal.style.display = 'flex';
+});
+
+closeModal.addEventListener('click', () => {
+  modal.style.display = 'none';
+});
+
+submitNote.addEventListener('click', () => {
+  const content = noteContent.value.trim();
+  if (content) {
+    const newPostRef = notesRef.push();
+    const postData = { content, timestamp: Date.now() };
+    newPostRef.set(postData, error => {
+      if (!error) {
+        displayPost(postData.content, postData.timestamp);
+        noteContent.value = '';
+        modal.style.display = 'none';
+      } else {
+        console.error('Error posting:', error);
       }
     });
+  }
+});
 
-    function toggleModal() {
-      const modal = document.getElementById('postModal');
-      modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'block' : 'none';
+function displayPost(content, timestamp) {
+  const postElement = document.createElement('div');
+  postElement.style.display = 'flex';
+  postElement.style.alignItems = 'center';
+  postElement.style.margin = '10px auto';
+  postElement.style.padding = '10px';
+  postElement.style.border = '1px solid #000';
+  postElement.style.borderRadius = '8px';
+  postElement.style.background = '#ffffff';
+  postElement.style.boxShadow = '0 2px 6px rgba(0,0,0,0.2)';
+  postElement.style.width = '50%';
+
+  const avatar = document.createElement('img');
+  avatar.src = 'https://randomuser.me/api/portraits/lego/' + Math.floor(Math.random() * 10) + '.jpg';
+  avatar.alt = 'Avatar';
+  avatar.style.width = '50px';
+  avatar.style.height = '50px';
+  avatar.style.borderRadius = '50%';
+  avatar.style.marginRight = '15px';
+
+  const contentContainer = document.createElement('div');
+  contentContainer.innerHTML = `<strong>${new Date(timestamp).toLocaleString()}</strong><br>${content}`;
+
+  postElement.appendChild(avatar);
+  postElement.appendChild(contentContainer);
+  postsContainer.prepend(postElement);
+}
+
+notesRef.on('value', snapshot => {
+  postsContainer.innerHTML = '';
+  snapshot.forEach(childSnapshot => {
+    const post = childSnapshot.val();
+    if (post && post.content && post.timestamp) {
+      displayPost(post.content, post.timestamp);
     }
+  });
 
-    function renderNote(note) {
-      const feed = document.getElementById('feed');
-      const noteDiv = document.createElement('div');
-      noteDiv.className = 'note';
-      const date = new Date(note.timestamp).toLocaleString();
-      noteDiv.innerHTML = `<strong>Posted on:</strong> ${date}<br>${note.content}`;
-      feed.appendChild(noteDiv);
-    }
+  const mockPosts = [
+    { content: 'Welcome to the Human Feed!', timestamp: Date.now() - 60000 },
+    { content: 'The universe is vast and full of mysteries.', timestamp: Date.now() - 120000 },
+    { content: 'What does humanity mean to you?', timestamp: Date.now() - 180000 }
+  ];
 
-    notesRef.orderByChild('timestamp').once('value', snapshot => {
-      snapshot.forEach(childSnapshot => {
-        renderNote(childSnapshot.val());
-      });
-    });
-
-    notesRef.on('child_added', snapshot => {
-      renderNote(snapshot.val());
-    });
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const canvas = document.getElementById('globeCanvas');
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
-      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-
-      const sphere = new THREE.Mesh(
-        new THREE.SphereGeometry(1, 32, 32),
-        new THREE.MeshStandardMaterial({ map: new THREE.TextureLoader().load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg') })
-      );
-      scene.add(sphere);
-
-      const light = new THREE.DirectionalLight(0xffffff, 1);
-      light.position.set(5, 3, 5);
-      scene.add(light);
-
-      camera.position.z = 3;
-      (function animate() {
-        requestAnimationFrame(animate);
-        sphere.rotation.y += 0.0015;
-        renderer.render(scene, camera);
-      })();
-    });
-  </script>
+  mockPosts.forEach(mock => displayPost(mock.content, mock.timestamp));
+});
+</script>
 </body>
 </html>
