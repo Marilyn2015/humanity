@@ -11,85 +11,78 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Roboto', sans-serif; background: #fff; margin: 0; padding: 0; }
-    .logout-button { position: fixed; top: 16px; right: 16px; }
     .container { max-width: 600px; margin: 0 auto; padding: 20px; text-align: center; }
     .feed { margin-top: 20px; border-top: 1px solid #ccc; padding-top: 10px; }
-    #globeCanvas { display: block; margin: 20px auto; }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
-    .modal-content {
-      background: #000;
-      color: #fff;
-      padding: 25px;
-      border-radius: 12px;
-      width: 320px;
-      text-align: center;
-      border: 2px solid #555;
-      box-shadow: 0 0 15px rgba(0,0,0,0.7);
-    }
-    .modal-content textarea {
-      width: 100%;
-      height: 100px;
-      background: #111;
-      color: #fff;
-      border: 1px solid #333;
-      border-radius: 5px;
-      padding: 10px;
-      font-family: 'Roboto', sans-serif;
-    }
-    .modal-content button {
-      margin: 10px 5px 0;
-      padding: 8px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    .submit-btn { background: #007BFF; color: #fff; }
-    .cancel-btn { background: #555; color: #fff; }
+    .note { background: #f0f0f0; border: 1px solid #ccc; margin-bottom: 10px; padding: 10px; border-radius: 5px; text-align: left; }
   </style>
 </head>
 <body>
-  <button class="logout-button" onclick="window.location.href='./index.html';">Logout</button>
   <canvas id="globeCanvas" width="220" height="220"></canvas>
 
   <div class="container">
     <h1>Welcome to the Universe</h1>
-    <button onclick="window.location.href='view_profile.html'">My Profile</button>
-    <button onclick="window.location.href='create_profile.html'">Create Profile</button>
     <button id="postNoteButton">Post Note</button>
 
-    <div class="feed" id="feed">
-      <!-- Universe thread content will load here -->
-    </div>
+    <div class="feed" id="feed"></div>
   </div>
 
-  <div class="modal" id="postModal">
-    <div class="modal-content">
-      <h2>New Note</h2>
-      <textarea id="noteContent" placeholder="What's on your mind?"></textarea><br>
-      <button class="submit-btn" id="submitNote">Submit</button>
-      <button class="cancel-btn" onclick="toggleModal()">Cancel</button>
-    </div>
+  <div class="modal" id="postModal" style="display:none;">
+    <textarea id="noteContent" placeholder="What's on your mind?"></textarea>
+    <button id="submitNote">Submit</button>
+    <button onclick="toggleModal()">Cancel</button>
   </div>
 
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const notesRef = database.ref('universe_notes');
+
     document.getElementById('postNoteButton').addEventListener('click', toggleModal);
     document.getElementById('submitNote').addEventListener('click', () => {
       const content = document.getElementById('noteContent').value.trim();
       if (content) {
-        const feed = document.getElementById('feed');
-        const newPost = document.createElement('div');
-        newPost.textContent = content;
-        feed.prepend(newPost);
-        toggleModal();
+        notesRef.push({
+          content,
+          timestamp: Date.now()
+        });
         document.getElementById('noteContent').value = '';
+        toggleModal();
       }
     });
 
     function toggleModal() {
       const modal = document.getElementById('postModal');
-      modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'flex' : 'none';
+      modal.style.display = (modal.style.display === 'none' || modal.style.display === '') ? 'block' : 'none';
     }
+
+    function renderNote(note) {
+      const feed = document.getElementById('feed');
+      const noteDiv = document.createElement('div');
+      noteDiv.className = 'note';
+      const date = new Date(note.timestamp).toLocaleString();
+      noteDiv.innerHTML = `<strong>Posted on:</strong> ${date}<br>${note.content}`;
+      feed.appendChild(noteDiv);
+    }
+
+    notesRef.orderByChild('timestamp').once('value', snapshot => {
+      snapshot.forEach(childSnapshot => {
+        renderNote(childSnapshot.val());
+      });
+    });
+
+    notesRef.on('child_added', snapshot => {
+      renderNote(snapshot.val());
+    });
 
     window.addEventListener('DOMContentLoaded', () => {
       const canvas = document.getElementById('globeCanvas');
