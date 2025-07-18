@@ -38,7 +38,6 @@
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const database = firebase.database();
 
     document.getElementById('loginButton').addEventListener('click', () => {
       const email = document.getElementById('email').value;
@@ -62,8 +61,8 @@
     });
 
     document.getElementById('registerButton').addEventListener('click', () => {
-      window.location.href = 'create_profile.html';
-    });
+  window.location.href = 'create_profile.html';
+});
   </script>
 </body>
 </html>
