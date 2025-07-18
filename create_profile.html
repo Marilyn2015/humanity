@@ -72,7 +72,8 @@
     <textarea id="profileBio" placeholder="Tell us about yourself..."></textarea>
     <input type="text" id="githubLink" placeholder="GitHub Profile URL">
     <input type="text" id="websiteLink" placeholder="Website URL">
-    <button id="createProfileBtn">Create Profile</button>
+    <button class="upload-btn" id="createProfileBtn">Save</button>
+    <p id="statusMessage"></p>
   </div>
 
 <script>
@@ -113,52 +114,71 @@
     }
   }
 
+  async function uploadAvatar(name) {
+    if (!avatarFile) return '';
+    try {
+      const storageRef = storage.ref('avatars/' + name.replace(/[.#$\[\]]/g, '_') + '_' + Date.now());
+      const snapshot = await storageRef.put(avatarFile);
+      const url = await snapshot.ref.getDownloadURL();
+      console.log('Avatar uploaded. URL:', url);
+      return url;
+    } catch (err) {
+      console.error('Avatar upload failed:', err);
+      return '';
+    }
+  }
+
   document.getElementById('createProfileBtn').addEventListener('click', async () => {
+    const statusMessage = document.getElementById('statusMessage');
+    statusMessage.textContent = '';
+
     const name = document.getElementById('profileName').value.trim();
-    const bio = document.getElementById('profileBio').value.trim();
-    const github = document.getElementById('githubLink').value.trim();
-    const website = document.getElementById('websiteLink').value.trim();
 
     if (!name) {
       alert('Username is required.');
       return;
     }
 
-    const available = await isUsernameAvailable(name);
-    if (!available) {
-      alert('Username is already taken. Please choose another.');
+    if (!avatarFile) {
+      alert('Please upload a profile picture.');
       return;
     }
 
-    let avatarUrl = '';
-    if (avatarFile) {
-      try {
-        const storageRef = storage.ref('avatars/' + Date.now() + '_' + avatarFile.name);
-        await storageRef.put(avatarFile);
-        avatarUrl = await storageRef.getDownloadURL();
-      } catch (error) {
-        console.error('Error uploading avatar:', error);
-      }
-    }
-
-    const userData = {
-      username: name,
-      bio,
-      github,
-      website,
-      avatar: avatarUrl
-    };
-
     try {
+      console.log(`Checking if username "${name}" is available...`);
+      const available = await isUsernameAvailable(name);
+      if (!available) {
+        alert('Username is already taken. Please choose another.');
+        return;
+      }
+
+      statusMessage.textContent = 'Saving profile...';
+
+      const avatarUrl = await uploadAvatar(name);
+
+      const userData = {
+        username: name,
+        bio: document.getElementById('profileBio').value.trim(),
+        github: document.getElementById('githubLink').value.trim(),
+        website: document.getElementById('websiteLink').value.trim(),
+        avatar: avatarUrl
+      };
+
+      console.log('Saving user data to database:', userData);
       await db.ref('users/' + name.replace(/[.#$\[\]]/g, '_')).set(userData);
+      console.log('User data saved successfully.');
+
       localStorage.setItem('currentUser', JSON.stringify(userData));
-      console.log('Redirecting to view_profile.html for user:', name);
-setTimeout(() => {
-  window.location.href = `view_profile.html?user=${encodeURIComponent(name)}`;
-}, 300);
+      statusMessage.textContent = 'Profile saved successfully! Redirecting...';
+
+      setTimeout(() => {
+        window.location.href = 'universe.html';
+      }, 1000);
+
     } catch (error) {
       console.error('Error saving profile:', error);
-      alert('Failed to create profile. Please try again.');
+      alert('Failed to create profile. Check console for details.');
+      statusMessage.textContent = 'Error saving profile.';
     }
   });
 </script>
