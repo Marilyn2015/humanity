@@ -21,27 +21,36 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.1);
       color: #000;
     }
-    .avatar-preview {
+    .avatar-wrapper {
+      position: relative;
       width: 140px;
       height: 140px;
+      margin: 0 auto 15px;
       border-radius: 50%;
-      object-fit: cover;
       border: 3px solid #000;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      margin-bottom: 15px;
-    }
-    .upload-btn, button {
-      display: inline-block;
-      margin: 10px;
-      padding: 8px 16px;
-      background: #000;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
+      overflow: hidden;
       cursor: pointer;
-      font-weight: bold;
     }
-    input, textarea {
+    .avatar-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+    .upload-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #000;
+      font-weight: bold;
+      background: rgba(255,255,255,0.7);
+      border-radius: 10px;
+      padding: 5px 10px;
+      pointer-events: none;
+    }
+    input, textarea, button {
       width: 80%;
       margin: 8px 0;
       padding: 10px;
@@ -49,31 +58,34 @@
       border-radius: 5px;
       background: #f5f5f5;
       color: #000;
+      font-weight: bold;
+      cursor: pointer;
     }
-    h1 {
-      font-family: 'Playfair Display', serif;
-      color: #000;
+    input[type="file"] {
+      display: none;
     }
   </style>
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 </head>
 <body>
-  <button onclick="window.location.href='login.html'" style="position: absolute; top: 10px; right: 10px; background: #000; color: #fff; border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer;">Back to Login</button>
   <div class="profile-container">
     <h1>Create Your Profile</h1>
-    <img id="avatarPreview" class="avatar-preview" src="https://via.placeholder.com/140" alt="Profile Avatar">
-    <br>
+    <label for="avatarUpload">
+      <div class="avatar-wrapper">
+        <img id="avatarPreview" class="avatar-preview" src="https://via.placeholder.com/140" alt="">
+        <div id="uploadText" class="upload-text">Upload</div>
+      </div>
+    </label>
     <input type="file" id="avatarUpload" accept="image/*">
-    <br>
+
     <input type="text" id="profileName" placeholder="Username">
     <textarea id="profileBio" placeholder="Tell us about yourself..."></textarea>
     <input type="text" id="githubLink" placeholder="GitHub Profile URL">
     <input type="text" id="websiteLink" placeholder="Website URL">
-    <button class="upload-btn" id="createProfileBtn">Save</button>
-    <p id="statusMessage"></p>
+    <button id="createProfileBtn" title="Save your profile">Save</button>
   </div>
 
 <script>
@@ -99,86 +111,76 @@
       const reader = new FileReader();
       reader.onload = event => {
         document.getElementById('avatarPreview').src = event.target.result;
+        document.getElementById('uploadText').style.display = 'none';
       };
       reader.readAsDataURL(avatarFile);
     }
   });
 
-  async function isUsernameAvailable(username) {
-    try {
-      const snapshot = await db.ref('users/' + username.replace(/[.#$\[\]]/g, '_')).once('value');
-      return !snapshot.exists();
-    } catch (error) {
-      console.error('Error checking username availability:', error);
-      return false;
-    }
-  }
-
-  async function uploadAvatar(name) {
+  async function uploadAvatar(username) {
     if (!avatarFile) return '';
     try {
-      const storageRef = storage.ref('avatars/' + name.replace(/[.#$\[\]]/g, '_') + '_' + Date.now());
+      const safeUsername = username.replace(/[.#$\[\]]/g, '_');
+      const storageRef = storage.ref('avatars/' + safeUsername + '_' + Date.now());
       const snapshot = await storageRef.put(avatarFile);
-      const url = await snapshot.ref.getDownloadURL();
-      console.log('Avatar uploaded. URL:', url);
-      return url;
+      return await snapshot.ref.getDownloadURL();
     } catch (err) {
-      console.error('Avatar upload failed:', err);
-      return '';
+      console.error('Failed to upload avatar:', err);
+      throw err;
     }
   }
 
   document.getElementById('createProfileBtn').addEventListener('click', async () => {
-    const statusMessage = document.getElementById('statusMessage');
-    statusMessage.textContent = '';
-
+    console.log('Save button clicked');
     const name = document.getElementById('profileName').value.trim();
+    const bio = document.getElementById('profileBio').value.trim();
+    const github = document.getElementById('githubLink').value.trim();
+    const website = document.getElementById('websiteLink').value.trim();
 
     if (!name) {
       alert('Username is required.');
       return;
     }
 
-    if (!avatarFile) {
-      alert('Please upload a profile picture.');
-      return;
-    }
+    
+
+    const safeUsername = name.replace(/[.#$\[\]]/g, '_');
+    const userRef = db.ref('users/' + safeUsername);
 
     try {
-      console.log(`Checking if username "${name}" is available...`);
-      const available = await isUsernameAvailable(name);
-      if (!available) {
-        alert('Username is already taken. Please choose another.');
+      console.log('Checking if username exists...');
+    const snapshot = await userRef.once('value');
+      if (snapshot.exists()) {
+        alert('Username already exists. Please choose another.');
         return;
       }
 
-      statusMessage.textContent = 'Saving profile...';
-
+      console.log('Uploading avatar...');
       const avatarUrl = await uploadAvatar(name);
+      console.log('Avatar uploaded at URL:', avatarUrl);
 
       const userData = {
         username: name,
-        bio: document.getElementById('profileBio').value.trim(),
-        github: document.getElementById('githubLink').value.trim(),
-        website: document.getElementById('websiteLink').value.trim(),
-        avatar: avatarUrl
+        bio: bio,
+        github: github,
+        website: website,
+        avatar: avatarUrl,
+        createdAt: new Date().toISOString()
       };
 
-      console.log('Saving user data to database:', userData);
-      await db.ref('users/' + name.replace(/[.#$\[\]]/g, '_')).set(userData);
-      console.log('User data saved successfully.');
-
+      console.log('Saving user data to Firebase...');
+      await userRef.set(userData);
+      console.log('User data saved successfully');
+      alert('Profile saved successfully! Redirecting to Universe...');
       localStorage.setItem('currentUser', JSON.stringify(userData));
-      statusMessage.textContent = 'Profile saved successfully! Redirecting...';
 
-      setTimeout(() => {
-        window.location.href = 'universe.html';
-      }, 1000);
+      console.log('User profile saved:', userData);
+      console.log('Redirecting to universe.html');
+      window.location.href = 'universe.html';
 
     } catch (error) {
       console.error('Error saving profile:', error);
-      alert('Failed to create profile. Check console for details.');
-      statusMessage.textContent = 'Error saving profile.';
+      alert('An error occurred while saving your profile. Please try again.');
     }
   });
 </script>
