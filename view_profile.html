@@ -10,8 +10,8 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #f4f4f4;
-      color: #333;
+      background-color: #ffffff;
+      color: #000;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -19,74 +19,93 @@
       margin: 0;
     }
     .container {
-      width: 800px;
-      padding: 40px;
-      text-align: center;
+      width: 1000px;
+      padding: 60px;
       background: #fff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      border-radius: 16px;
-      border: 1px solid #ddd;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      text-align: center;
     }
-    .avatar {
-      width: 160px;
-      height: 160px;
+    .profile-header {
+      background: #eaeaea;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .profile-header img {
+      width: 200px;
+      height: 200px;
       border-radius: 50%;
       object-fit: cover;
-      margin-bottom: 20px;
-      border: 2px solid #333;
-      cursor: pointer;
+      border: 3px solid #000;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 15px;
     }
-    h1 {
-      font-size: 2em;
-      margin-bottom: 10px;
-      color: #111;
-      cursor: pointer;
-    }
-    .profile-info {
-      text-align: center;
-      background: #fafafa;
-      border: 1px solid #ddd;
-      border-radius: 12px;
+    .profile-section, .posts-section {
+      background: #eaeaea;
       padding: 20px;
-      margin-top: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
     }
-    .profile-info p {
-      font-size: 1em;
-      margin: 10px 0;
+    .profile-section h2, .posts-section h2 {
+      margin-bottom: 15px;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 8px;
+      font-weight: 600;
     }
-    .profile-info a {
-      color: #0066cc;
+    .info {
+      margin: 8px 0;
+      text-align: center;
+    }
+    a {
+      color: #000;
       text-decoration: none;
       font-weight: 600;
     }
-    .profile-info a:hover {
+    a:hover {
       text-decoration: underline;
     }
-    .posts-section {
-      margin-top: 30px;
-      text-align: left;
-    }
     .post-item {
-      background: #f9f9f9;
+      background: #fff;
       border: 1px solid #ccc;
-      padding: 15px;
-      margin-bottom: 10px;
+      padding: 20px;
+      margin-bottom: 12px;
       border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      text-align: left;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <img id="avatar" class="avatar" src="https://randomuser.me/api/portraits/lego/1.jpg" alt="Profile Avatar">
-    <h1 id="username">Loading...</h1>
-    <div class="profile-info">
-      <p><strong>Bio:</strong> <span id="bio"></span></p>
-      <p><strong>GitHub:</strong> <a id="github" href="#" target="_blank">View GitHub Profile</a></p>
-      <p><strong>Website:</strong> <a id="website" href="#" target="_blank">Visit Personal Website</a></p>
+    <div class="profile-header">
+      <img src="https://via.placeholder.com/120" alt="Profile Picture" id="profileImage">
+      <div class="details">
+        <h2 id="username"></h2>
+        <div id="bio"></div>
+      </div>
     </div>
+
+    <div class="profile-section">
+      <h2>Contact & Links</h2>
+      <div class="info">
+        <strong>GitHub:</strong> <a id="github" href="#" target="_blank">View GitHub Profile</a>
+      </div>
+      <div class="info">
+        <strong>Website:</strong> <a id="website" href="#" target="_blank">Visit Personal Website</a>
+      </div>
+    </div>
+
     <div class="posts-section">
       <h2>Previous Posts</h2>
-      <div id="userPosts"></div>
+      <div id="userPosts">Loading posts...</div>
     </div>
   </div>
 
@@ -106,38 +125,19 @@
     const queryParams = new URLSearchParams(window.location.search);
     const username = queryParams.get('user');
 
-    function redirectToViewProfile(user) {
-      window.location.href = `view_profile.html?user=${encodeURIComponent(user)}`;
-    }
-
-    function displayDefaultProfile() {
-      document.getElementById('username').textContent = 'Pleb';
-      document.getElementById('bio').textContent = "I'm just like you!";
-      document.getElementById('github').textContent = 'View GitHub Profile';
-      document.getElementById('github').href = '#';
-      document.getElementById('website').textContent = 'Visit Personal Website';
-      document.getElementById('website').href = '#';
-    }
-
     function loadUserProfile(user) {
       db.ref('users/' + user.replace(/[.#$\[\]]/g, '_')).once('value').then(snapshot => {
         const data = snapshot.val();
         if (data) {
           document.getElementById('username').textContent = data.username || 'Unnamed';
-          document.getElementById('bio').textContent = data.bio || "I'm just like you!";
-          document.getElementById('avatar').src = data.avatar || 'https://randomuser.me/api/portraits/lego/1.jpg';
+          document.getElementById('bio').textContent = data.bio || 'No bio available.';
           document.getElementById('github').href = data.github || '#';
           document.getElementById('website').href = data.website || '#';
-
-          document.getElementById('avatar').addEventListener('click', () => redirectToViewProfile(data.username));
-          document.getElementById('username').addEventListener('click', () => redirectToViewProfile(data.username));
-
+          if (data.avatar) {
+            document.getElementById('profileImage').src = data.avatar;
+          }
           loadUserPosts(data.username);
-        } else {
-          displayDefaultProfile();
         }
-      }).catch(() => {
-        displayDefaultProfile();
       });
     }
 
@@ -163,8 +163,6 @@
 
     if (username) {
       loadUserProfile(username);
-    } else {
-      displayDefaultProfile();
     }
   </script>
 </body>
