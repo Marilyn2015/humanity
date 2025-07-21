@@ -145,37 +145,42 @@
 
     const safeUsername = name.replace(/[.#$\[\]]/g, '_');
     const userRef = db.ref('users/' + safeUsername);
+try {
+  // ✅ Username check already passed
 
-    try {
-      console.log('Checking if username exists...');
-    const snapshot = await userRef.once('value');
-      if (snapshot.exists()) {
-        alert('Username already exists. Please choose another.');
-        return;
-      }
+  console.log('Uploading avatar...');
+  let avatarUrl;
+  try {
+    avatarUrl = await uploadAvatar(name);
+  } catch (err) {
+    console.error('Avatar upload failed:', err);
+    avatarUrl = 'default-avatar.png'; // fallback avatar
+  }
 
-      console.log('Uploading avatar...');
-      const avatarUrl = await uploadAvatar(name);
-      console.log('Avatar uploaded at URL:', avatarUrl);
+  const userData = {
+    username: name,
+    bio: bio,
+    github: github,
+    website: website,
+    avatar: avatarUrl,
+    createdAt: new Date().toISOString()
+  };
 
-      const userData = {
-        username: name,
-        bio: bio,
-        github: github,
-        website: website,
-        avatar: avatarUrl,
-        createdAt: new Date().toISOString()
-      };
+  console.log('Saving user data to Firebase...');
+  await userRef.set(userData);
 
-      console.log('Saving user data to Firebase...');
-      await userRef.set(userData);
-      console.log('User data saved successfully');
-      alert('Profile saved successfully! Redirecting to Universe...');
-      localStorage.setItem('currentUser', JSON.stringify(userData));
+  // 🔍 Confirm it was saved
+  const postSaveSnapshot = await userRef.once('value');
+  console.log('Post-save check:', postSaveSnapshot.val());
 
-      console.log('User profile saved:', userData);
-      console.log('Redirecting to universe.html');
-      window.location.href = 'universe.html';
+  alert('Profile saved successfully! Redirecting to Universe...');
+  localStorage.setItem('currentUser', JSON.stringify(userData));
+
+  console.log('User profile saved:', userData);
+  console.log('Redirecting to universe.html');
+  window.location.href = 'universe.html';
+}
+';
 
     } catch (error) {
       console.error('Error saving profile:', error);
