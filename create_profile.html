@@ -104,17 +104,17 @@
 
   let avatarFile = null;
 
-  document.getElementById('avatarUpload').addEventListener('change', e => {
-    avatarFile = e.target.files[0];
-    if (avatarFile) {
-      const reader = new FileReader();
-      reader.onload = event => {
-        document.getElementById('avatarPreview').src = event.target.result;
-        document.getElementById('uploadText').style.display = 'none';
-      };
-      reader.readAsDataURL(avatarFile);
-    }
-  });
+ document.getElementById('avatarUpload').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    avatarFile = file; // 👉 This makes sure it's ready for upload
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      document.getElementById('avatarPreview').src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+});
 
   async function uploadAvatar(username) {
     if (!avatarFile) return '';
@@ -180,13 +180,13 @@ try {
   console.log('Redirecting to universe.html');
   window.location.href = 'universe.html';
 }
-';
 
     } catch (error) {
       console.error('Error saving profile:', error);
       alert('An error occurred while saving your profile. Please try again.');
     }
   });
+
 </script>
 </body>
 </html>
