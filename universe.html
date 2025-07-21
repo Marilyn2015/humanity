@@ -1,23 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>#HUMANITY Universe</title>
+
+  <!-- Firebase & Three.js -->
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+
+  <!-- Styles -->
   <style>
-    body { font-family: 'Roboto', sans-serif; background: #fff; text-align: center; margin: 0; padding: 0; }
-    #globeCanvas { display: block; margin: 20px auto; width: 400px; height: 400px; }
-    h1 { font-size: 2rem; color: #333; }
-    .post-item { background: #fff; border: 1px solid #ccc; padding: 15px; margin: 10px auto; width: 60%; border-radius: 8px; text-align: left; display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
-    .post-item img { width: 50px; height: 50px; border-radius: 50%; margin-right: 15px; }
-    .modal { display: none; flex-direction: column; align-items: center; justify-content: center; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 20px; border: 2px solid #000; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-    textarea { width: 300px; height: 80px; margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 8px; }
-    button { padding: 10px 20px; border: none; background: #000; color: #fff; border-radius: 4px; cursor: pointer; margin: 5px; }
-    .top-left { position: absolute; top: 10px; left: 10px; }
-    .top-right { position: absolute; top: 10px; right: 10px; }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    #globeCanvas {
+      display: block;
+      margin: 20px auto;
+      width: 400px;
+      height: 400px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #333;
+    }
+
+    .post-item {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin: 10px auto;
+      width: 60%;
+      border-radius: 8px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .post-item img.avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+
+    .post-item img.uploaded {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .modal {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 20px;
+      border: 2px solid #000;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    textarea {
+      width: 300px;
+      height: 80px;
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    input[type='file'] {
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      background: #000;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    .top-left {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+    }
+
+    .top-right {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
   </style>
 </head>
 <body>
@@ -29,7 +120,8 @@
   <button id="openModal">Feed the Human Feed...</button>
 
   <div id="postModal" class="modal">
-    <textarea id="newPostContent" placeholder="Feed the Human Feed..."></textarea><br>
+    <textarea id="newPostContent" placeholder="Feed the Human Feed..."></textarea><br />
+    <input type="file" id="postImageUpload" accept="image/*" /><br />
     <button id="postButton">Post</button>
     <button id="closeModal">Cancel</button>
   </div>
@@ -49,58 +141,89 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const postsContainer = document.getElementById('postsContainer');
+    const storage = firebase.storage();
+    const postsContainer = document.getElementById("postsContainer");
 
     const avatars = [
-      'https://randomuser.me/api/portraits/men/32.jpg',
-      'https://randomuser.me/api/portraits/women/44.jpg',
-      'https://randomuser.me/api/portraits/men/12.jpg',
-      'https://randomuser.me/api/portraits/women/68.jpg'
+      "https://randomuser.me/api/portraits/men/32.jpg",
+      "https://randomuser.me/api/portraits/women/44.jpg",
+      "https://randomuser.me/api/portraits/men/12.jpg",
+      "https://randomuser.me/api/portraits/women/68.jpg"
     ];
 
-    function displayPost(content, timestamp) {
-      const postElement = document.createElement('div');
-      postElement.className = 'post-item';
+    function displayPost(content, timestamp, imageUrl = "") {
+      const postElement = document.createElement("div");
+      postElement.className = "post-item";
 
-      const avatar = document.createElement('img');
+      const avatar = document.createElement("img");
+      avatar.className = "avatar";
       avatar.src = avatars[Math.floor(Math.random() * avatars.length)];
-
-      const text = document.createElement('div');
-      text.innerHTML = `<strong>${new Date(timestamp).toLocaleString()}</strong><br>${content}`;
-
       postElement.appendChild(avatar);
+
+      const text = document.createElement("div");
+      text.innerHTML = `<strong>${new Date(timestamp).toLocaleString()}</strong><br>${content}`;
       postElement.appendChild(text);
+
+      if (imageUrl) {
+        const postImg = document.createElement("img");
+        postImg.src = imageUrl;
+        postImg.className = "uploaded";
+        postElement.appendChild(postImg);
+      }
+
       postsContainer.prepend(postElement);
     }
 
-    db.ref('posts').on('value', snapshot => {
-      postsContainer.innerHTML = '';
-      snapshot.forEach(child => {
+    db.ref("posts").on("value", (snapshot) => {
+      postsContainer.innerHTML = "";
+      snapshot.forEach((child) => {
         const post = child.val();
-        if (post.content && post.content !== 'Exploring new frontiers of humanity!' && post.content !== 'undefined') {
-          displayPost(post.content, post.timestamp);
-        }
+        displayPost(post.content || "", post.timestamp, post.imageUrl || "");
       });
     });
 
-    document.getElementById('openModal').addEventListener('click', () => {
-      document.getElementById('postModal').style.display = 'flex';
+    document.getElementById("openModal").addEventListener("click", () => {
+      document.getElementById("postModal").style.display = "flex";
     });
 
-    document.getElementById('closeModal').addEventListener('click', () => {
-      document.getElementById('postModal').style.display = 'none';
+    document.getElementById("closeModal").addEventListener("click", () => {
+      document.getElementById("postModal").style.display = "none";
     });
 
-    document.getElementById('postButton').addEventListener('click', () => {
-      const content = document.getElementById('newPostContent').value.trim();
-      if (content) {
-        db.ref('posts').push({ content, timestamp: Date.now() });
-        document.getElementById('newPostContent').value = '';
-        document.getElementById('postModal').style.display = 'none';
+    document.getElementById("postButton").addEventListener("click", async () => {
+      const content = document.getElementById("newPostContent").value.trim();
+      const file = document.getElementById("postImageUpload").files[0];
+
+      if (!content && !file) {
+        alert("Please add text or select an image.");
+        return;
       }
+
+      let imageUrl = "";
+      if (file) {
+        try {
+          const imageRef = storage.ref("postImages/" + Date.now() + "_" + file.name);
+          const snapshot = await imageRef.put(file);
+          imageUrl = await snapshot.ref.getDownloadURL();
+        } catch (err) {
+          console.error("Image upload failed:", err);
+          alert("Upload failed, try again.");
+        }
+      }
+
+      await db.ref("posts").push({
+        content,
+        imageUrl,
+        timestamp: Date.now()
+      });
+
+      document.getElementById("newPostContent").value = "";
+      document.getElementById("postImageUpload").value = "";
+      document.getElementById("postModal").style.display = "none";
     });
 
-    const canvas = document.getElementById('globeCanvas');
+    // 🌍 Spinning 3D Globe
+    const canvas = document.getElementById("globeCanvas");
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
     renderer.setSize(400, 400);
 
@@ -109,7 +232,7 @@
     camera.position.z = 3;
 
     const textureLoader = new THREE.TextureLoader();
-    const earthTexture = textureLoader.load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg');
+    const earthTexture = textureLoader.load("https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg");
 
     const sphere = new THREE.Mesh(
       new THREE.SphereGeometry(1, 32, 32),
