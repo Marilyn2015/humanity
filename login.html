@@ -1,56 +1,75 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login • #HUMANITY</title>
+
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #000;
+      color: white;
+      text-align: center;
+      padding: 50px;
+    }
+    .logo {
+      width: 150px;
+    }
+    .input-field {
+      margin: 10px;
+      padding: 10px;
+      width: 240px;
+      border: none;
+      border-radius: 8px;
+    }
+    .btn {
+      margin: 10px;
+      padding: 10px 20px;
+      border: none;
+      background: #1db954;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #1ed760;
+    }
+  </style>
 </head>
 <body>
-  <h2>Login to #HUMANITY</h2><label for="emailInput">Email:</label><br> <input type="email" id="emailInput" placeholder="Enter email"><br><br>
 
-<label for="passwordInput">Password:</label><br> <input type="password" id="passwordInput" placeholder="Enter password"><br><br>
+  <img src="your_logo.png" alt="Logo" class="logo"><br><br>
 
-<button id="loginBtn">Login</button> <button onclick="window.location.href='create_profile.html'">Register</button>
+  <h2>Login to #HUMANITY</h2>
 
-  <!-- Firebase SDKs -->  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>  <script>
+  <input type="email" id="emailInput" placeholder="Email" class="input-field"><br>
+  <input type="password" id="passwordInput" placeholder="Password" class="input-field"><br>
+
+  <button id="loginBtn" class="btn">Login</button>
+  <button id="registerBtn" class="btn">Register</button>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+
+  <script>
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      databaseURL: "YOUR_DATABASE_URL",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
+      measurementId: "G-3ZTCXL4374"
     };
 
     firebase.initializeApp(firebaseConfig);
 
     const auth = firebase.auth();
     const db = firebase.database();
-
-    function loginUser(email, password) {
-      auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-
-          db.ref(`profiles/${user.uid}`).once('value').then(snapshot => {
-            if (snapshot.exists()) {
-              const profileData = snapshot.val();
-              localStorage.setItem('profileData', JSON.stringify(profileData));
-              window.location.href = 'universe.html';
-            } else {
-              alert('Profile not found. Please create one.');
-              window.location.href = 'create_profile.html';
-            }
-          }).catch((error) => {
-            console.error('Error fetching profile data:', error);
-            alert('Failed to retrieve profile data.');
-          });
-        })
-        .catch((error) => {
-          console.error('Login failed:', error);
-          alert('Login failed: ' + error.message);
-        });
-    }
 
     document.getElementById('loginBtn').addEventListener('click', () => {
       const email = document.getElementById('emailInput').value.trim();
@@ -61,7 +80,33 @@
         return;
       }
 
-      loginUser(email, password);
+      auth.signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          db.ref(`profiles/${user.uid}`).once('value').then(snapshot => {
+            if (snapshot.exists()) {
+              const profileData = snapshot.val();
+              localStorage.setItem('profileData', JSON.stringify(profileData));
+              window.location.href = 'universe.html';
+            } else {
+              alert('Profile not found. Please create one.');
+              window.location.href = 'create_profile.html';
+            }
+          }).catch((err) => {
+            console.error('Error reading profile data:', err);
+            alert('Error fetching profile data.');
+          });
+        })
+        .catch((error) => {
+          console.error('Login error:', error);
+          alert('Login failed: ' + error.message);
+        });
     });
-  </script></body>
+
+    document.getElementById('registerBtn').addEventListener('click', () => {
+      window.location.href = 'create_profile.html';
+    });
+  </script>
+
+</body>
 </html>
