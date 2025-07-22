@@ -127,8 +127,7 @@
   </div>
 
   <div id="postsContainer"></div>
-
- <script>
+<script>
   const firebaseConfig = {
     apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
     authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -242,7 +241,35 @@
     document.getElementById("postModal").style.display = "none";
   });
 
-  // Globe logic unchanged...
+  // 🌍 Spinning 3D Globe
+  const canvas = document.getElementById("globeCanvas");
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+  renderer.setSize(400, 400);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+  camera.position.z = 3;
+
+  const textureLoader = new THREE.TextureLoader();
+  const earthTexture = textureLoader.load("https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg");
+
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(1, 32, 32),
+    new THREE.MeshStandardMaterial({ map: earthTexture })
+  );
+  scene.add(sphere);
+
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(5, 3, 5);
+  scene.add(light);
+
+  function animate() {
+    requestAnimationFrame(animate);
+    sphere.rotation.y += 0.002;
+    renderer.render(scene, camera);
+  }
+
+  animate();
 </script>
-</body>
+ </body>
 </html>
