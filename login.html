@@ -5,17 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login • #HUMANITY</title>
 
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Roboto', sans-serif;
       background: #fff;
@@ -26,7 +21,6 @@
       min-height: 100vh;
       padding: 20px;
     }
-
     .login-container {
       background: #f8f8f8;
       padding: 40px 30px;
@@ -37,14 +31,7 @@
       text-align: center;
       border: 1px solid #ddd;
     }
-
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 24px;
-      font-weight: 600;
-      letter-spacing: -0.5px;
-    }
-
+    h1 { font-size: 1.8rem; margin-bottom: 24px; font-weight: 600; }
     input {
       width: 100%;
       padding: 12px;
@@ -52,14 +39,7 @@
       border: 1px solid #bbb;
       border-radius: 8px;
       font-size: 1rem;
-      background: #fff;
-      color: #111;
     }
-
-    ::placeholder {
-      color: #666;
-    }
-
     .btn {
       width: 100%;
       background: #111;
@@ -71,23 +51,10 @@
       border-radius: 8px;
       margin-top: 16px;
       cursor: pointer;
-      transition: background 0.2s ease;
     }
-
-    .btn:hover {
-      background: #333;
-    }
-
-    .secondary {
-      background: transparent;
-      border: 1px solid #111;
-      color: #111;
-    }
-
-    .secondary:hover {
-      background: #eee;
-    }
-
+    .btn:hover { background: #333; }
+    .secondary { background: transparent; border: 1px solid #111; color: #111; }
+    .secondary:hover { background: #eee; }
     #error-message {
       color: #c00;
       margin-top: 18px;
@@ -96,17 +63,13 @@
   </style>
 </head>
 <body>
-
   <div class="login-container">
     <h1>Sign in to #HUMANITY</h1>
-
     <input type="email" id="email" placeholder="Email Address" required />
     <input type="password" id="password" placeholder="Password" required />
-
     <button class="btn" onclick="login()">Login</button>
     <button class="btn secondary" onclick="register()">Register</button>
     <button class="btn secondary" onclick="resetPassword()">Reset Password</button>
-
     <div id="error-message"></div>
   </div>
 
@@ -123,14 +86,38 @@
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    const database = firebase.database();
 
     function login() {
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
+      if (!email || !password) {
+        document.getElementById('error-message').innerText = "Please enter both email and password.";
+        return;
+      }
+
       auth.signInWithEmailAndPassword(email, password)
-        .then(() => {
-          console.log('Redirecting...');
+        .then((userCredential) => {
+          const userId = userCredential.user.uid;
+          console.log('Logged in UID:', userId);
+
+          return database.ref('/users/' + userId).once('value').then(snapshot => {
+            if (!snapshot.exists()) {
+              // Initialize user data if missing
+              const userData = {
+                email: email,
+                initializedAt: new Date().toISOString()
+              };
+              database.ref('/users/' + userId).set(userData);
+              return userData;
+            }
+            return snapshot.val();
+          });
+        })
+        .then((userData) => {
+          console.log('User data loaded:', userData);
+          localStorage.setItem('userData', JSON.stringify(userData));
           window.location.href = "universe.html";
         })
         .catch((error) => {
@@ -142,7 +129,20 @@
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
+      if (!email || !password) {
+        document.getElementById('error-message').innerText = "Please enter both email and password.";
+        return;
+      }
+
       auth.createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+          const userId = userCredential.user.uid;
+
+          return database.ref('/users/' + userId).set({
+            email: email,
+            createdAt: new Date().toISOString()
+          });
+        })
         .then(() => {
           window.location.href = "create_profile.html";
         })
@@ -167,6 +167,5 @@
         });
     }
   </script>
-
 </body>
 </html>
