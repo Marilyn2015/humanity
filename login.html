@@ -83,7 +83,7 @@
   </div>
 
   <script>
-    // Firebase configuration (correct one)
+    // Firebase configuration (corrected API key)
     const firebaseConfig = {
       apiKey: "AIzaSyCUu1olq6dW8N7GqJLMFLmv3iwXT23bJ6g",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -126,7 +126,7 @@
         })
         .catch(error => {
           console.error('Login error:', error.code, error.message);
-          errorDiv.textContent = error.message;
+          errorDiv.textContent = `${error.code}: ${error.message}`;
         });
     });
 
