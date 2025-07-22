@@ -120,14 +120,19 @@
   <button id="openModal">Feed the Human Feed...</button>
 
   <div id="postModal" class="modal">
-    <textarea id="newPostContent" placeholder="Feed the Human Feed..."></textarea><br />
-    <input type="file" id="postImageUpload" accept="image/*" /><br />
-    <button id="postButton">Post</button>
-    <button id="closeModal">Cancel</button>
-  </div>
+  <h2>Feed the Human Feed…</h2>
+  <textarea id="newPostContent" placeholder="Feed the human feed..."></textarea><br />
+  <input type="file" id="postImageUpload" accept="image/*" /><br />
+  <img id="imagePreview" alt="Preview" />
+  <button id="postButton">Post</button>
+  <button id="closeModal">Cancel</button>
+</div>
+
 
   <div id="postsContainer"></div>
 <script>
+  <script>
+  // Initialize Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
     authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -141,6 +146,7 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
   const storage = firebase.storage();
+
   const postsContainer = document.getElementById("postsContainer");
 
   const avatars = [
@@ -150,6 +156,7 @@
     "https://randomuser.me/api/portraits/women/68.jpg"
   ];
 
+  // Display posts
   function displayPost(content, timestamp, imageUrl = "", key = "") {
     const postElement = document.createElement("div");
     postElement.className = "post-item";
@@ -179,6 +186,7 @@
     postsContainer.prepend(postElement);
   }
 
+  // Fetch posts from Firebase
   db.ref("posts").on("value", (snapshot) => {
     postsContainer.innerHTML = "";
     snapshot.forEach((child) => {
@@ -188,6 +196,7 @@
     });
   });
 
+  // Delete post and optional image
   function deletePost(postKey, imageUrl) {
     if (confirm("Delete this post?")) {
       db.ref("posts/" + postKey).remove()
@@ -197,18 +206,38 @@
             storage.ref("postImages/" + decodeURIComponent(path)).delete().catch(() => {});
           }
         })
-        .catch((err) => console.error("Delete failed", err));
+        .catch((err) => console.error("Delete failed:", err));
     }
   }
 
+  // Modal open/close + image preview
   document.getElementById("openModal").addEventListener("click", () => {
-    document.getElementById("postModal").style.display = "flex";
+    document.getElementById("postModal").classList.add("show");
   });
 
   document.getElementById("closeModal").addEventListener("click", () => {
-    document.getElementById("postModal").style.display = "none";
+    document.getElementById("postModal").classList.remove("show");
+    document.getElementById("newPostContent").value = "";
+    document.getElementById("postImageUpload").value = "";
+    document.getElementById("imagePreview").style.display = "none";
   });
 
+  document.getElementById("postImageUpload").addEventListener("change", () => {
+    const file = document.getElementById("postImageUpload").files[0];
+    const preview = document.getElementById("imagePreview");
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        preview.src = reader.result;
+        preview.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    } else {
+      preview.style.display = "none";
+    }
+  });
+
+  // Submit post
   document.getElementById("postButton").addEventListener("click", async () => {
     const content = document.getElementById("newPostContent").value.trim();
     const file = document.getElementById("postImageUpload").files[0];
@@ -230,15 +259,21 @@
       }
     }
 
-    await db.ref("posts").push({
-      content,
-      imageUrl,
-      timestamp: Date.now()
-    });
+    try {
+      await db.ref("posts").push({
+        content,
+        imageUrl,
+        timestamp: Date.now()
+      });
 
-    document.getElementById("newPostContent").value = "";
-    document.getElementById("postImageUpload").value = "";
-    document.getElementById("postModal").style.display = "none";
+      document.getElementById("newPostContent").value = "";
+      document.getElementById("postImageUpload").value = "";
+      document.getElementById("imagePreview").style.display = "none";
+      document.getElementById("postModal").classList.remove("show");
+    } catch (err) {
+      console.error("Post failed:", err);
+      alert("Unable to post. Try again later.");
+    }
   });
 
   // 🌍 Spinning 3D Globe
