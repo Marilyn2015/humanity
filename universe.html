@@ -95,14 +95,14 @@
 
     // 2) onAuthStateChanged — only when profile loaded do we wire up everything
     auth.onAuthStateChanged(async user => {
-      if (!user) {
-        return window.location.href = 'login.html';
-      }
+     if (!user) {
+  return window.location.href = 'login.html';
+}
       // load user profile
       const snap = await db.ref(`users/${user.uid}`).once('value');
       currentUserProfile = snap.val();
       if (!currentUserProfile) {
-        return window.location.href = 'createProfile.html';
+        return window.location.href = 'create_profile.html';
       }
 
       // now that profile is ready, attach handlers & load posts
