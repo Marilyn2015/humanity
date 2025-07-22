@@ -1,192 +1,210 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Profile - #HUMANITY</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Profile • #HUMANITY</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
   <style>
+    * { box-sizing: border-box; }
     body {
-      font-family: 'Roboto', sans-serif;
-      background: #ffffff;
-      text-align: center;
-      padding: 40px;
-      color: #000;
+      margin: 0;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      font-family: 'Merriweather', serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+      color: #ffffff;
     }
     .profile-container {
-      background: #e0e0e0;
-      padding: 30px;
-      border-radius: 15px;
-      max-width: 500px;
-      margin: auto;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      color: #000;
+      background: #1f1f1f;
+      padding: 40px 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
     }
     .avatar-wrapper {
       position: relative;
-      width: 140px;
-      height: 140px;
-      margin: 0 auto 15px;
+      width: 140px; height: 140px;
+      margin: 0 auto 20px;
       border-radius: 50%;
-      border: 3px solid #000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      border: 3px solid #444;
       overflow: hidden;
       cursor: pointer;
     }
     .avatar-preview {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       object-fit: cover;
-      border-radius: 50%;
+      display: block;
     }
     .upload-text {
       position: absolute;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      color: #000;
-      font-weight: bold;
-      background: rgba(255,255,255,0.7);
-      border-radius: 10px;
-      padding: 5px 10px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-family: 'Merriweather', serif;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
       pointer-events: none;
     }
-    input, textarea, button {
-      width: 80%;
-      margin: 8px 0;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      background: #f5f5f5;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
+    input[type="file"] { display: none; }
+    input[type="text"], textarea {
+      width: 100%;
+      background: #2b2b2b;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+      color: #e0e0e0;
+      font-size: 1rem;
+      font-family: 'Merriweather', serif;
+      resize: vertical;
     }
-    input[type="file"] {
-      display: none;
+    input::placeholder, textarea::placeholder { color: #aaa; }
+    button {
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      transition: background 0.2s, transform 0.1s;
+      margin-top: 16px;
+      width: 100%;
+    }
+    button:hover {
+      background: #222;
+      transform: translateY(-2px);
+    }
+    button:active {
+      transform: translateY(0);
     }
   </style>
-  <script type="module" src="https://marilyn2015.github.io/Humanity/createProfile.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 </head>
 <body>
   <div class="profile-container">
-    <h1>Edit Profile</h1>
+    <h1>Create Your Profile</h1>
+
     <label for="avatarUpload">
       <div class="avatar-wrapper">
-        <img id="avatarPreview" class="avatar-preview" src="https://via.placeholder.com/140" alt="">
-        <div id="uploadText" class="upload-text">Upload</div>
+        <img id="avatarPreview"
+             class="avatar-preview"
+             src="https://via.placeholder.com/140"
+             alt="Avatar preview">
+        <div class="upload-text">Upload</div>
       </div>
     </label>
     <input type="file" id="avatarUpload" accept="image/*">
 
-    <input type="text" id="profileName" placeholder="Username">
-    <textarea id="profileBio" placeholder="Tell us about yourself..."></textarea>
-    <input type="text" id="githubLink" placeholder="GitHub Profile URL">
-    <input type="text" id="websiteLink" placeholder="Website URL">
-    <button id="createProfileBtn" title="Save your profile">Save</button>
+    <input type="text" id="profileName" placeholder="Username" />
+    <textarea id="profileBio" placeholder="Tell us about yourself…"></textarea>
+    <input type="text" id="githubLink" placeholder="GitHub Profile URL" />
+    <input type="text" id="websiteLink" placeholder="Website URL" />
+
+    <button id="createProfileBtn">Save Profile</button>
   </div>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-    authDomain: "hashhumanity-58b9a.firebaseapp.com",
-    databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-    projectId: "hashhumanity-58b9a",
-    storageBucket: "hashhumanity-58b9a.appspot.com",
-    messagingSenderId: "886745899016",
-    appId: "1:886745899016:web:2b0f7e0434379d71bd"
-  };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const storage = firebase.storage();
-
-  let avatarFile = null;
-
- document.getElementById('avatarUpload').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    avatarFile = file; // 👉 This makes sure it's ready for upload
-    const reader = new FileReader();
-    reader.onload = function (event) {
-      document.getElementById('avatarPreview').src = event.target.result;
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e0434379d71bd"
     };
-    reader.readAsDataURL(file);
-  }
-});
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const storage = firebase.storage();
 
-  async function uploadAvatar(username) {
-    if (!avatarFile) return '';
-    try {
-      const safeUsername = username.replace(/[.#$\[\]]/g, '_');
-      const storageRef = storage.ref('avatars/' + safeUsername + '_' + Date.now());
-      const snapshot = await storageRef.put(avatarFile);
-      return await snapshot.ref.getDownloadURL();
-    } catch (err) {
-      console.error('Failed to upload avatar:', err);
-      throw err;
-    }
-  }
+    let avatarFile = null;
+    const avatarInput = document.getElementById('avatarUpload');
+    const avatarPreview = document.getElementById('avatarPreview');
 
-  document.getElementById('createProfileBtn').addEventListener('click', async () => {
-    console.log('Save button clicked');
-    const name = document.getElementById('profileName').value.trim();
-    const bio = document.getElementById('profileBio').value.trim();
-    const github = document.getElementById('githubLink').value.trim();
-    const website = document.getElementById('websiteLink').value.trim();
+    avatarInput.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      avatarFile = file;
+      const reader = new FileReader();
+      reader.onload = evt => {
+        avatarPreview.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
 
-    if (!name) {
-      alert('Username is required.');
-      return;
+    async function uploadAvatar(username) {
+      if (!avatarFile) return '';
+      const safeName = username.replace(/[.#$\[\]]/g, '_');
+      const ref = storage.ref('avatars/' + safeName + '_' + Date.now());
+      const snap = await ref.put(avatarFile);
+      return await snap.ref.getDownloadURL();
     }
 
-    
+    document.getElementById('createProfileBtn').addEventListener('click', async () => {
+      const name    = document.getElementById('profileName').value.trim();
+      const bio     = document.getElementById('profileBio').value.trim();
+      const github  = document.getElementById('githubLink').value.trim();
+      const website = document.getElementById('websiteLink').value.trim();
 
-    const safeUsername = name.replace(/[.#$\[\]]/g, '_');
-    const userRef = db.ref('users/' + safeUsername);
-try {
-  // ✅ Username check already passed
+      if (!name) {
+        alert('Username is required.');
+        return;
+      }
 
-  console.log('Uploading avatar...');
-  let avatarUrl;
-  try {
-    avatarUrl = await uploadAvatar(name);
-  } catch (err) {
-    console.error('Avatar upload failed:', err);
-    avatarUrl = 'default-avatar.png'; // fallback avatar
-  }
+      try {
+        let avatarUrl = '';
+        try {
+          avatarUrl = await uploadAvatar(name);
+        } catch (err) {
+          console.warn('Avatar upload failed, continuing without it.', err);
+        }
 
-  const userData = {
-    username: name,
-    bio: bio,
-    github: github,
-    website: website,
-    avatar: avatarUrl,
-    createdAt: new Date().toISOString()
-  };
+        const safeUsername = name.replace(/[.#$\[\]]/g, '_');
+        const userRef = db.ref('users/' + safeUsername);
+        const userData = {
+          username: name,
+          bio,
+          github,
+          website,
+          avatar: avatarUrl,
+          createdAt: new Date().toISOString()
+        };
 
-  console.log('Saving user data to Firebase...');
-  await userRef.set(userData);
+        await userRef.set(userData);
 
-  // 🔍 Confirm it was saved
-  const postSaveSnapshot = await userRef.once('value');
-  console.log('Post-save check:', postSaveSnapshot.val());
+        // **Redirect immediately upon success**
+        window.location.href = 'universe.html';
 
-  alert('Profile saved successfully! Redirecting to Universe...');
-  localStorage.setItem('currentUser', JSON.stringify(userData));
-
-  console.log('User profile saved:', userData);
-  console.log('Redirecting to universe.html');
-  window.location.href = 'universe.html';
-}
-
-    } catch (error) {
-      console.error('Error saving profile:', error);
-      alert('An error occurred while saving your profile. Please try again.');
-    }
-  });
-
-</script>
+      } catch (err) {
+        console.error('Error saving profile:', err);
+        alert('An error occurred while saving your profile. Please try again.');
+      }
+    });
+  </script>
 </body>
 </html>
