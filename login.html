@@ -91,17 +91,18 @@
   </div>
 
   <script>
-    // Firebase configuration - your actual credentials
+    // Firebase configuration for HashHumanity
     const firebaseConfig = {
-      apiKey: "AIzaSyDRv-K8hPfFFxgiHWW1BTTytBGRzG6n7hM",
-      authDomain: "humanity-social.firebaseapp.com",
-      projectId: "humanity-social",
-      storageBucket: "humanity-social.appspot.com",
-      messagingSenderId: "1012261143317",
-      appId: "1:1012261143317:web:04e12227e2b02f7248a372"
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
+      measurementId: "G-3ZTCXL4374"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
@@ -116,7 +117,6 @@
         })
         .catch(error => {
           console.error("Login error:", error);
-
           if (error.code === 'auth/user-not-found') {
             messageDiv.textContent = "No user found, redirecting to create profile...";
             messageDiv.style.color = 'orange';
