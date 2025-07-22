@@ -8,7 +8,7 @@
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
 
-  <!-- Firebase: Auth, Database & Storage -->
+  <!-- Firebase (Auth, Database, Storage) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -120,11 +120,10 @@
   </style>
 </head>
 <body>
-
   <div class="profile-container">
     <h1>Create Your Profile</h1>
 
-    <!-- Avatar upload -->
+    <!-- Avatar Upload -->
     <label for="avatarUpload">
       <div class="avatar-wrapper">
         <img id="avatarPreview"
@@ -136,23 +135,22 @@
     </label>
     <input type="file" id="avatarUpload" accept="image/*">
 
-    <!-- Auth fields -->
+    <!-- Auth Fields -->
     <input type="email"    id="profileEmail"    placeholder="Email Address" required />
     <input type="password" id="profilePassword" placeholder="Password" required />
 
-    <!-- Public display fields -->
+    <!-- Public Display -->
     <input type="text" id="profileUsername" placeholder="Username" required />
 
-    <!-- Private profile details (stored but not shown elsewhere) -->
+    <!-- Hidden-but-stored Details -->
     <input type="text"   id="firstName"    placeholder="First Name" />
     <input type="text"   id="lastName"     placeholder="Last Name" />
     <input type="date"   id="dob"          placeholder="Date of Birth" />
-    <textarea id="profileBio" placeholder="Tell us about yourself…"></textarea>
+    <textarea id="profileBio" placeholder="Bio…"></textarea>
     <input type="text"   id="location"     placeholder="Location" />
-    <input type="text"   id="interests"    placeholder="Interests (comma separated)" />
+    <input type="text"   id="interests"    placeholder="Interests (comma-separated)" />
     <input type="text"   id="githubLink"   placeholder="GitHub Profile URL" />
     <input type="text"   id="websiteLink"  placeholder="Website URL" />
-
     <label class="checkbox-label">
       <input type="checkbox" id="emailNotifications" />
       Receive Email Notifications
@@ -162,7 +160,7 @@
   </div>
 
   <script>
-    // Initialize Firebase
+    // 1) Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -177,7 +175,7 @@
     const db      = firebase.database();
     const storage = firebase.storage();
 
-    // Avatar preview & file
+    // 2) Avatar Preview
     let avatarFile = null;
     document.getElementById('avatarUpload').addEventListener('change', e => {
       const file = e.target.files[0];
@@ -192,13 +190,16 @@
 
     async function uploadAvatar(uid) {
       if (!avatarFile) return '';
-      const ref = storage.ref(`avatars/${uid}_${Date.now()}`);
+      const ref  = storage.ref(`avatars/${uid}_${Date.now()}`);
       const snap = await ref.put(avatarFile);
       return await snap.ref.getDownloadURL();
     }
 
-    document.getElementById('createProfileBtn').addEventListener('click', async () => {
-      // Collect fields
+    // 3) Save Profile, Redirect on Success
+    document.getElementById('createProfileBtn')
+      .addEventListener('click', async () => {
+
+      // Gather form values
       const email    = document.getElementById('profileEmail').value.trim();
       const password = document.getElementById('profilePassword').value;
       const username = document.getElementById('profileUsername').value.trim();
@@ -207,8 +208,9 @@
       const dob      = document.getElementById('dob').value;
       const bio      = document.getElementById('profileBio').value.trim();
       const location = document.getElementById('location').value.trim();
-      const interests = document.getElementById('interests').value
-                          .split(',').map(s=>s.trim()).filter(Boolean);
+      const interests = document
+        .getElementById('interests').value
+        .split(',').map(s=>s.trim()).filter(Boolean);
       const github   = document.getElementById('githubLink').value.trim();
       const website  = document.getElementById('websiteLink').value.trim();
       const emailNotif = document.getElementById('emailNotifications').checked;
@@ -220,19 +222,21 @@
       }
 
       try {
-        // 1) Create Auth user
+        console.log('Creating user in Auth…');
         const cred = await auth.createUserWithEmailAndPassword(email, password);
         const uid  = cred.user.uid;
+        console.log('✅ Auth created, UID:', uid);
 
-        // 2) Upload avatar
+        console.log('Uploading avatar…');
         let avatarUrl = '';
         try {
           avatarUrl = await uploadAvatar(uid);
+          console.log('✅ Avatar URL:', avatarUrl);
         } catch (err) {
-          console.warn('Avatar upload failed:', err);
+          console.warn('⚠️ Avatar upload failed, proceeding without:', err);
         }
 
-        // 3) Prepare profile object
+        // Build profile object
         const profileData = {
           uid,
           email,
@@ -250,14 +254,15 @@
           createdAt: new Date().toISOString()
         };
 
-        // 4) Save under /users/{uid}
+        console.log('Saving profile to Database…', profileData);
         await db.ref(`users/${uid}`).set(profileData);
+        console.log('✅ Profile saved! Redirecting…');
 
-        // 5) Redirect to universe
+        // Redirect to universe.html
         window.location.href = 'universe.html';
 
       } catch (err) {
-        console.error('Error creating profile:', err);
+        console.error('❌ Error in sign-up or save:', err);
         alert(err.message || 'Failed to create profile.');
       }
     });
