@@ -8,8 +8,9 @@
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
 
-  <!-- Firebase -->
+  <!-- Firebase: Auth, Database & Storage -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
@@ -47,13 +48,12 @@
       border-radius: 50%;
       border: 3px solid #ccc;
       overflow: hidden;
-      cursor: pointer;
       background: #ddd;
+      cursor: pointer;
     }
     .avatar-preview {
       width: 100%; height: 100%;
       object-fit: cover;
-      display: block;
     }
     .upload-text {
       position: absolute;
@@ -68,7 +68,8 @@
       pointer-events: none;
     }
     input[type="file"] { display: none; }
-    input[type="text"], textarea {
+
+    input, textarea {
       width: 100%;
       background: #ffffff;
       border: 1px solid #ccc;
@@ -80,9 +81,21 @@
       font-family: 'Merriweather', serif;
       resize: vertical;
     }
-    input::placeholder, textarea::placeholder {
-      color: #888;
+    ::placeholder { color: #888; }
+
+    label.checkbox-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 12px 0;
+      font-size: 0.95rem;
+      color: #202020;
     }
+    label.checkbox-label input {
+      margin-right: 8px;
+      width: auto;
+    }
+
     button {
       background: #000;
       color: #fff;
@@ -111,6 +124,7 @@
   <div class="profile-container">
     <h1>Create Your Profile</h1>
 
+    <!-- Avatar upload -->
     <label for="avatarUpload">
       <div class="avatar-wrapper">
         <img id="avatarPreview"
@@ -122,10 +136,27 @@
     </label>
     <input type="file" id="avatarUpload" accept="image/*">
 
-    <input type="text" id="profileName" placeholder="Username" />
+    <!-- Auth fields -->
+    <input type="email"    id="profileEmail"    placeholder="Email Address" required />
+    <input type="password" id="profilePassword" placeholder="Password" required />
+
+    <!-- Public display fields -->
+    <input type="text" id="profileUsername" placeholder="Username" required />
+
+    <!-- Private profile details (stored but not shown elsewhere) -->
+    <input type="text"   id="firstName"    placeholder="First Name" />
+    <input type="text"   id="lastName"     placeholder="Last Name" />
+    <input type="date"   id="dob"          placeholder="Date of Birth" />
     <textarea id="profileBio" placeholder="Tell us about yourself…"></textarea>
-    <input type="text" id="githubLink" placeholder="GitHub Profile URL" />
-    <input type="text" id="websiteLink" placeholder="Website URL" />
+    <input type="text"   id="location"     placeholder="Location" />
+    <input type="text"   id="interests"    placeholder="Interests (comma separated)" />
+    <input type="text"   id="githubLink"   placeholder="GitHub Profile URL" />
+    <input type="text"   id="websiteLink"  placeholder="Website URL" />
+
+    <label class="checkbox-label">
+      <input type="checkbox" id="emailNotifications" />
+      Receive Email Notifications
+    </label>
 
     <button id="createProfileBtn">Save Profile</button>
   </div>
@@ -142,72 +173,92 @@
       appId: "1:886745899016:web:2b0f7e0434379d71bd"
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const auth    = firebase.auth();
+    const db      = firebase.database();
     const storage = firebase.storage();
 
+    // Avatar preview & file
     let avatarFile = null;
-    const avatarInput = document.getElementById('avatarUpload');
-    const avatarPreview = document.getElementById('avatarPreview');
-
-    avatarInput.addEventListener('change', e => {
+    document.getElementById('avatarUpload').addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
       avatarFile = file;
       const reader = new FileReader();
       reader.onload = evt => {
-        avatarPreview.src = evt.target.result;
+        document.getElementById('avatarPreview').src = evt.target.result;
       };
       reader.readAsDataURL(file);
     });
 
-    async function uploadAvatar(username) {
+    async function uploadAvatar(uid) {
       if (!avatarFile) return '';
-      const safeName = username.replace(/[.#$\[\]]/g, '_');
-      const ref = storage.ref(`avatars/${safeName}_${Date.now()}`);
+      const ref = storage.ref(`avatars/${uid}_${Date.now()}`);
       const snap = await ref.put(avatarFile);
       return await snap.ref.getDownloadURL();
     }
 
     document.getElementById('createProfileBtn').addEventListener('click', async () => {
-      const name    = document.getElementById('profileName').value.trim();
-      const bio     = document.getElementById('profileBio').value.trim();
-      const github  = document.getElementById('githubLink').value.trim();
-      const website = document.getElementById('websiteLink').value.trim();
+      // Collect fields
+      const email    = document.getElementById('profileEmail').value.trim();
+      const password = document.getElementById('profilePassword').value;
+      const username = document.getElementById('profileUsername').value.trim();
+      const firstName= document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const dob      = document.getElementById('dob').value;
+      const bio      = document.getElementById('profileBio').value.trim();
+      const location = document.getElementById('location').value.trim();
+      const interests = document.getElementById('interests').value
+                          .split(',').map(s=>s.trim()).filter(Boolean);
+      const github   = document.getElementById('githubLink').value.trim();
+      const website  = document.getElementById('websiteLink').value.trim();
+      const emailNotif = document.getElementById('emailNotifications').checked;
 
-      if (!name) {
-        alert('Username is required.');
+      // Basic validation
+      if (!email || !password || !username) {
+        alert('Email, password, and username are required.');
         return;
       }
 
       try {
-        console.log('Uploading avatar if present…');
+        // 1) Create Auth user
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        const uid  = cred.user.uid;
+
+        // 2) Upload avatar
         let avatarUrl = '';
         try {
-          avatarUrl = await uploadAvatar(name);
+          avatarUrl = await uploadAvatar(uid);
         } catch (err) {
-          console.warn('Avatar upload failed, continuing without it.', err);
+          console.warn('Avatar upload failed:', err);
         }
 
-        const safeUsername = name.replace(/[.#$\[\]]/g, '_');
-        const userRef = db.ref(`users/${safeUsername}`);
-        const userData = {
-          username: name,
+        // 3) Prepare profile object
+        const profileData = {
+          uid,
+          email,
+          username,
+          firstName,
+          lastName,
+          dob,
           bio,
+          location,
+          interests,
           github,
           website,
+          emailNotifications: emailNotif,
           avatar: avatarUrl,
           createdAt: new Date().toISOString()
         };
 
-        console.log('Saving profile to Firebase…', userData);
-        await userRef.set(userData);
+        // 4) Save under /users/{uid}
+        await db.ref(`users/${uid}`).set(profileData);
 
-        // Redirect on success
+        // 5) Redirect to universe
         window.location.href = 'universe.html';
 
       } catch (err) {
-        console.error('Error saving profile:', err);
-        alert('An error occurred while saving your profile. Please try again.');
+        console.error('Error creating profile:', err);
+        alert(err.message || 'Failed to create profile.');
       }
     });
   </script>
