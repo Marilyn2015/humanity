@@ -44,7 +44,7 @@
     .avatar-wrapper {
       position: relative;
       width: 140px; height: 140px;
-      margin: 0 auto 12px;
+      margin: 0 auto 8px;
       border-radius: 50%;
       border: 3px solid #ccc;
       overflow: hidden;
@@ -56,6 +56,7 @@
       display: block;
     }
     .select-photo-btn {
+      display: inline-block;
       background: #000;
       color: #fff;
       border: none;
@@ -66,6 +67,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       transition: background .2s;
       margin-bottom: 20px;
+      font-family: 'Merriweather', serif;
     }
     .select-photo-btn:hover {
       background: #333;
@@ -88,9 +90,11 @@
     label.checkbox-label {
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
+      width: 100%;
       margin: 12px 0;
       font-size: .95rem;
+      color: #202020;
     }
     label.checkbox-label input {
       margin-right: 8px;
@@ -108,9 +112,11 @@
       transition: background .2s, transform .1s;
       margin-top: 16px;
       width: 100%;
+      font-family: 'Merriweather', serif;
     }
     button#createProfileBtn:hover {
-      background: #333; transform: translateY(-2px);
+      background: #333;
+      transform: translateY(-2px);
     }
     button#createProfileBtn:active {
       transform: translateY(0);
@@ -122,10 +128,11 @@
     <h1>Create Your Profile</h1>
 
     <!-- Avatar Preview -->
-    <div class="avatar-wrapper" id="avatarWrapper">
+    <div class="avatar-wrapper">
       <img id="avatarPreview" src="https://via.placeholder.com/140" alt="Avatar preview">
     </div>
-    <button class="select-photo-btn" id="selectPhotoBtn">Select Photo</button>
+    <!-- Label-triggered file input -->
+    <label for="avatarUpload" class="select-photo-btn">Select Photo</label>
     <input type="file" id="avatarUpload" accept="image/*">
 
     <!-- Auth Fields -->
@@ -153,7 +160,7 @@
   </div>
 
   <script>
-    // Initialize Firebase
+    // 1) Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -168,24 +175,23 @@
     const db      = firebase.database();
     const storage = firebase.storage();
 
-    // Photo selection & preview
-    const avatarUpload   = document.getElementById('avatarUpload');
-    const selectPhotoBtn = document.getElementById('selectPhotoBtn');
-    const avatarPreview  = document.getElementById('avatarPreview');
-    let avatarFile       = null;
-
-    selectPhotoBtn.onclick = () => avatarUpload.click();
+    // 2) Avatar Preview
+    const avatarUpload  = document.getElementById('avatarUpload');
+    const avatarPreview = document.getElementById('avatarPreview');
+    let avatarFile      = null;
 
     avatarUpload.addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
       avatarFile = file;
       const reader = new FileReader();
-      reader.onload = evt => avatarPreview.src = evt.target.result;
+      reader.onload = evt => {
+        avatarPreview.src = evt.target.result;
+      };
       reader.readAsDataURL(file);
     });
 
-    // Upload avatar to Storage
+    // 3) Upload avatar
     async function uploadAvatar(uid) {
       if (!avatarFile) return '';
       const ref  = storage.ref(`avatars/${uid}_${Date.now()}`);
@@ -193,7 +199,7 @@
       return await snap.ref.getDownloadURL();
     }
 
-    // Save profile
+    // 4) Create Profile
     document.getElementById('createProfileBtn').addEventListener('click', async () => {
       const email    = document.getElementById('profileEmail').value.trim();
       const password = document.getElementById('profilePassword').value;
@@ -214,11 +220,11 @@
       }
 
       try {
-        // 1) Sign up
+        // Sign up
         const cred = await auth.createUserWithEmailAndPassword(email, password);
         const uid  = cred.user.uid;
 
-        // 2) Upload avatar
+        // Upload avatar
         let avatarURL = '';
         try {
           avatarURL = await uploadAvatar(uid);
@@ -226,26 +232,19 @@
           console.warn('Avatar upload failed:', e);
         }
 
-        // 3) Save to database
+        // Save profile
         const profileData = {
-          uid,
-          email,
-          username,
-          firstName,
-          lastName,
-          dob,
-          bio,
-          location,
-          interests,
-          github,
-          website,
+          uid, email, username,
+          firstName, lastName, dob,
+          bio, location, interests,
+          github, website,
           emailNotifications: emailNotif,
           avatar: avatarURL,
           createdAt: new Date().toISOString()
         };
         await db.ref(`users/${uid}`).set(profileData);
 
-        // 4) Redirect
+        // Redirect
         window.location.href = 'universe.html';
       } catch (err) {
         console.error('Profile creation error:', err);
