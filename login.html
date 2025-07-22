@@ -5,107 +5,134 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login • #HUMANITY</title>
 
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet" />
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+
   <style>
     body {
-      font-family: 'Roboto', sans-serif;
+      font-family: 'Playfair Display', serif;
+      background: white;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #f1f1f1;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 40px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .logo {
+      width: 120px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .btn {
       background: #000;
       color: white;
-      text-align: center;
-      padding: 50px;
-    }
-    .logo {
-      width: 150px;
-    }
-    .input-field {
-      margin: 10px;
-      padding: 10px;
-      width: 240px;
       border: none;
-      border-radius: 8px;
-    }
-    .btn {
-      margin: 10px;
       padding: 10px 20px;
-      border: none;
-      background: #1db954;
-      color: white;
+      margin: 10px 5px;
       border-radius: 8px;
       cursor: pointer;
+      font-weight: bold;
     }
+
     .btn:hover {
-      background: #1ed760;
+      background: #555;
+    }
+
+    .footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #888;
     }
   </style>
 </head>
 <body>
 
-  <img src="your_logo.png" alt="Logo" class="logo"><br><br>
+  <div class="container">
+    <img src="your_logo.png" alt="World ID Logo" class="logo">
+    <h2>Login to #HUMANITY</h2>
 
-  <h2>Login to #HUMANITY</h2>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
 
-  <input type="email" id="emailInput" placeholder="Email" class="input-field"><br>
-  <input type="password" id="passwordInput" placeholder="Password" class="input-field"><br>
+    <div>
+      <button class="btn" onclick="login()">Login</button>
+      <button class="btn" onclick="goToRegister()">Register</button>
+    </div>
 
-  <button id="loginBtn" class="btn">Login</button>
-  <button id="registerBtn" class="btn">Register</button>
+    <div id="message"></div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <div class="footer">Powered by World ID Theme</div>
+  </div>
 
   <script>
+    // Firebase configuration - your actual credentials
     const firebaseConfig = {
-      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-      authDomain: "hashhumanity-58b9a.firebaseapp.com",
-      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-      projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.appspot.com",
-      messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
-      measurementId: "G-3ZTCXL4374"
+      apiKey: "AIzaSyDRv-K8hPfFFxgiHWW1BTTytBGRzG6n7hM",
+      authDomain: "humanity-social.firebaseapp.com",
+      projectId: "humanity-social",
+      storageBucket: "humanity-social.appspot.com",
+      messagingSenderId: "1012261143317",
+      appId: "1:1012261143317:web:04e12227e2b02f7248a372"
     };
 
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-
     const auth = firebase.auth();
-    const db = firebase.database();
 
-    document.getElementById('loginBtn').addEventListener('click', () => {
-      const email = document.getElementById('emailInput').value.trim();
-      const password = document.getElementById('passwordInput').value.trim();
-
-      if (!email || !password) {
-        alert('Please enter both email and password.');
-        return;
-      }
+    function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const messageDiv = document.getElementById('message');
 
       auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          db.ref(`users/${user.uid}`).once('value').then(snapshot => {
-            if (snapshot.exists()) {
-              const profileData = snapshot.val();
-              localStorage.setItem('profileData', JSON.stringify(profileData));
-              window.location.href = 'universe.html';
-            } else {
-              alert('Profile not found. Please create one.');
-              window.location.href = 'create_profile.html';
-            }
-          }).catch((err) => {
-            console.error('Error reading profile data:', err);
-            alert('Error fetching profile data.');
-          });
+        .then(() => {
+          window.location.href = 'universe.html';
         })
-        .catch((error) => {
-          console.error('Login error:', error);
-          alert('Login failed: ' + error.message);
-        });
-    });
+        .catch(error => {
+          console.error("Login error:", error);
 
-    document.getElementById('registerBtn').addEventListener('click', () => {
+          if (error.code === 'auth/user-not-found') {
+            messageDiv.textContent = "No user found, redirecting to create profile...";
+            messageDiv.style.color = 'orange';
+            setTimeout(() => {
+              window.location.href = 'create_profile.html';
+            }, 2000);
+          } else {
+            messageDiv.textContent = 'Login failed: ' + error.message;
+            messageDiv.style.color = 'red';
+          }
+        });
+    }
+
+    function goToRegister() {
       window.location.href = 'create_profile.html';
-    });
+    }
   </script>
 
 </body>
