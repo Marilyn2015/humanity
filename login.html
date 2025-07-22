@@ -123,8 +123,10 @@
       try {
         await auth.signInWithEmailAndPassword(email, pass);
         // immediately redirect on success
+        console.log('Redirecting...')
         window.location.href = 'universe.html';
-      } catch (err) {
+      } 
+      catch (err) {
         console.error('Login failed:', err);
         alert(err.message || 'Failed to log in.');
       }
