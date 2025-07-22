@@ -4,79 +4,72 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>#HUMANITY Universe</title>
-
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
-
-  <!-- Three.js & Firebase -->
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-
   <style>
-    /* your existing styles… */
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#fff;color:#202020;font-family:'Merriweather',serif;text-align:center;padding:20px;position:relative;}
-    .top-right{position:absolute;top:16px;right:16px;background:#000;color:#fff;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;font-family:'Merriweather',serif;transition:background .2s;}
-    .top-right:hover{background:#333;}
-    h1{font-family:'Playfair Display',serif;font-size:2.4rem;margin:16px 0;}
-    #globeCanvas{display:block;margin:0 auto 16px;width:90vw;max-width:380px;height:380px;}
-    #openModal{background:#000;color:#fff;border:none;border-radius:6px;padding:12px 32px;font-size:1rem;cursor:pointer;margin-bottom:16px;font-family:'Merriweather',serif;transition:background .2s;}
-    #openModal:hover{background:#333;}
-    .modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.1);justify-content:center;align-items:center;z-index:999;}
-    .modal.show{display:flex;}
-    .modal-content{background:#f0f0f0;padding:24px;border-radius:12px;max-width:360px;width:90vw;text-align:left;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
-    .modal-content h2{font-family:'Playfair Display',serif;margin-top:0;margin-bottom:12px;}
-    .modal-content textarea{width:100%;min-height:80px;padding:8px;border:1px solid #ccc;border-radius:6px;resize:vertical;font-family:'Merriweather',serif;}
-    .modal-content input[type=file]{margin:12px 0;width:100%;}
-    #imagePreview{max-width:100%;display:none;margin-bottom:12px;}
-    .modal-actions{text-align:right;}
-    .modal-actions button{font-family:'Merriweather',serif;padding:8px 20px;border:none;border-radius:6px;margin-left:8px;cursor:pointer;}
-    #postButton{background:#000;color:#fff;}
-    #postButton:hover{background:#333;}
-    #closeModal{background:#fff;color:#000;border:1px solid #ccc;}
-    #closeModal:hover{background:#e0e0e0;}
-    #postsContainer{margin:24px auto;max-width:600px;text-align:left;}
-    .post-item{background:#f0f0f0;border:1px solid #ccc;border-radius:12px;padding:16px;margin-bottom:20px;display:flex;gap:12px;align-items:flex-start;}
-    .avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;}
-    .post-content{flex:1;}
-    .post-content .username{font-weight:700;margin-right:8px;}
-    .post-content .timestamp{font-size:.85rem;color:#555;}
-    .post-content .text{margin:8px 0;}
-    .uploaded{max-width:200px;margin-top:8px;border-radius:6px;}
-    .like-btn,.delete-btn{padding:6px 12px;border:none;border-radius:6px;cursor:pointer;font-family:'Merriweather',serif;font-weight:700;margin-right:8px;}
-    .like-btn{background:#fff;border:1px solid #ccc;}
-    .like-btn:hover{background:#ddd;}
-    .delete-btn{background:#800;color:#fff;}
-    .delete-btn:hover{background:#a00;}
+    * { box-sizing: border-box; margin:0; padding:0; }
+    body { background:#fff; color:#202020; font-family:'Merriweather',serif; text-align:center; padding:20px; position:relative; }
+    .top-right { position:absolute; top:16px; right:16px; background:#000; color:#fff; border:none; border-radius:6px; padding:8px 16px; cursor:pointer; font-family:'Merriweather',serif; transition:background .2s; }
+    .top-right:hover { background:#333; }
+    h1 { font-family:'Playfair Display',serif; font-size:2.4rem; margin:16px 0; }
+    #globeCanvas { display:block; margin:0 auto 16px; width:90vw; max-width:380px; height:380px; }
+    #openModal { background:#000; color:#fff; border:none; border-radius:6px; padding:12px 32px; font-size:1rem; cursor:pointer; margin-bottom:16px; font-family:'Merriweather',serif; transition:background .2s; }
+    #openModal:hover { background:#333; }
+    .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:999; }
+    .modal.show { display:flex; }
+    .modal-content { background:#fff; padding:24px; border-radius:12px; max-width:360px; width:90vw; text-align:left; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
+    .modal-content h2 { font-family:'Playfair Display',serif; margin-top:0; margin-bottom:12px; }
+    .modal-content textarea { width:100%; min-height:80px; padding:8px; border:1px solid #ccc; border-radius:6px; resize:vertical; font-family:'Merriweather',serif; }
+    .modal-content input[type=file] { margin:12px 0; width:100%; }
+    #imagePreview { max-width:100%; display:none; margin-bottom:12px; border-radius:6px; }
+    .file-info { font-size:0.85rem; color:#555; margin-bottom:8px; }
+    .modal-actions { text-align:right; }
+    .modal-actions button { font-family:'Merriweather',serif; padding:8px 20px; border:none; border-radius:6px; margin-left:8px; cursor:pointer; }
+    #postButton { background:#000; color:#fff; }
+    #postButton:hover { background:#333; }
+    #closeModal { background:#fff; color:#000; border:1px solid #ccc; }
+    #closeModal:hover { background:#e0e0e0; }
+    #postsContainer { margin:24px auto; max-width:600px; text-align:left; }
+    .post-item { background:#f0f0f0; border:1px solid #ccc; border-radius:12px; padding:16px; margin-bottom:20px; display:flex; gap:12px; align-items:flex-start; }
+    .avatar { width:48px; height:48px; border-radius:50%; object-fit:cover; }
+    .post-content { flex:1; }
+    .post-content .username { font-weight:700; margin-right:8px; }
+    .post-content .timestamp { font-size:.85rem; color:#555; }
+    .post-content .text { margin:8px 0; }
+    .uploaded { max-width:200px; margin-top:8px; border-radius:6px; }
+    .like-btn, .delete-btn { padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-family:'Merriweather',serif; font-weight:700; margin-right:8px; }
+    .like-btn { background:#fff; border:1px solid #ccc; }
+    .like-btn:hover { background:#ddd; }
+    .delete-btn { background:#800; color:#fff; }
+    .delete-btn:hover { background:#a00; }
   </style>
 </head>
-
 <body>
   <button class="top-right" id="logoutBtn">Logout</button>
+  <button class="top-right" style="right:120px;" id="profileBtn">Profile</button>
   <h1>The Universe</h1>
   <canvas id="globeCanvas" width="400" height="400"></canvas>
-  <button id="openModal">📝 New Post</button>
-
+  <button id="openModal" type="button">📝 New Post</button>
   <div id="postModal" class="modal">
     <div class="modal-content">
       <h2>Feed the Human Feed…</h2>
       <textarea id="newPostContent" placeholder="What’s on your mind?"></textarea>
       <input type="file" id="postImageUpload" accept="image/*">
-      <img id="imagePreview" alt="Preview">
+      <div id="fileInfo" class="file-info"></div>
+      <img id="imagePreview" alt="Image Preview">
       <div class="modal-actions">
-        <button id="postButton">Post</button>
-        <button id="closeModal">Cancel</button>
+        <button id="postButton" type="button">Post</button>
+        <button id="closeModal" type="button">Cancel</button>
       </div>
     </div>
   </div>
-
   <div id="postsContainer"></div>
-
   <script>
-    // 1) Firebase init
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -88,180 +81,165 @@
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const db   = firebase.database();
+    const db = firebase.database();
     const storage = firebase.storage();
-
     let currentUserProfile = null;
 
-    // 2) onAuthStateChanged — only when profile loaded do we wire up everything
     auth.onAuthStateChanged(async user => {
-     if (!user) {
-  return window.location.href = 'login.html';
-}
-      // load user profile
+      if (!user) return window.location.href = 'login.html';
       const snap = await db.ref(`users/${user.uid}`).once('value');
       currentUserProfile = snap.val();
-      if (!currentUserProfile) {
-        return window.location.href = 'create_profile.html';
-      }
-
-      // now that profile is ready, attach handlers & load posts
+      if (!currentUserProfile) return window.location.href = 'create_profile.html';
       setupPostModal();
       listenForPosts();
     });
 
-    // 3) Logout
     document.getElementById('logoutBtn').onclick = async () => {
       await auth.signOut();
       window.location.href = 'login.html';
     };
 
+    document.getElementById('profileBtn').onclick = () => {
+      window.location.href = 'view_profile.html';
+    };
+
     function setupPostModal() {
-      const openModalBtn  = document.getElementById('openModal');
-      const postModal     = document.getElementById('postModal');
-      const closeModalBtn = document.getElementById('closeModal');
-      const previewImg    = document.getElementById('imagePreview');
-      const textArea      = document.getElementById('newPostContent');
-      const fileInput     = document.getElementById('postImageUpload');
-      const postButton    = document.getElementById('postButton');
+      const openBtn = document.getElementById('openModal');
+      const modal = document.getElementById('postModal');
+      const closeBtn = document.getElementById('closeModal');
+      const preview = document.getElementById('imagePreview');
+      const fileInfo = document.getElementById('fileInfo');
+      const txt = document.getElementById('newPostContent');
+      const fileInp = document.getElementById('postImageUpload');
+      const postBtn = document.getElementById('postButton');
 
-      openModalBtn.onclick = () => {
-        postModal.classList.add('show');
-        previewImg.style.display = 'none';
-        textArea.value = '';
-        fileInput.value = '';
+      openBtn.onclick = () => {
+        modal.classList.add('show');
+        preview.style.display = 'none';
+        fileInfo.textContent = '';
+        txt.value = '';
+        fileInp.value = '';
       };
-      closeModalBtn.onclick = () => postModal.classList.remove('show');
+      closeBtn.onclick = () => modal.classList.remove('show');
 
-      fileInput.onchange = () => {
-        const f = fileInput.files[0];
-        if (f) {
-          const r = new FileReader();
-          r.onload = () => {
-            previewImg.src = r.result;
-            previewImg.style.display = 'block';
+      fileInp.onchange = () => {
+        const img = fileInp.files[0];
+        if (img) {
+          fileInfo.textContent = `File: ${img.name} (${(img.size / 1024 / 1024).toFixed(2)} MB)`;
+          if (img.size > MAX_FILE_SIZE) fileInfo.textContent += ' — Too large! Max 5MB.';
+          const reader = new FileReader();
+          reader.onload = () => {
+            preview.src = reader.result;
+            preview.style.display = 'block';
           };
-          r.readAsDataURL(f);
+          reader.readAsDataURL(img);
         } else {
-          previewImg.style.display = 'none';
+          fileInfo.textContent = '';
+          preview.style.display = 'none';
         }
       };
 
-      postButton.onclick = async () => {
-        const content = textArea.value.trim();
-        const file    = fileInput.files[0];
-        if (!content && !file) {
-          return alert('Enter text or choose an image.');
-        }
+      postBtn.onclick = async () => {
+        const content = txt.value.trim();
+        const imgFile = fileInp.files[0];
+        if (!content && !imgFile) return alert('Enter text or choose an image.');
+        if (imgFile && imgFile.size > MAX_FILE_SIZE) return alert('Image exceeds 5MB limit.');
 
-        // upload file if present
         let imageUrl = '';
-        if (file) {
+        if (imgFile) {
           try {
-            const path = `postImages/${auth.currentUser.uid}_${Date.now()}_${file.name}`;
-            const snap = await storage.ref(path).put(file);
+            console.log('[DEBUG] Uploading:', imgFile.name, imgFile.size, imgFile.type);
+            const path = `postImages/${auth.currentUser.uid}_${Date.now()}_${imgFile.name}`;
+            const snap = await storage.ref().child(path).put(imgFile);
             imageUrl = await snap.ref.getDownloadURL();
-          } catch(e) {
-            console.warn('Image upload failed:', e);
+            console.log('[DEBUG] Uploaded Image URL:', imageUrl);
+          } catch (e) {
+            console.error('[ERROR] Upload failed:', e);
+            return alert('Image upload failed. Check console or CORS settings.');
           }
         }
 
-        // push post with real avatar from profile
-        await db.ref('posts').push({
+        const postData = {
           uid: auth.currentUser.uid,
-          username: currentUserProfile.username,
-          avatar: currentUserProfile.avatar,
+          username: currentUserProfile?.username || 'Anonymous',
+          avatar: currentUserProfile?.avatar || '',
           content,
           imageUrl,
           timestamp: Date.now(),
           likes: 0
-        });
+        };
 
-        postModal.classList.remove('show');
+        try {
+          const newRef = await db.ref('posts').push(postData);
+          console.log('[DEBUG] Post created with key:', newRef.key);
+        } catch (e) {
+          console.error('[ERROR] Post push failed:', e);
+          return alert('Failed to save post.');
+        }
+
+        modal.classList.remove('show');
+        txt.value = '';
+        fileInp.value = '';
+        preview.style.display = 'none';
+        fileInfo.textContent = '';
       };
     }
 
-    // 4) Load & render posts
     function listenForPosts() {
-      const postsContainer = document.getElementById('postsContainer');
+      const container = document.getElementById('postsContainer');
       db.ref('posts').on('value', snap => {
-        postsContainer.innerHTML = '';
+        console.log('[DEBUG] Feed snapshot exists:', snap.exists());
+        console.log('[DEBUG] Feed data:', snap.val());
+        container.innerHTML = '';
         snap.forEach(child => {
-          const p   = child.val();
+          const p = child.val();
           const key = child.key;
-
           const div = document.createElement('div');
           div.className = 'post-item';
-
-          const img = document.createElement('img');
-          img.className = 'avatar';
-          img.src = p.avatar || 'https://via.placeholder.com/48';
-          div.appendChild(img);
-
+          const avatar = document.createElement('img');
+          avatar.className = 'avatar';
+          avatar.src = p.avatar || 'https://via.placeholder.com/48';
+          div.appendChild(avatar);
           const cd = document.createElement('div');
           cd.className = 'post-content';
           cd.innerHTML = `
             <span class="username">${p.username}</span>
             <span class="timestamp">${new Date(p.timestamp).toLocaleString()}</span>
             <div class="text">${p.content.replace(/</g,'&lt;')}</div>
-            ${p.imageUrl?`<img class="uploaded" src="${p.imageUrl}">`:``}
+            ${p.imageUrl ? `<img class="uploaded" src="${p.imageUrl}">` : ''}
           `;
           div.appendChild(cd);
-
-          // like
           const likeBtn = document.createElement('button');
           likeBtn.className = 'like-btn';
-          likeBtn.innerHTML = `👍 <span>${p.likes||0}</span>`;
-          likeBtn.onclick = () => {
-            db.ref(`posts/${key}`).transaction(x => {
-              if (x) x.likes = (x.likes||0)+1;
-              return x;
-            });
-          };
+          likeBtn.innerHTML = `👍 <span>${p.likes || 0}</span>`;
+          likeBtn.onclick = () => db.ref(`posts/${key}`).transaction(x => { if (x) x.likes = (x.likes || 0) + 1; return x; });
           cd.appendChild(likeBtn);
-
-          // delete if owner
           if (p.uid === auth.currentUser.uid) {
             const delBtn = document.createElement('button');
             delBtn.className = 'delete-btn';
             delBtn.textContent = 'Delete';
-            delBtn.onclick = () => {
-              if (confirm('Delete this post?')) {
-                db.ref(`posts/${key}`).remove();
-              }
-            };
+            delBtn.onclick = () => db.ref(`posts/${key}`).remove();
             cd.appendChild(delBtn);
           }
-
-          postsContainer.prepend(div);
+          container.prepend(div);
         });
       });
     }
 
-    // 5) Spinning globe
-    const canvas   = document.getElementById('globeCanvas');
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha:true });
-    renderer.setSize(400,400);
-    const scene    = new THREE.Scene();
-    const camera   = new THREE.PerspectiveCamera(50,1,0.1,1000);
+    const canvas = document.getElementById('globeCanvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+    renderer.setSize(400, 400);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
     camera.position.z = 3;
-
     const loader = new THREE.TextureLoader();
     const earthTex = loader.load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg');
-    const sphere = new THREE.Mesh(
-      new THREE.SphereGeometry(1,32,32),
-      new THREE.MeshStandardMaterial({ map:earthTex })
-    );
+    const sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshStandardMaterial({ map: earthTex }));
     scene.add(sphere);
-    const light = new THREE.DirectionalLight(0xffffff,1.2);
-    light.position.set(5,3,5);
+    const light = new THREE.DirectionalLight(0xffffff, 1.2);
+    light.position.set(5, 3, 5);
     scene.add(light);
-
-    (function animate(){
-      requestAnimationFrame(animate);
-      sphere.rotation.y += 0.002;
-      renderer.render(scene,camera);
-    })();
+    (function animate() { requestAnimationFrame(animate); sphere.rotation.y += 0.002; renderer.render(scene, camera); })();
   </script>
 </body>
 </html>
