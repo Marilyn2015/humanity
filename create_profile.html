@@ -15,89 +15,60 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
   <style>
-    * { box-sizing: border-box; margin:0; padding:0; }
+    * { box-sizing: border-box; margin: 0; padding: 0 }
     body {
       background: #fff;
       color: #202020;
       font-family: 'Merriweather', serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 20px;
     }
     .profile-container {
       background: #f0f0f0;
       padding: 40px 30px;
       border-radius: 12px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 480px;
+      width: 100%; max-width: 480px;
       text-align: center;
+      position: relative;
     }
     h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      margin-bottom: 1.5rem;
-      color: #000;
+      font-size: 2rem; margin-bottom: 1.5rem; color: #000;
     }
-
-    /* Avatar wrapper as label */
+    /* Avatar display */
     .avatar-wrapper {
-      position: relative;
       width: 140px; height: 140px;
       margin: 0 auto 16px;
-      border-radius: 50%;
-      border: 3px solid #ccc;
-      overflow: hidden;
-      background: #ddd;
-      cursor: pointer;
+      border-radius: 50%; border: 3px solid #ccc;
+      overflow: hidden; background: #ddd;
     }
     .avatar-wrapper img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
+      width: 100%; height: 100%; object-fit: cover;
     }
-    .avatar-wrapper .upload-text {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(255,255,255,0.8);
-      color: #000;
-      font-weight: 700;
-      padding: 6px 12px;
-      border-radius: 8px;
-      pointer-events: none;
+    /* Upload File button */
+    #openAvatarModal {
+      background: #000; color: #fff;
+      border: none; border-radius: 6px;
+      padding: 8px 16px; font-size: .9rem;
+      cursor: pointer; margin-bottom: 20px;
       font-family: 'Merriweather', serif;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: background .2s;
     }
-    .avatar-wrapper input[type="file"] {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      opacity: 0; z-index: 2;
-      cursor: pointer;
-    }
+    #openAvatarModal:hover { background: #333; }
 
     input, textarea {
-      width: 100%;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 12px;
-      margin: 12px 0;
-      font-family: 'Merriweather', serif;
-      font-size: 1rem;
+      width: 100%; background: #fff; border: 1px solid #ccc;
+      border-radius: 6px; padding: 12px; margin: 12px 0;
+      font-family: 'Merriweather', serif; font-size: 1rem;
       resize: vertical;
     }
     ::placeholder { color: #888; }
 
-    /* Centered checkbox */
     label.checkbox-label {
-      display: block;
-      width: 100%;
-      text-align: center;
-      margin: 12px 0;
-      font-size: .95rem;
-      color: #202020;
+      display: block; width: 100%; text-align: center;
+      margin: 12px 0; font-size: .95rem;
       font-family: 'Merriweather', serif;
     }
     label.checkbox-label input {
@@ -105,63 +76,106 @@
     }
 
     button#createProfileBtn {
-      background: #000;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 12px 28px;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
+      background: #000; color: #fff; border: none;
+      border-radius: 8px; padding: 12px 28px;
+      font-size: 1rem; font-weight: 700;
+      cursor: pointer; width: 100%; margin-top: 16px;
+      font-family: 'Merriweather', serif;
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       transition: background .2s, transform .1s;
-      margin-top: 16px;
-      width: 100%;
-      font-family: 'Merriweather', serif;
     }
     button#createProfileBtn:hover {
-      background: #333;
-      transform: translateY(-2px);
+      background: #333; transform: translateY(-2px);
     }
     button#createProfileBtn:active {
       transform: translateY(0);
     }
+
+    /* Modal styles */
+    .modal {
+      display: none; position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.3);
+      justify-content: center; align-items: center;
+      z-index: 1000;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: #fff; padding: 20px;
+      border-radius: 8px; width: 90%; max-width: 320px;
+      text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .modal-content h3 {
+      margin-bottom: 12px; font-family: 'Playfair Display', serif;
+    }
+    .modal-content input[type="file"] {
+      margin: 12px 0; width: 100%;
+    }
+    #avatarModalPreview {
+      width: 100%; max-height: 200px;
+      object-fit: contain; margin: 12px 0;
+      border: 1px solid #ccc; border-radius: 6px;
+    }
+    .modal-buttons {
+      display: flex; justify-content: space-between;
+      margin-top: 16px;
+    }
+    .modal-buttons button {
+      flex: 1; margin: 0 4px;
+      padding: 8px; font-family: 'Merriweather', serif;
+      border-radius: 6px; border: none; cursor: pointer;
+    }
+    #saveAvatarBtn {
+      background: #000; color: #fff;
+    }
+    #saveAvatarBtn:hover { background: #333; }
+    #cancelAvatarBtn {
+      background: #ccc; color: #202020;
+    }
+    #cancelAvatarBtn:hover { background: #bbb; }
   </style>
 </head>
 <body>
   <div class="profile-container">
     <h1>Create Your Profile</h1>
 
-    <!-- Avatar picker with live preview -->
-    <label class="avatar-wrapper">
+    <!-- Avatar and “Upload File” -->
+    <div class="avatar-wrapper">
       <img id="avatarPreview" src="https://via.placeholder.com/140" alt="Avatar preview">
-      <div class="upload-text">Upload</div>
-      <input type="file" id="avatarUpload" accept="image/*">
-    </label>
+    </div>
+    <button id="openAvatarModal">Upload File</button>
 
-    <!-- Auth Fields -->
+    <!-- Profile fields -->
     <input type="email"    id="profileEmail"    placeholder="Email Address" required>
     <input type="password" id="profilePassword" placeholder="Password" required>
-
-    <!-- Public Display -->
-    <input type="text" id="profileUsername" placeholder="Username" required>
-
-    <!-- Hidden-but-stored Details -->
-    <input type="text" id="firstName"    placeholder="First Name">
-    <input type="text" id="lastName"     placeholder="Last Name">
-    <input type="date" id="dob"          placeholder="Date of Birth">
+    <input type="text"     id="profileUsername" placeholder="Username" required>
+    <input type="text"     id="firstName"       placeholder="First Name">
+    <input type="text"     id="lastName"        placeholder="Last Name">
+    <input type="date"     id="dob"             placeholder="Date of Birth">
     <textarea id="profileBio" placeholder="Bio…"></textarea>
-    <input type="text" id="location"     placeholder="Location">
-    <input type="text" id="interests"    placeholder="Interests (comma-separated)">
-    <input type="text" id="githubLink"   placeholder="GitHub Profile URL">
-    <input type="text" id="websiteLink"  placeholder="Website URL">
-
+    <input type="text"     id="location"        placeholder="Location">
+    <input type="text"     id="interests"       placeholder="Interests (comma-separated)">
+    <input type="text"     id="githubLink"      placeholder="GitHub Profile URL">
+    <input type="text"     id="websiteLink"     placeholder="Website URL">
     <label class="checkbox-label">
       <input type="checkbox" id="emailNotifications">
       Receive Email Notifications
     </label>
 
     <button id="createProfileBtn">Save Profile</button>
+  </div>
+
+  <!-- Avatar Modal -->
+  <div id="avatarModal" class="modal">
+    <div class="modal-content">
+      <h3>Select Profile Picture</h3>
+      <input type="file" id="avatarFileInput" accept="image/*">
+      <img id="avatarModalPreview" src="" alt="Preview">
+      <div class="modal-buttons">
+        <button id="cancelAvatarBtn">Cancel</button>
+        <button id="saveAvatarBtn">Save Photo</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -180,17 +194,49 @@
     const db      = firebase.database();
     const storage = firebase.storage();
 
-    // Avatar preview & file
-    const avatarUpload  = document.getElementById('avatarUpload');
-    const avatarPreview = document.getElementById('avatarPreview');
-    let avatarFile      = null;
-    avatarUpload.addEventListener('change', e => {
+    // Avatar modal logic
+    const openAvatarModal = document.getElementById('openAvatarModal');
+    const avatarModal     = document.getElementById('avatarModal');
+    const avatarInput     = document.getElementById('avatarFileInput');
+    const avatarModalPreview = document.getElementById('avatarModalPreview');
+    const cancelAvatarBtn    = document.getElementById('cancelAvatarBtn');
+    const saveAvatarBtn      = document.getElementById('saveAvatarBtn');
+    const avatarPreview      = document.getElementById('avatarPreview');
+
+    let avatarFile = null;
+
+    // Open modal
+    openAvatarModal.addEventListener('click', () => {
+      avatarModal.classList.add('show');
+      avatarModalPreview.src = '';
+      avatarInput.value = '';
+      avatarFile = null;
+    });
+
+    // File change preview
+    avatarInput.addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
       avatarFile = file;
       const reader = new FileReader();
-      reader.onload = evt => avatarPreview.src = evt.target.result;
+      reader.onload = evt => {
+        avatarModalPreview.src = evt.target.result;
+      };
       reader.readAsDataURL(file);
+    });
+
+    // Cancel
+    cancelAvatarBtn.addEventListener('click', () => {
+      avatarModal.classList.remove('show');
+      avatarFile = null;
+    });
+
+    // Save photo to main preview
+    saveAvatarBtn.addEventListener('click', () => {
+      if (avatarFile && avatarModalPreview.src) {
+        avatarPreview.src = avatarModalPreview.src;
+      }
+      avatarModal.classList.remove('show');
     });
 
     // Upload avatar helper
@@ -222,7 +268,7 @@
       }
 
       try {
-        // 1) Sign up
+        // 1) Auth signup
         const cred = await auth.createUserWithEmailAndPassword(email, password);
         const uid  = cred.user.uid;
 
