@@ -17,7 +17,7 @@
   <style>
     body { background: #fff; color: #202020; font-family: 'Merriweather', serif; margin:0; text-align:center; }
     h1 { font-family:'Playfair Display',serif; font-size:2.4rem; color:#000; margin:24px 0; }
-    .top-left,.top-right { position:absolute;top:24px;padding:8px 20px;background:#fff;border:1.5px solid #000;color:#000;border-radius:8px;font-weight:700;cursor:pointer;transition:.15s;z-index:1000; }
+    .top-left,.top-right { position:absolute; top:24px; padding:8px 20px; background:#fff; border:1.5px solid #000; color:#000; border-radius:8px; font-weight:700; cursor:pointer; transition:.15s; z-index:1000; }
     .top-left{left:24px} .top-right{right:24px}
     .top-left:hover,.top-right:hover{background:#000;color:#fff}
     #globeCanvas{margin:32px auto 12px;display:block;width:90vw;max-width:380px;height:380px;}
@@ -26,16 +26,14 @@
     .modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.1);justify-content:center;align-items:center;z-index:999}
     .modal.show{display:flex}
     .modal-content{background:#f0f0f0;border:1.5px solid #222;border-radius:14px;padding:28px 24px 20px;max-width:380px;width:90vw;box-shadow:0 4px 24px rgba(0,0,0,0.2);text-align:left;}
-    .modal-content h2{margin-top:0;color:#000;text-align:center;font-family:'Playfair Display',serif;font-size:1.4rem;margin-bottom:16px;}
+    .modal-content h2{margin:0 0 16px;color:#000;text-align:center;font-family:'Playfair Display',serif;font-size:1.4rem;}
     .modal-content textarea{width:80%;margin:0 auto 12px;display:block;min-height:80px;padding:10px;border:1.5px solid #ccc;border-radius:6px;font-size:1rem;resize:vertical;}
     .modal-content input[type="file"]{margin-left:10%;margin-bottom:12px;display:block;}
     #imagePreview{max-width:80%;margin:0 auto 12px;display:none;border:1px solid #ccc;border-radius:6px;}
     .modal-actions{text-align:right;}
     .modal-actions button{font-weight:700;padding:8px 20px;margin-left:8px;border-radius:6px;border:none;cursor:pointer;transition:.15s;}
-    #postButton{background:#000;color:#fff}
-    #postButton:hover{background:#333}
-    #closeModal{background:#fff;color:#000;border:1px solid #ccc}
-    #closeModal:hover{background:#e0e0e0}
+    #postButton{background:#000;color:#fff} #postButton:hover{background:#333}
+    #closeModal{background:#fff;color:#000;border:1px solid #ccc} #closeModal:hover{background:#e0e0e0}
     #postsContainer{margin:24px auto 40px;width:92vw;max-width:600px;text-align:left;}
     .post-item{background:#f0f0f0;border:1.5px solid #ccc;border-radius:12px;padding:18px 20px;margin-bottom:28px;display:flex;gap:16px;align-items:flex-start;box-shadow:0 2px 12px rgba(0,0,0,0.1);transition:.12s;}
     .post-item:hover{box-shadow:0 4px 20px rgba(0,0,0,0.15);}
@@ -46,10 +44,8 @@
     .post-content .text{margin:8px 0;font-size:1rem;line-height:1.4;color:#202946;}
     .uploaded{max-width:200px;margin-top:8px;border-radius:6px;border:1px solid #ccc;}
     .like-btn,.delete-btn{font-weight:700;padding:6px 14px;border:none;border-radius:6px;cursor:pointer;margin-top:8px;margin-right:8px;transition:.12s;}
-    .like-btn{background:#fff;color:#000;border:1px solid #ccc;}
-    .like-btn:hover{background:#ddd;}
-    .delete-btn{background:#800;color:#fff;}
-    .delete-btn:hover{background:#a00;}
+    .like-btn{background:#fff;color:#000;border:1px solid #ccc;} .like-btn:hover{background:#ddd;}
+    .delete-btn{background:#800;color:#fff;} .delete-btn:hover{background:#a00;}
     @media(max-width:600px){#globeCanvas{height:44vw}.post-item{padding:14px}}
   </style>
 </head>
@@ -102,56 +98,59 @@
       return mockUsers[Math.floor(Math.random()*mockUsers.length)];
     }
 
-    // Modal toggle & preview
+    // Modal & preview
     const openModal = document.getElementById("openModal"),
           postModal = document.getElementById("postModal"),
-          closeModal = document.getElementById("closeModal"),
-          postBtn    = document.getElementById("postButton"),
-          preview    = document.getElementById("imagePreview"),
-          textInput  = document.getElementById("newPostContent"),
-          fileInput  = document.getElementById("postImageUpload");
+          closeModal= document.getElementById("closeModal"),
+          postBtn   = document.getElementById("postButton"),
+          preview   = document.getElementById("imagePreview"),
+          txtInput  = document.getElementById("newPostContent"),
+          fileInput = document.getElementById("postImageUpload");
 
     openModal.onclick = ()=>{
       postModal.classList.add("show");
       preview.style.display="none";
-      textInput.value="";
+      txtInput.value="";
       fileInput.value="";
     };
     closeModal.onclick = ()=> postModal.classList.remove("show");
 
-    fileInput.addEventListener("change", ()=>{
+    fileInput.addEventListener("change",()=>{
       const f = fileInput.files[0];
       if(f){
         const r = new FileReader();
-        r.onload = ()=>{ preview.src = r.result; preview.style.display="block"; };
+        r.onload=()=>{
+          preview.src=r.result;
+          preview.style.display="block";
+        };
         r.readAsDataURL(f);
       } else preview.style.display="none";
     });
 
-    // Post handler (works for text, image, or both)
+    // Posting
     postBtn.onclick = async ()=>{
-      const content = textInput.value.trim();
+      const content = txtInput.value.trim();
       const file    = fileInput.files[0];
       if(!content && !file){
-        alert("Please add text or select an image.");
+        alert("Add text or an image.");
         return;
       }
-      let imageUrl = "";
+      let imageUrl="";
       if(file){
         try{
-          const ref = storage.ref("postImages/"+Date.now()+"_"+file.name);
-          const snap= await ref.put(file);
-          imageUrl = await snap.ref.getDownloadURL();
+          const ref=storage.ref("postImages/"+Date.now()+"_"+file.name);
+          const snap=await ref.put(file);
+          imageUrl=await snap.ref.getDownloadURL();
         }catch(e){
-          alert("Image upload failed.");
-          console.error(e);
+          alert("Image upload failed."); console.error(e);
           return;
         }
       }
-      const user = getRandomUser();
+      // pick real or fallback
+      const userObj = (content||imageUrl) && getRandomUser();
       await db.ref("posts").push({
-        username: user.name,
-        avatar:   user.avatar,
+        username: userObj.name,
+        avatar:   userObj.avatar,
         content,
         imageUrl,
         timestamp: Date.now(),
@@ -160,33 +159,40 @@
       postModal.classList.remove("show");
     };
 
-    // Render posts with like & delete
+    // Render posts
     const postsContainer = document.getElementById("postsContainer");
     function renderPost(p, key){
+      // fallback for legacy
+      let userObj = { name:p.username, avatar:p.avatar };
+      if(!p.username||!p.avatar){
+        userObj = getRandomUser();
+      }
       const div = document.createElement("div"); div.className="post-item";
-      const img = document.createElement("img"); img.className="avatar"; img.src=p.avatar;
+      const img = document.createElement("img"); img.className="avatar"; img.src=userObj.avatar;
       const cd  = document.createElement("div"); cd.className="post-content";
-      cd.innerHTML = `
-        <span class="username">${p.username}</span>
+      cd.innerHTML=`
+        <span class="username">${userObj.name}</span>
         <span class="timestamp">${new Date(p.timestamp).toLocaleString()}</span>
-        <div class="text">${p.content.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
-        ${p.imageUrl?`<img src="${p.imageUrl}" class="uploaded">`:''}
+        <div class="text">${(p.content||"").replace(/</g,"&lt;")}</div>
+        ${p.imageUrl?`<img src="${p.imageUrl}" class="uploaded">`:``}
       `;
-      const likeBtn = document.createElement("button");
+      // like
+      const likeBtn=document.createElement("button");
       likeBtn.className="like-btn";
-      likeBtn.innerHTML = `👍 <span>${p.likes||0}</span>`;
-      likeBtn.onclick = ()=> db.ref("posts/"+key).transaction(obj=>{
-        if(obj) obj.likes=(obj.likes||0)+1;
-        return obj;
+      likeBtn.innerHTML=`👍 <span>${p.likes||0}</span>`;
+      likeBtn.onclick = ()=> db.ref("posts/"+key).transaction(x=>{
+        if(x) x.likes=(x.likes||0)+1;
+        return x;
       });
-      const delBtn = document.createElement("button");
+      // delete
+      const delBtn=document.createElement("button");
       delBtn.className="delete-btn";
       delBtn.textContent="Delete";
-      delBtn.onclick = ()=>{
+      delBtn.onclick=()=>{
         if(!confirm("Delete this post?")) return;
         db.ref("posts/"+key).remove().then(()=>{
           if(p.imageUrl){
-            const path = decodeURIComponent(p.imageUrl.split("/o/")[1].split("?")[0]);
+            const path=decodeURIComponent(p.imageUrl.split("/o/")[1].split("?")[0]);
             storage.ref(path).delete().catch(()=>{});
           }
         });
@@ -200,41 +206,41 @@
 
     db.ref("posts").on("value", snap=>{
       postsContainer.innerHTML="";
-      let found=false;
-      snap.forEach(child=>{
-        found=true;
-        renderPost(child.val(), child.key);
+      let any=false;
+      snap.forEach(ch=>{
+        any=true;
+        renderPost(ch.val(), ch.key);
       });
-      if(!found){
-        // Show two demo posts if empty
-        [
-          { username:"alice", avatar:mockUsers[0].avatar, content:"Demo post #1", timestamp:Date.now(), likes:1 },
-          { username:"bob",   avatar:mockUsers[1].avatar, content:"Demo post #2", timestamp:Date.now(), likes:3 }
-        ].forEach((p,i)=> renderPost(p, "demo"+i));
+      if(!any){
+        // show demo if empty
+        [{content:"Demo post #1"},{content:"Demo post #2"}].forEach((d,i)=>{
+          const demo={...d, timestamp:Date.now(), likes:i+1};
+          renderPost(demo, "demo"+i);
+        });
       }
     });
 
-    // Spinning globe
+    // Globe
     const canvas   = document.getElementById("globeCanvas");
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+    const renderer = new THREE.WebGLRenderer({canvas,alpha:true});
     renderer.setSize(400,400);
     const scene    = new THREE.Scene();
     const camera   = new THREE.PerspectiveCamera(50,1,0.1,1000);
     camera.position.z=3;
     const loader   = new THREE.TextureLoader();
-    const tex      = loader.load("https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg");
+    const earthTex = loader.load("https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg");
     const sphere   = new THREE.Mesh(
       new THREE.SphereGeometry(1,32,32),
-      new THREE.MeshStandardMaterial({ map: tex })
+      new THREE.MeshStandardMaterial({map:earthTex})
     );
     scene.add(sphere);
-    const light = new THREE.DirectionalLight(0xffffff,1.2);
+    const light=new THREE.DirectionalLight(0xffffff,1.2);
     light.position.set(5,3,5);
     scene.add(light);
     (function animate(){
       requestAnimationFrame(animate);
-      sphere.rotation.y += 0.002;
-      renderer.render(scene, camera);
+      sphere.rotation.y+=0.002;
+      renderer.render(scene,camera);
     })();
   </script>
 </body>
