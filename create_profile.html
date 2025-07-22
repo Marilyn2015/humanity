@@ -41,41 +41,42 @@
       margin-bottom: 1.5rem;
       color: #000;
     }
+
+    /* Avatar wrapper now contains the invisible file input */
     .avatar-wrapper {
       position: relative;
       width: 140px; height: 140px;
-      margin: 0 auto 8px;
+      margin: 0 auto 16px;
       border-radius: 50%;
       border: 3px solid #ccc;
       overflow: hidden;
       background: #ddd;
+      cursor: pointer;
     }
     .avatar-wrapper img {
       width: 100%; height: 100%;
       object-fit: cover;
       display: block;
     }
-    /* label-as-button */
-    label.select-photo-btn {
-      display: inline-block;
-      background: #000;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-size: .9rem;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      transition: background .2s;
-      margin-bottom: 20px;
+    .avatar-wrapper .upload-text {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.8);
+      color: #000;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      pointer-events: none;
       font-family: 'Merriweather', serif;
     }
-    label.select-photo-btn:hover {
-      background: #333;
+    .avatar-wrapper input[type="file"] {
+      position: absolute;
+      top:0; left:0; width:100%; height:100%;
+      opacity: 0;
+      cursor: pointer;
     }
-    input[type="file"] {
-      display: none;
-    }
+
     input, textarea {
       width: 100%;
       background: #fff;
@@ -89,15 +90,15 @@
     }
     ::placeholder { color: #888; }
 
-    /* Centered checkbox label */
+    /* Center the checkbox label */
     label.checkbox-label {
-      display: flex;
-      align-items: center;
-      justify-content: center;    /* centered */
+      display: block;
+      width: 100%;
+      text-align: center;
       margin: 12px 0;
       font-size: .95rem;
       color: #202020;
-      width: 100%;
+      font-family: 'Merriweather', serif;
     }
     label.checkbox-label input {
       margin-right: 8px;
@@ -119,7 +120,8 @@
       font-family: 'Merriweather', serif;
     }
     button#createProfileBtn:hover {
-      background: #333; transform: translateY(-2px);
+      background: #333;
+      transform: translateY(-2px);
     }
     button#createProfileBtn:active {
       transform: translateY(0);
@@ -130,14 +132,12 @@
   <div class="profile-container">
     <h1>Create Your Profile</h1>
 
-    <!-- Avatar Preview -->
+    <!-- Avatar picker with live preview -->
     <div class="avatar-wrapper">
       <img id="avatarPreview" src="https://via.placeholder.com/140" alt="Avatar preview">
+      <div class="upload-text">Upload</div>
+      <input type="file" id="avatarUpload" accept="image/*">
     </div>
-
-    <!-- Label triggers file picker -->
-    <label for="avatarUpload" class="select-photo-btn">Select Photo</label>
-    <input type="file" id="avatarUpload" accept="image/*">
 
     <!-- Auth Fields -->
     <input type="email"    id="profileEmail"    placeholder="Email Address" required>
@@ -190,13 +190,11 @@
       if (!file) return;
       avatarFile = file;
       const reader = new FileReader();
-      reader.onload = evt => {
-        avatarPreview.src = evt.target.result;
-      };
+      reader.onload = evt => avatarPreview.src = evt.target.result;
       reader.readAsDataURL(file);
     });
 
-    // Upload avatar
+    // Upload avatar helper
     async function uploadAvatar(uid) {
       if (!avatarFile) return '';
       const ref  = storage.ref(`avatars/${uid}_${Date.now()}`);
