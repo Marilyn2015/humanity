@@ -18,77 +18,49 @@
       background: #fff;
       font-family: 'Merriweather', serif;
       color: #202020;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      padding: 20px;
+      display: flex; align-items: center; justify-content: center;
+      height: 100vh; padding: 20px;
     }
     .login-container {
-      background: #f0f0f0;
-      padding: 40px 30px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 360px;
-      text-align: center;
+      background: #f0f0f0; padding: 40px 30px;
+      border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      width: 100%; max-width: 360px; text-align: center;
     }
     h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      margin-bottom: 1.5rem;
-      color: #000;
+      font-size: 2rem; margin-bottom: 1.5rem; color: #000;
     }
     input {
-      width: 100%;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      padding: 12px;
-      margin: 12px 0;
-      font-size: 1rem;
-      font-family: 'Merriweather', serif;
+      width: 100%; background: #fff; border: 1px solid #ccc;
+      border-radius: 6px; padding: 12px; margin: 12px 0;
+      font-size: 1rem; font-family: 'Merriweather', serif;
     }
     ::placeholder { color: #888; }
     button {
-      background: #000;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 12px 0;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      width: 100%;
-      font-family: 'Merriweather', serif;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      width: 100%; padding: 12px 0; margin-top: 16px;
+      font-family: 'Merriweather', serif; font-weight: 700;
+      font-size: 1rem; border: none; border-radius: 8px;
+      cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       transition: background .2s, transform .1s;
-      margin-top: 16px;
+      background: #000; color: #fff;
     }
-    button:hover {
-      background: #333;
-      transform: translateY(-2px);
-    }
+    button:hover { background: #333; transform: translateY(-2px); }
     .secondary {
-      background: #fff;
-      color: #000;
-      border: 1px solid #000;
+      background: #fff; color: #000; border: 1px solid #000;
       margin-top: 8px;
     }
-    .secondary:hover {
-      background: #eee;
-    }
+    .secondary:hover { background: #eee; }
   </style>
 </head>
+
 <body>
   <div class="login-container">
     <h1>Sign In</h1>
-    <input type="email" id="email" placeholder="Email Address" required />
-    <input type="password" id="password" placeholder="Password" required />
+    <input type="email"    id="email"    placeholder="Email Address" required />
+    <input type="password" id="password" placeholder="Password"      required />
 
-    <!-- Primary Log In -->
+    <!-- Only redirect after successful sign-in -->
     <button id="loginBtn">Log In</button>
-    <!-- Secondary Register -->
     <button id="registerBtn" class="secondary">Register</button>
   </div>
 
@@ -106,14 +78,7 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
-    // If already authenticated, go straight to Universe
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        window.location.href = 'universe.html';
-      }
-    });
-
-    // Log In handler with explicit redirect
+    // Handle Log In click
     document.getElementById('loginBtn').addEventListener('click', async () => {
       const email = document.getElementById('email').value.trim();
       const pass  = document.getElementById('password').value;
@@ -122,17 +87,15 @@
       }
       try {
         await auth.signInWithEmailAndPassword(email, pass);
-        // immediately redirect on success
-        console.log('Redirecting...')
+        // Only now do we redirect
         window.location.href = 'universe.html';
-      } 
-      catch (err) {
+      } catch (err) {
         console.error('Login failed:', err);
         alert(err.message || 'Failed to log in.');
       }
     });
 
-    // Register button redirects to profile creation
+    // Register button
     document.getElementById('registerBtn').addEventListener('click', () => {
       window.location.href = 'create_profile.html';
     });
