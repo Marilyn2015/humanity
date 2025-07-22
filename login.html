@@ -1,139 +1,72 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login • #HUMANITY</title>
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet"/>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #fff;
-      font-family: 'Merriweather', serif;
-      color: #202020;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      padding: 20px;
-    }
-    .login-container {
-      background: #f0f0f0;
-      padding: 40px 30px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 360px;
-      text-align: center;
-    }
-    .login-container h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      margin-bottom: 1.5rem;
-      color: #333;
-    }
-    .login-container input {
-      width: 100%;
-      padding: 10px 12px;
-      margin-bottom: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1rem;
-    }
-    .login-container button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.2s ease;
-      margin-bottom: 12px;
-    }
-    #loginBtn { background: #202020; color: #fff; }
-    #loginBtn:hover { background: #444; }
-    #registerBtn {
-      background: transparent;
-      color: #202020;
-      border: 1px solid #202020;
-    }
-    #registerBtn:hover { background: #e0e0e0; }
-    .error {
-      color: #c00;
-      margin-bottom: 12px;
-    }
-  </style>
 </head>
 <body>
-  <div class="login-container">
-    <h1>#HUMANITY Login</h1>
-    <div id="error-message" class="error"></div>
-    <input type="email" id="email" placeholder="Email Address" required/>
-    <input type="password" id="password" placeholder="Password" required/>
-    <button id="loginBtn">Log In</button>
-    <button id="registerBtn">Register</button>
-  </div>
+  <h2>Login to #HUMANITY</h2><label for="emailInput">Email:</label><br> <input type="email" id="emailInput" placeholder="Enter email"><br><br>
 
-  <script>
-    // Firebase configuration (corrected API key)
+<label for="passwordInput">Password:</label><br> <input type="password" id="passwordInput" placeholder="Enter password"><br><br>
+
+<button id="loginBtn">Login</button> <button onclick="window.location.href='create_profile.html'">Register</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js";
+
     const firebaseConfig = {
-      apiKey: "AIzaSyCUu1olq6dW8N7GqJLMFLmv3iwXT23bJ6g",
-      authDomain: "hashhumanity-58b9a.firebaseapp.com",
-      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-      projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.appspot.com",
-      messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
-      measurementId: "G-3ZTCXL4374"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-    // Handle login
+    function loginUser(email, password) {
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+
+          const userRef = ref(db, `profiles/${user.uid}`);
+          get(userRef).then((snapshot) => {
+            if (snapshot.exists()) {
+              const profileData = snapshot.val();
+              localStorage.setItem('profileData', JSON.stringify(profileData));
+              window.location.href = 'universe.html';
+            } else {
+              alert('Profile data not found. Please create your profile.');
+              window.location.href = 'create_profile.html';
+            }
+          }).catch((error) => {
+            console.error('Error fetching profile data:', error);
+            alert('Failed to retrieve profile data.');
+          });
+
+        })
+        .catch((error) => {
+          console.error("Login error:", error);
+          alert('Login failed: ' + error.message);
+        });
+    }
+
     document.getElementById('loginBtn').addEventListener('click', () => {
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const errorDiv = document.getElementById('error-message');
-      errorDiv.textContent = '';
+      const email = document.getElementById('emailInput').value.trim();
+      const password = document.getElementById('passwordInput').value.trim();
 
       if (!email || !password) {
-        errorDiv.textContent = 'Please enter both email and password.';
+        alert('Please enter both email and password.');
         return;
       }
 
-      auth.signInWithEmailAndPassword(email, password)
-        .then((cred) => {
-          return db.ref(`profiles/${cred.user.uid}`).once('value');
-        })
-        .then(snapshot => {
-          const profile = snapshot.val();
-          if (profile) {
-            sessionStorage.setItem('username', profile.username || '');
-            sessionStorage.setItem('avatarUrl', profile.avatar || '');
-          }
-          window.location.href = 'universe.html';
-        })
-        .catch(error => {
-          console.error('Login error:', error.code, error.message);
-          errorDiv.textContent = `${error.code}: ${error.message}`;
-        });
+      loginUser(email, password);
     });
-
-    // Handle register redirect
-    document.getElementById('registerBtn').addEventListener('click', () => {
-      window.location.href = 'create_profile.html';
-    });
-  </script>
-</body>
+  </script></body>
 </html>
