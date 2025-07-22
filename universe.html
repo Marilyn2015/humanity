@@ -129,10 +129,12 @@
 </div>
 
 
-  <div id="postsContainer"></div>
-<script>
-  <script>
-  // Initialize Firebase
+  <div id="postsContainer"></div
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  // your entire script code should be pasted here
+});
+   // Initialize Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
     authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -155,6 +157,7 @@
     "https://randomuser.me/api/portraits/men/12.jpg",
     "https://randomuser.me/api/portraits/women/68.jpg"
   ];
+  
 
   // Display posts
   function displayPost(content, timestamp, imageUrl = "", key = "") {
@@ -194,7 +197,6 @@
       const key = child.key;
       displayPost(post.content || "", post.timestamp, post.imageUrl || "", key);
     });
-  });
 
   // Delete post and optional image
   function deletePost(postKey, imageUrl) {
