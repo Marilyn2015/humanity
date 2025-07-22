@@ -131,10 +131,7 @@
 
   <div id="postsContainer"></div
     <script>
-document.addEventListener("DOMContentLoaded", () => {
-  // your entire script code should be pasted here
-});
-   // Initialize Firebase
+  // Initialize Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
     authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -157,9 +154,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "https://randomuser.me/api/portraits/men/12.jpg",
     "https://randomuser.me/api/portraits/women/68.jpg"
   ];
-  
-
-  // Display posts
+    // Display posts
   function displayPost(content, timestamp, imageUrl = "", key = "") {
     const postElement = document.createElement("div");
     postElement.className = "post-item";
