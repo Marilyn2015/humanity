@@ -55,7 +55,8 @@
       object-fit: cover;
       display: block;
     }
-    .select-photo-btn {
+    /* label-as-button */
+    label.select-photo-btn {
       display: inline-block;
       background: #000;
       color: #fff;
@@ -69,7 +70,7 @@
       margin-bottom: 20px;
       font-family: 'Merriweather', serif;
     }
-    .select-photo-btn:hover {
+    label.select-photo-btn:hover {
       background: #333;
     }
     input[type="file"] {
@@ -87,18 +88,21 @@
       resize: vertical;
     }
     ::placeholder { color: #888; }
+
+    /* Centered checkbox label */
     label.checkbox-label {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
-      width: 100%;
+      justify-content: center;    /* centered */
       margin: 12px 0;
       font-size: .95rem;
       color: #202020;
+      width: 100%;
     }
     label.checkbox-label input {
       margin-right: 8px;
     }
+
     button#createProfileBtn {
       background: #000;
       color: #fff;
@@ -115,8 +119,7 @@
       font-family: 'Merriweather', serif;
     }
     button#createProfileBtn:hover {
-      background: #333;
-      transform: translateY(-2px);
+      background: #333; transform: translateY(-2px);
     }
     button#createProfileBtn:active {
       transform: translateY(0);
@@ -131,7 +134,8 @@
     <div class="avatar-wrapper">
       <img id="avatarPreview" src="https://via.placeholder.com/140" alt="Avatar preview">
     </div>
-    <!-- Label-triggered file input -->
+
+    <!-- Label triggers file picker -->
     <label for="avatarUpload" class="select-photo-btn">Select Photo</label>
     <input type="file" id="avatarUpload" accept="image/*">
 
@@ -143,14 +147,15 @@
     <input type="text" id="profileUsername" placeholder="Username" required>
 
     <!-- Hidden-but-stored Details -->
-    <input type="text"   id="firstName"    placeholder="First Name">
-    <input type="text"   id="lastName"     placeholder="Last Name">
-    <input type="date"   id="dob"          placeholder="Date of Birth">
+    <input type="text" id="firstName"    placeholder="First Name">
+    <input type="text" id="lastName"     placeholder="Last Name">
+    <input type="date" id="dob"          placeholder="Date of Birth">
     <textarea id="profileBio" placeholder="Bio…"></textarea>
-    <input type="text"   id="location"     placeholder="Location">
-    <input type="text"   id="interests"    placeholder="Interests (comma-separated)">
-    <input type="text"   id="githubLink"   placeholder="GitHub Profile URL">
-    <input type="text"   id="websiteLink"  placeholder="Website URL">
+    <input type="text" id="location"     placeholder="Location">
+    <input type="text" id="interests"    placeholder="Interests (comma-separated)">
+    <input type="text" id="githubLink"   placeholder="GitHub Profile URL">
+    <input type="text" id="websiteLink"  placeholder="Website URL">
+
     <label class="checkbox-label">
       <input type="checkbox" id="emailNotifications">
       Receive Email Notifications
@@ -160,7 +165,7 @@
   </div>
 
   <script>
-    // 1) Initialize Firebase
+    // Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -175,7 +180,7 @@
     const db      = firebase.database();
     const storage = firebase.storage();
 
-    // 2) Avatar Preview
+    // Avatar Preview & File
     const avatarUpload  = document.getElementById('avatarUpload');
     const avatarPreview = document.getElementById('avatarPreview');
     let avatarFile      = null;
@@ -191,7 +196,7 @@
       reader.readAsDataURL(file);
     });
 
-    // 3) Upload avatar
+    // Upload avatar
     async function uploadAvatar(uid) {
       if (!avatarFile) return '';
       const ref  = storage.ref(`avatars/${uid}_${Date.now()}`);
@@ -199,7 +204,7 @@
       return await snap.ref.getDownloadURL();
     }
 
-    // 4) Create Profile
+    // Save profile
     document.getElementById('createProfileBtn').addEventListener('click', async () => {
       const email    = document.getElementById('profileEmail').value.trim();
       const password = document.getElementById('profilePassword').value;
@@ -220,11 +225,11 @@
       }
 
       try {
-        // Sign up
+        // 1) Sign up
         const cred = await auth.createUserWithEmailAndPassword(email, password);
         const uid  = cred.user.uid;
 
-        // Upload avatar
+        // 2) Upload avatar
         let avatarURL = '';
         try {
           avatarURL = await uploadAvatar(uid);
@@ -232,7 +237,7 @@
           console.warn('Avatar upload failed:', e);
         }
 
-        // Save profile
+        // 3) Save profile
         const profileData = {
           uid, email, username,
           firstName, lastName, dob,
@@ -244,7 +249,7 @@
         };
         await db.ref(`users/${uid}`).set(profileData);
 
-        // Redirect
+        // 4) Redirect
         window.location.href = 'universe.html';
       } catch (err) {
         console.error('Profile creation error:', err);
