@@ -1,8 +1,19 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login • #HUMANITY</title>  <!-- Google Fonts -->  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet" />  <!-- Firebase SDKs -->  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>  <style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login • #HUMANITY</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet"/>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       background: #fff;
@@ -47,38 +58,34 @@
       transition: background 0.2s ease;
       margin-bottom: 12px;
     }
-    #loginBtn {
-      background: #202020;
-      color: #fff;
-    }
-    #loginBtn:hover {
-      background: #444;
-    }
+    #loginBtn { background: #202020; color: #fff; }
+    #loginBtn:hover { background: #444; }
     #registerBtn {
       background: transparent;
       color: #202020;
       border: 1px solid #202020;
     }
-    #registerBtn:hover {
-      background: #e0e0e0;
-    }
+    #registerBtn:hover { background: #e0e0e0; }
     .error {
       color: #c00;
       margin-bottom: 12px;
     }
-  </style></head>
+  </style>
+</head>
 <body>
   <div class="login-container">
     <h1>#HUMANITY Login</h1>
     <div id="error-message" class="error"></div>
-    <input type="email" id="email" placeholder="Email Address" required />
-    <input type="password" id="password" placeholder="Password" required />
+    <input type="email" id="email" placeholder="Email Address" required/>
+    <input type="password" id="password" placeholder="Password" required/>
     <button id="loginBtn">Log In</button>
     <button id="registerBtn">Register</button>
-  </div>  <script>
-    // Firebase project config
+  </div>
+
+  <script>
+    // Firebase configuration (correct one)
     const firebaseConfig = {
-      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9",
+      apiKey: "AIzaSyCUu1olq6dW8N7GqJLMFLmv3iwXT23bJ6g",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
       databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
       projectId: "hashhumanity-58b9a",
@@ -107,7 +114,6 @@
 
       auth.signInWithEmailAndPassword(email, password)
         .then((cred) => {
-          // Fetch user profile data
           return db.ref(`profiles/${cred.user.uid}`).once('value');
         })
         .then(snapshot => {
@@ -116,10 +122,10 @@
             sessionStorage.setItem('username', profile.username || '');
             sessionStorage.setItem('avatarUrl', profile.avatar || '');
           }
-          // Redirect to universe
           window.location.href = 'universe.html';
         })
         .catch(error => {
+          console.error('Login error:', error.code, error.message);
           errorDiv.textContent = error.message;
         });
     });
@@ -128,5 +134,6 @@
     document.getElementById('registerBtn').addEventListener('click', () => {
       window.location.href = 'create_profile.html';
     });
-  </script></body>
+  </script>
+</body>
 </html>
