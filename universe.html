@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>#HUMANITY Universe</title>
 
@@ -16,165 +16,134 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
   <style>
-    /* Global resets */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; margin:0; padding:0; }
     body {
-      background: #ffffff;
+      background: #fff;
       color: #202020;
       font-family: 'Merriweather', serif;
-      position: relative;
       text-align: center;
       padding: 20px;
     }
-
-    /* Logout button */
     .top-right {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      background: #000;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 16px;
-      font-family: 'Merriweather', serif;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background .2s;
-      z-index: 1000;
+      position: absolute; top:16px; right:16px;
+      background:#000; color:#fff;
+      border:none; border-radius:6px;
+      padding:8px 16px; cursor:pointer;
+      font-family:'Merriweather', serif;
+      transition:background .2s; z-index:1000;
     }
-    .top-right:hover { background: #333; }
-
+    .top-right:hover { background:#333; }
     h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.4rem;
-      margin: 16px 0;
+      font-family:'Playfair Display', serif;
+      font-size:2.4rem; margin:16px 0;
     }
-
-    /* Globe canvas */
     #globeCanvas {
-      display: block;
-      margin: 0 auto 16px;
-      width: 90vw; max-width: 380px; height: 380px;
+      display:block; margin:0 auto 16px;
+      width:90vw; max-width:380px; height:380px;
     }
-
-    /* New Post button */
     #openModal {
-      background: #000; color: #fff;
-      border: none; border-radius: 6px;
-      padding: 12px 32px; font-size:1rem;
-      cursor:pointer; margin-bottom:16px;
+      background:#000; color:#fff; border:none;
+      border-radius:6px; padding:12px 32px;
+      font-size:1rem; cursor:pointer; margin-bottom:16px;
       font-family:'Merriweather', serif;
     }
     #openModal:hover { background:#333; }
-
-    /* Modal overlay */
     .modal {
-      display: none; position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.1);
-      justify-content: center; align-items: center;
-      z-index: 999;
+      display:none; position:fixed;
+      top:0; left:0; right:0; bottom:0;
+      background:rgba(0,0,0,0.1);
+      justify-content:center; align-items:center;
+      z-index:999;
     }
-    .modal.show { display: flex; }
-
-    /* Modal content */
+    .modal.show { display:flex; }
     .modal-content {
-      background: #f0f0f0; padding: 24px;
-      border-radius: 12px; max-width: 360px; width: 90vw;
-      text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      background:#f0f0f0; padding:24px;
+      border-radius:12px; max-width:360px; width:90vw;
+      text-align:left; box-shadow:0 4px 12px rgba(0,0,0,0.2);
     }
     .modal-content h2 {
       font-family:'Playfair Display', serif;
-      margin-top: 0; margin-bottom: 12px;
+      margin-top:0; margin-bottom:12px;
     }
     .modal-content textarea {
-      width: 100%; min-height: 80px;
-      padding: 8px; border: 1px solid #ccc;
-      border-radius: 6px; resize: vertical;
-      font-family:'Merriweather', serif;
+      width:100%; min-height:80px;
+      padding:8px; border:1px solid #ccc;
+      border-radius:6px; font-family:'Merriweather', serif;
+      resize:vertical;
     }
     .modal-content input[type=file] {
-      margin: 12px 0; width: 100%;
+      margin:12px 0; width:100%;
     }
     #imagePreview {
-      max-width: 100%; display: none; margin-bottom: 12px;
+      max-width:100%; display:none; margin-bottom:12px;
     }
     .modal-actions {
-      text-align: right;
+      text-align:right;
     }
     .modal-actions button {
-      font-family: 'Merriweather', serif;
-      padding: 8px 20px; border: none; border-radius: 6px;
-      margin-left: 8px; cursor: pointer;
+      font-family:'Merriweather', serif;
+      padding:8px 20px; border:none; border-radius:6px;
+      margin-left:8px; cursor:pointer;
     }
     #postButton {
-      background: #000; color: #fff;
+      background:#000; color:#fff;
     }
-    #postButton:hover { background: #333; }
+    #postButton:hover { background:#333; }
     #closeModal {
-      background: #fff; color: #000; border: 1px solid #ccc;
+      background:#fff; color:#000; border:1px solid #ccc;
     }
-    #closeModal:hover { background: #e0e0e0; }
-
-    /* Posts feed */
+    #closeModal:hover { background:#e0e0e0; }
     #postsContainer {
-      margin: 24px auto; max-width: 600px; text-align: left;
+      margin:24px auto; max-width:600px; text-align:left;
     }
     .post-item {
-      background: #f0f0f0; border: 1px solid #ccc;
-      border-radius: 12px; padding: 16px; margin-bottom: 20px;
-      display: flex; gap: 12px; align-items: flex-start;
+      background:#f0f0f0; border:1px solid #ccc;
+      border-radius:12px; padding:16px; margin-bottom:20px;
+      display:flex; gap:12px; align-items:flex-start;
     }
     .avatar {
-      width: 48px; height: 48px; border-radius: 50%;
-      object-fit: cover;
+      width:48px; height:48px; border-radius:50%;
+      object-fit:cover;
     }
     .post-content {
-      flex: 1;
+      flex:1;
     }
     .post-content .username {
-      font-weight: 700; margin-right: 8px;
+      font-weight:700; margin-right:8px;
     }
     .post-content .timestamp {
-      font-size: .85rem; color: #555;
+      font-size:.85rem; color:#555;
     }
     .post-content .text {
-      margin: 8px 0;
+      margin:8px 0;
     }
     .uploaded {
-      max-width: 200px; margin-top: 8px;
-      border-radius: 6px;
+      max-width:200px; margin-top:8px;
+      border-radius:6px;
     }
     .like-btn, .delete-btn {
-      padding: 6px 12px; border: none; border-radius: 6px;
-      cursor: pointer; font-family: 'Merriweather', serif;
-      font-weight: 700; margin-right: 8px;
+      padding:6px 12px; border:none; border-radius:6px;
+      cursor:pointer; font-family:'Merriweather', serif;
+      font-weight:700; margin-right:8px;
     }
     .like-btn {
-      background: #fff; border: 1px solid #ccc;
+      background:#fff; border:1px solid #ccc;
     }
-    .like-btn:hover {
-      background: #ddd;
-    }
+    .like-btn:hover { background:#ddd; }
     .delete-btn {
-      background: #800; color: #fff;
+      background:#800; color:#fff;
     }
-    .delete-btn:hover {
-      background: #a00;
-    }
+    .delete-btn:hover { background:#a00; }
   </style>
 </head>
 
 <body>
-  <!-- Logout -->
   <button class="top-right" id="logoutBtn">Logout</button>
 
   <h1>The Universe</h1>
   <canvas id="globeCanvas" width="400" height="400"></canvas>
   <button id="openModal">📝 New Post</button>
 
-  <!-- Post Modal -->
   <div id="postModal" class="modal">
     <div class="modal-content">
       <h2>Feed the Human Feed…</h2>
@@ -188,12 +157,11 @@
     </div>
   </div>
 
-  <!-- Posts Container -->
   <div id="postsContainer"></div>
 
   <script>
-    // Initialize Firebase
-    const firebaseConfig = {
+    // Firebase init
+    const cfg = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
       databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
@@ -202,14 +170,14 @@
       messagingSenderId: "886745899016",
       appId: "1:886745899016:web:2b0f7e0434379d71bd"
     };
-    firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(cfg);
     const auth = firebase.auth();
     const db   = firebase.database();
     const storage = firebase.storage();
 
     let currentUserProfile = null;
 
-    // Redirect if not logged in, else load profile
+    // Redirect if not logged in
     auth.onAuthStateChanged(async user => {
       if (!user) return window.location.href = 'login.html';
       const snap = await db.ref(`users/${user.uid}`).once('value');
@@ -217,21 +185,19 @@
       if (!currentUserProfile) return window.location.href = 'createProfile.html';
     });
 
-    // Logout handler
+    // Logout
     document.getElementById('logoutBtn').onclick = async () => {
       await auth.signOut();
       window.location.href = 'login.html';
     };
 
-    // Modal & new-post logic
-    const openModalBtn  = document.getElementById('openModal'),
-          postModal     = document.getElementById('postModal'),
-          closeModalBtn = document.getElementById('closeModal'),
-          postButton    = document.getElementById('postButton'),
-          previewImg    = document.getElementById('imagePreview'),
-          textArea      = document.getElementById('newPostContent'),
-          fileInput     = document.getElementById('postImageUpload'),
-          postsContainer= document.getElementById('postsContainer');
+    // Modal open/close
+    const openModalBtn  = document.getElementById('openModal');
+    const postModal     = document.getElementById('postModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const previewImg    = document.getElementById('imagePreview');
+    const textArea      = document.getElementById('newPostContent');
+    const fileInput     = document.getElementById('postImageUpload');
 
     openModalBtn.onclick = () => {
       postModal.classList.add('show');
@@ -239,11 +205,9 @@
       textArea.value = '';
       fileInput.value = '';
     };
-    closeModalBtn.onclick = () => {
-      postModal.classList.remove('show');
-    };
+    closeModalBtn.onclick = () => postModal.classList.remove('show');
 
-    fileInput.addEventListener('change', ()=>{
+    fileInput.addEventListener('change', () => {
       const f = fileInput.files[0];
       if (f) {
         const r = new FileReader();
@@ -257,19 +221,14 @@
       }
     });
 
-    postButton.onclick = async () => {
-      if (!currentUserProfile) {
-        alert('Profile not loaded. Please reload.');
-        return;
-      }
+    // Post button
+    document.getElementById('postButton').onclick = async () => {
+      if (!currentUserProfile) return alert('Profile not loaded.');
+
       const content = textArea.value.trim();
       const file    = fileInput.files[0];
-      if (!content && !file) {
-        alert('Enter text or choose an image.');
-        return;
-      }
+      if (!content && !file) return alert('Enter text or choose an image.');
 
-      // Attempt image upload
       let imageUrl = '';
       if (file) {
         try {
@@ -281,7 +240,6 @@
         }
       }
 
-      // Push post
       await db.ref('posts').push({
         uid: auth.currentUser.uid,
         username: currentUserProfile.username,
@@ -295,6 +253,7 @@
       postModal.classList.remove('show');
     };
 
+    // Render posts
     function renderPost(p, key) {
       const div = document.createElement('div');
       div.className = 'post-item';
@@ -310,11 +269,10 @@
         <span class="username">${p.username}</span>
         <span class="timestamp">${new Date(p.timestamp).toLocaleString()}</span>
         <div class="text">${p.content.replace(/</g,'&lt;')}</div>
-        ${p.imageUrl?`<img class="uploaded" src="${p.imageUrl}">`:``}
+        ${p.imageUrl ? `<img class="uploaded" src="${p.imageUrl}">` : ''}
       `;
       div.appendChild(cd);
 
-      // Like button
       const likeBtn = document.createElement('button');
       likeBtn.className = 'like-btn';
       likeBtn.innerHTML = `👍 <span>${p.likes||0}</span>`;
@@ -326,8 +284,7 @@
       };
       cd.appendChild(likeBtn);
 
-      // Delete button (owner only)
-      if (auth.currentUser && p.uid === auth.currentUser.uid) {
+      if (p.uid === auth.currentUser.uid) {
         const delBtn = document.createElement('button');
         delBtn.className = 'delete-btn';
         delBtn.textContent = 'Delete';
@@ -339,18 +296,16 @@
         cd.appendChild(delBtn);
       }
 
-      postsContainer.prepend(div);
+      document.getElementById('postsContainer').prepend(div);
     }
 
     // Listen for posts
     db.ref('posts').on('value', snap => {
-      postsContainer.innerHTML = '';
-      snap.forEach(child => {
-        renderPost(child.val(), child.key);
-      });
+      document.getElementById('postsContainer').innerHTML = '';
+      snap.forEach(child => renderPost(child.val(), child.key));
     });
 
-    // Spinning globe setup
+    // Spinning globe
     const canvas   = document.getElementById('globeCanvas');
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
     renderer.setSize(400, 400);
@@ -362,7 +317,6 @@
     const earthTex = loader.load(
       'https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg'
     );
-
     const sphere = new THREE.Mesh(
       new THREE.SphereGeometry(1, 32, 32),
       new THREE.MeshStandardMaterial({ map: earthTex })
