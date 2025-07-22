@@ -1,13 +1,13 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login • #HUMANITY</title>  <!-- Google Fonts -->  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">  <!-- Firebase SDKs -->  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>  <style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login • #HUMANITY</title>  <!-- Google Fonts -->  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet" />  <!-- Firebase SDKs -->  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>  <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: #000;
-      color: #fff;
+      background: #fff;
       font-family: 'Merriweather', serif;
+      color: #202020;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -15,118 +15,118 @@
       padding: 20px;
     }
     .login-container {
-      background: #111;
+      background: #f0f0f0;
       padding: 40px 30px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
       width: 100%;
       max-width: 360px;
       text-align: center;
     }
-    h1 {
+    .login-container h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 2.5rem;
+      font-size: 2rem;
       margin-bottom: 1.5rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-    .login-container label {
-      display: block;
-      text-align: left;
-      margin-bottom: 0.5rem;
-      font-weight: bold;
+      color: #333;
     }
     .login-container input {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 1rem;
-      border: 1px solid #444;
-      border-radius: 4px;
-      background: #222;
-      color: #fff;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
     }
     .login-container button {
       width: 100%;
       padding: 12px;
       border: none;
-      border-radius: 4px;
-      background: #fff;
-      color: #000;
+      border-radius: 6px;
       font-size: 1rem;
-      font-weight: bold;
       cursor: pointer;
-      transition: background 0.3s ease;
+      transition: background 0.2s ease;
+      margin-bottom: 12px;
     }
-    .login-container button:hover {
-      background: #ddd;
-    }
-    .login-container .register-btn {
-      margin-top: 1rem;
-      background: transparent;
+    #loginBtn {
+      background: #202020;
       color: #fff;
-      border: 1px solid #fff;
     }
-    .login-container .register-btn:hover {
-      background: #fff;
-      color: #000;
+    #loginBtn:hover {
+      background: #444;
     }
-    .error-message {
-      color: #f33;
-      margin-bottom: 1rem;
-      display: none;
+    #registerBtn {
+      background: transparent;
+      color: #202020;
+      border: 1px solid #202020;
+    }
+    #registerBtn:hover {
+      background: #e0e0e0;
+    }
+    .error {
+      color: #c00;
+      margin-bottom: 12px;
     }
   </style></head>
 <body>
   <div class="login-container">
-    <h1>HASH HUMANITY</h1>
-    <div class="error-message" id="error-message"></div>
-    <label for="email">Email</label>
-    <input type="email" id="email" placeholder="you@example.com" required />
-    <label for="password">Password</label>
-    <input type="password" id="password" placeholder="••••••••" required /><button id="loginBtn">Log In</button>
-<button class="register-btn" id="registerBtn">Register</button>
-
+    <h1>#HUMANITY Login</h1>
+    <div id="error-message" class="error"></div>
+    <input type="email" id="email" placeholder="Email Address" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button id="loginBtn">Log In</button>
+    <button id="registerBtn">Register</button>
   </div>  <script>
-    // TODO: Replace with your Firebase project configuration
+    // Firebase project config
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      // ...
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
+      measurementId: "G-3ZTCXL4374"
     };
+
+    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    const db = firebase.database();
 
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
-    const errorMessage = document.getElementById('error-message');
+    // Handle login
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const errorDiv = document.getElementById('error-message');
+      errorDiv.textContent = '';
 
-    loginBtn.addEventListener('click', async () => {
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-      errorMessage.style.display = 'none';
-      try {
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        // store user info
-        localStorage.setItem('user', JSON.stringify(userCredential.user));
-        // redirect to universe page
-        window.location.href = 'universe.html';
-      } catch (error) {
-        errorMessage.textContent = error.message;
-        errorMessage.style.display = 'block';
+      if (!email || !password) {
+        errorDiv.textContent = 'Please enter both email and password.';
+        return;
       }
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then((cred) => {
+          // Fetch user profile data
+          return db.ref(`profiles/${cred.user.uid}`).once('value');
+        })
+        .then(snapshot => {
+          const profile = snapshot.val();
+          if (profile) {
+            sessionStorage.setItem('username', profile.username || '');
+            sessionStorage.setItem('avatarUrl', profile.avatar || '');
+          }
+          // Redirect to universe
+          window.location.href = 'universe.html';
+        })
+        .catch(error => {
+          errorDiv.textContent = error.message;
+        });
     });
 
-    registerBtn.addEventListener('click', () => {
+    // Handle register redirect
+    document.getElementById('registerBtn').addEventListener('click', () => {
       window.location.href = 'create_profile.html';
-    });
-
-    // Auto-redirect if already logged in
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        window.location.href = 'universe.html';
-      }
     });
   </script></body>
 </html>
