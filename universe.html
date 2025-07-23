@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>#HUMANITY Universe</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet"/>
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -41,11 +41,6 @@
     .post-content .timestamp { font-size:.85rem; color:#555; }
     .post-content .text { margin:8px 0; }
     .uploaded { max-width:200px; margin-top:8px; border-radius:6px; }
-    .like-btn, .delete-btn { padding:6px 12px; border:none; border-radius:6px; cursor:pointer; font-family:'Merriweather',serif; font-weight:700; margin-right:8px; }
-    .like-btn { background:#fff; border:1px solid #ccc; }
-    .like-btn:hover { background:#ddd; }
-    .delete-btn { background:#800; color:#fff; }
-    .delete-btn:hover { background:#a00; }
   </style>
 </head>
 <body>
@@ -54,12 +49,11 @@
   <h1>The Universe</h1>
   <canvas id="globeCanvas" width="400" height="400"></canvas>
   <button id="openModal" type="button">📝 New Post</button>
-  <div id="postModal" class="modal">
+  <div id="postModal" class="modal" role="dialog" aria-modal="true">
     <div class="modal-content">
       <h2>Feed the Human Feed…</h2>
-      <textarea id="newPostContent" placeholder="What’s on your mind?"></textarea>
-      <input type="file" id="postImageUpload" accept="image/*">
-      <div id="fileInfo" class="file-info"></div>
+      <textarea id="postText" placeholder="What’s on your mind?"></textarea>
+      <input type="file" id="postImage" accept="image/*">
       <img id="imagePreview" alt="Image Preview">
       <div class="modal-actions">
         <button id="postButton" type="button">Post</button>
@@ -68,6 +62,7 @@
     </div>
   </div>
   <div id="postsContainer"></div>
+
   <script>
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const firebaseConfig = {
@@ -108,15 +103,13 @@
       const modal = document.getElementById('postModal');
       const closeBtn = document.getElementById('closeModal');
       const preview = document.getElementById('imagePreview');
-      const fileInfo = document.getElementById('fileInfo');
-      const txt = document.getElementById('newPostContent');
-      const fileInp = document.getElementById('postImageUpload');
+      const txt = document.getElementById('postText');
+      const fileInp = document.getElementById('postImage');
       const postBtn = document.getElementById('postButton');
 
       openBtn.onclick = () => {
         modal.classList.add('show');
         preview.style.display = 'none';
-        fileInfo.textContent = '';
         txt.value = '';
         fileInp.value = '';
       };
@@ -125,8 +118,12 @@
       fileInp.onchange = () => {
         const img = fileInp.files[0];
         if (img) {
-          fileInfo.textContent = `File: ${img.name} (${(img.size / 1024 / 1024).toFixed(2)} MB)`;
-          if (img.size > MAX_FILE_SIZE) fileInfo.textContent += ' — Too large! Max 5MB.';
+          if (img.size > MAX_FILE_SIZE) {
+            alert('Image too large! Max 5MB.');
+            fileInp.value = '';
+            preview.style.display = 'none';
+            return;
+          }
           const reader = new FileReader();
           reader.onload = () => {
             preview.src = reader.result;
@@ -134,7 +131,6 @@
           };
           reader.readAsDataURL(img);
         } else {
-          fileInfo.textContent = '';
           preview.style.display = 'none';
         }
       };
@@ -143,57 +139,48 @@
         const content = txt.value.trim();
         const imgFile = fileInp.files[0];
         if (!content && !imgFile) return alert('Enter text or choose an image.');
-        if (imgFile && imgFile.size > MAX_FILE_SIZE) return alert('Image exceeds 5MB limit.');
 
-        let imageUrl = '';
-        if (imgFile) {
-          try {
-            console.log('[DEBUG] Uploading:', imgFile.name, imgFile.size, imgFile.type);
+        postBtn.disabled = true;
+
+        try {
+          let imageUrl = '';
+          if (imgFile) {
             const path = `postImages/${auth.currentUser.uid}_${Date.now()}_${imgFile.name}`;
             const snap = await storage.ref().child(path).put(imgFile);
             imageUrl = await snap.ref.getDownloadURL();
-            console.log('[DEBUG] Uploaded Image URL:', imageUrl);
-          } catch (e) {
-            console.error('[ERROR] Upload failed:', e);
-            return alert('Image upload failed. Check console or CORS settings.');
           }
-        }
 
-        const postData = {
-          uid: auth.currentUser.uid,
-          username: currentUserProfile?.username || 'Anonymous',
-          avatar: currentUserProfile?.avatar || '',
-          content,
-          imageUrl,
-          timestamp: Date.now(),
-          likes: 0
-        };
+          const postData = {
+            uid: auth.currentUser.uid,
+            username: currentUserProfile?.username || 'Anonymous',
+            avatar: currentUserProfile?.avatar || '',
+            content,
+            imageUrl,
+            timestamp: Date.now(),
+            likes: 0
+          };
 
-        try {
-          const newRef = await db.ref('posts').push(postData);
-          console.log('[DEBUG] Post created with key:', newRef.key);
+          await db.ref('posts').push(postData);
+
+          modal.classList.remove('show');
+          txt.value = '';
+          fileInp.value = '';
+          preview.style.display = 'none';
+
         } catch (e) {
-          console.error('[ERROR] Post push failed:', e);
-          return alert('Failed to save post.');
+          alert('Failed to post: ' + e.message);
+        } finally {
+          postBtn.disabled = false;
         }
-
-        modal.classList.remove('show');
-        txt.value = '';
-        fileInp.value = '';
-        preview.style.display = 'none';
-        fileInfo.textContent = '';
       };
     }
 
     function listenForPosts() {
       const container = document.getElementById('postsContainer');
-      db.ref('posts').on('value', snap => {
-        console.log('[DEBUG] Feed snapshot exists:', snap.exists());
-        console.log('[DEBUG] Feed data:', snap.val());
+      db.ref('posts').orderByChild('timestamp').on('value', snapshot => {
         container.innerHTML = '';
-        snap.forEach(child => {
+        snapshot.forEach(child => {
           const p = child.val();
-          const key = child.key;
           const div = document.createElement('div');
           div.className = 'post-item';
           const avatar = document.createElement('img');
@@ -209,23 +196,12 @@
             ${p.imageUrl ? `<img class="uploaded" src="${p.imageUrl}">` : ''}
           `;
           div.appendChild(cd);
-          const likeBtn = document.createElement('button');
-          likeBtn.className = 'like-btn';
-          likeBtn.innerHTML = `👍 <span>${p.likes || 0}</span>`;
-          likeBtn.onclick = () => db.ref(`posts/${key}`).transaction(x => { if (x) x.likes = (x.likes || 0) + 1; return x; });
-          cd.appendChild(likeBtn);
-          if (p.uid === auth.currentUser.uid) {
-            const delBtn = document.createElement('button');
-            delBtn.className = 'delete-btn';
-            delBtn.textContent = 'Delete';
-            delBtn.onclick = () => db.ref(`posts/${key}`).remove();
-            cd.appendChild(delBtn);
-          }
           container.prepend(div);
         });
       });
     }
 
+    // Simple globe render (optional)
     const canvas = document.getElementById('globeCanvas');
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
     renderer.setSize(400, 400);
@@ -239,7 +215,11 @@
     const light = new THREE.DirectionalLight(0xffffff, 1.2);
     light.position.set(5, 3, 5);
     scene.add(light);
-    (function animate() { requestAnimationFrame(animate); sphere.rotation.y += 0.002; renderer.render(scene, camera); })();
+    (function animate() {
+      requestAnimationFrame(animate);
+      sphere.rotation.y += 0.002;
+      renderer.render(scene, camera);
+    })();
   </script>
 </body>
 </html>
