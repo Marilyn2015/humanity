@@ -1,14 +1,20 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>#HUMANITY Universe</title>
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+  <!-- Three.js for Globe -->
+  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
   <style>
+    /* Base & Fonts */
     body {
       font-family: 'Merriweather', serif;
       background: #000;
@@ -17,13 +23,20 @@
       padding: 0;
     }
     header {
+      font-family: 'Playfair Display', serif;
       padding: 20px;
       text-align: center;
       background: #111;
-      font-size: 24px;
-      font-weight: bold;
+      font-size: 2rem;
       letter-spacing: 1px;
     }
+    /* Globe */
+    #globeContainer {
+      width: 100%;
+      height: 300px;
+      /* no border, just the raw canvas */
+    }
+    /* New Post Button */
     #newPostBtn {
       position: fixed;
       bottom: 30px;
@@ -39,6 +52,7 @@
       cursor: pointer;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
+    /* Modal */
     #postModal {
       display: none;
       position: fixed;
@@ -50,6 +64,7 @@
       border-radius: 12px;
       width: 90%;
       max-width: 400px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
       z-index: 100;
     }
     .modal.show { display: block; }
@@ -59,18 +74,18 @@
       padding: 10px;
       border-radius: 6px;
       border: none;
+      font-family: inherit;
+    }
+    /* Posts */
+    #postFeed {
+      padding: 20px 0;
     }
     .post {
       background: #111;
-      margin: 20px;
+      margin: 20px auto;
       padding: 15px;
+      max-width: 600px;
       border-radius: 10px;
-    }
-    .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
     }
     .post-header {
       display: flex;
@@ -78,12 +93,25 @@
       gap: 10px;
       margin-bottom: 10px;
     }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .post img {
+      width: 100%;
+      height: auto;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
     .like-btn, .delete-btn {
       background: none;
       border: none;
       color: #ccc;
       cursor: pointer;
       margin-right: 10px;
+      font-size: 1.2rem;
     }
     .like-btn.liked {
       color: #1db954;
@@ -91,14 +119,52 @@
   </style>
 </head>
 <body>
-  <header>#HUMANITY Universe</header>  <div id="postFeed"></div><button id="newPostBtn">+</button>
+  <header>#HUMANITY Universe</header>
 
+  <!-- Globe Visualization -->
+  <div id="globeContainer"></div>
+
+  <!-- Post Feed & Button -->
+  <div id="postFeed"></div>
+  <button id="newPostBtn">+</button>
+
+  <!-- Post Modal -->
   <div id="postModal" class="modal">
     <textarea id="postText" placeholder="What's on your mind?"></textarea>
     <input type="file" id="postImage" accept="image/*">
     <button onclick="submitPost()">Post</button>
     <button onclick="closeModal()">Cancel</button>
-  </div>  <script>
+  </div>
+
+  <script>
+    // ——— Three.js Globe Setup ———
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 300, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, 300);
+    document.getElementById('globeContainer').appendChild(renderer.domElement);
+
+    const geometry = new THREE.SphereGeometry(2, 64, 64);
+    const texture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/earth_atmos_2048.jpg');
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const globe = new THREE.Mesh(geometry, material);
+    scene.add(globe);
+
+    camera.position.z = 5;
+    function animate() {
+      requestAnimationFrame(animate);
+      globe.rotation.y += 0.001;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, 300);
+      camera.aspect = window.innerWidth / 300;
+      camera.updateProjectionMatrix();
+    });
+
+    // ——— Firebase Initialization ———
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -108,12 +174,12 @@
       messagingSenderId: "886745899016",
       appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
     };
-
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
     const storage = firebase.storage();
 
+    // ——— Modal & Posting Logic ———
     const modal = document.getElementById('postModal');
     document.getElementById('newPostBtn').onclick = () => modal.classList.add('show');
     function closeModal() { modal.classList.remove('show'); }
@@ -122,31 +188,30 @@
       const user = auth.currentUser;
       const text = document.getElementById('postText').value.trim();
       const imageFile = document.getElementById('postImage').files[0];
-
       if (!text && !imageFile) return alert("Nothing to post.");
 
       const userId = user.uid;
       db.ref('users/' + userId).once('value').then(snap => {
-        const userData = snap.val();
+        const u = snap.val();
         const postData = {
           uid: userId,
-          username: userData.username,
-          avatar: userData.avatar,
+          username: u.username,
+          avatar: u.avatar,
           text,
           timestamp: Date.now()
         };
-
         const postRef = db.ref('posts').push();
         if (imageFile) {
-          const imgRef = storage.ref('posts/' + postRef.key);
-          imgRef.put(imageFile).then(snap => snap.ref.getDownloadURL()).then(url => {
-            postData.image = url;
-            postRef.set(postData);
-          });
+          storage.ref('posts/' + postRef.key)
+            .put(imageFile)
+            .then(s => s.ref.getDownloadURL())
+            .then(url => {
+              postData.image = url;
+              postRef.set(postData);
+            });
         } else {
           postRef.set(postData);
         }
-
         document.getElementById('postText').value = '';
         document.getElementById('postImage').value = '';
         closeModal();
@@ -157,25 +222,24 @@
     function loadPosts() {
       const feed = document.getElementById('postFeed');
       feed.innerHTML = '';
-      db.ref('posts').orderByChild('timestamp').once('value').then(snapshot => {
-        snapshot.forEach(child => {
-          const post = child.val();
-          const postId = child.key;
-          const div = document.createElement('div');
-          div.className = 'post';
-          div.innerHTML = `
+      db.ref('posts').orderByChild('timestamp').once('value').then(snap => {
+        snap.forEach(child => {
+          const p = child.val(), id = child.key;
+          const el = document.createElement('div');
+          el.className = 'post';
+          el.innerHTML = `
             <div class="post-header">
-              <img src="${post.avatar}" class="avatar" />
-              <strong>${post.username}</strong>
+              <img src="${p.avatar}" class="avatar">
+              <strong>${p.username}</strong>
             </div>
-            <div>${post.text || ''}</div>
-            ${post.image ? `<img src="${post.image}" style="width:100%;margin-top:10px;border-radius:6px;">` : ''}
+            <div>${p.text || ''}</div>
+            ${p.image ? `<img src="${p.image}">` : ''}
             <div style="margin-top:10px;">
-              <button class="like-btn" onclick="likePost('${postId}', this)">❤️</button>
-              <button class="delete-btn" onclick="deletePost('${postId}')">🗑️</button>
+              <button class="like-btn" onclick="likePost('${id}', this)">❤️</button>
+              <button class="delete-btn" onclick="deletePost('${id}')">🗑️</button>
             </div>
           `;
-          feed.prepend(div);
+          feed.prepend(el);
         });
       });
     }
@@ -186,9 +250,9 @@
 
     function deletePost(postId) {
       const user = auth.currentUser;
-      db.ref('posts/' + postId).once('value').then(snapshot => {
-        if (snapshot.val().uid === user.uid) {
-          db.ref('posts/' + postId).remove().then(() => loadPosts());
+      db.ref('posts/' + postId).once('value').then(snap => {
+        if (snap.val().uid === user.uid) {
+          db.ref('posts/' + postId).remove().then(loadPosts);
         } else {
           alert("You can only delete your own posts.");
         }
@@ -196,11 +260,9 @@
     }
 
     auth.onAuthStateChanged(user => {
-      if (!user) {
-        window.location.href = 'login.html';
-      } else {
-        loadPosts();
-      }
+      if (!user) return window.location.href = 'login.html';
+      loadPosts();
     });
-  </script></body>
+  </script>
+</body>
 </html>
