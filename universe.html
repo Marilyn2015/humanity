@@ -1,42 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>#HUMANITY Universe</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet"/>
+
+  <!-- Firebase & Three.js -->
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+
+  <!-- Styles -->
   <style>
-    /* Your existing styles (unchanged) */
-    /* KEEPING YOUR STYLES AS IS */
-    /* ...snipped to save space, it's all the same... */
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    #globeCanvas {
+      display: block;
+      margin: 20px auto;
+      width: 400px;
+      height: 400px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #333;
+    }
+
+    .post-item {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin: 10px auto;
+      width: 60%;
+      border-radius: 8px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .post-item img.avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+
+    .post-item img.uploaded {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .modal {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 20px;
+      border: 2px solid #000;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    textarea {
+      width: 300px;
+      height: 80px;
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    input[type='file'] {
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      background: #000;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    .top-left {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+    }
+
+    .top-right {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
   </style>
 </head>
 <body>
-  <button class="top-right" id="logoutBtn">Logout</button>
-  <button class="top-right" style="right:120px;" id="profileBtn">Profile</button>
+  <button class="top-left" onclick="window.location.href='view_profile.html'">My Profile</button>
+  <button class="top-right" onclick="window.location.href='login.html'">Logout</button>
+
+  <canvas id="globeCanvas"></canvas>
   <h1>The Universe</h1>
-  <canvas id="globeCanvas" width="400" height="400"></canvas>
-  <button id="openModal" type="button">📝 New Post</button>
-  <div id="postModal" class="modal" role="dialog" aria-modal="true">
-    <div class="modal-content">
-      <h2>Feed the Human Feed…</h2>
-      <textarea id="postText" placeholder="What’s on your mind?"></textarea>
-      <input type="file" id="postImage" accept="image/*">
-      <img id="imagePreview" alt="Image Preview">
-      <div class="modal-actions">
-        <button id="postButton" type="button">Post</button>
-        <button id="closeModal" type="button">Cancel</button>
-      </div>
-    </div>
+  <button id="openModal">Feed the Human Feed...</button>
+
+  <div id="postModal" class="modal">
+    <textarea id="newPostContent" placeholder="Feed the Human Feed..."></textarea><br />
+    <input type="file" id="postImageUpload" accept="image/*" /><br />
+    <button id="postButton">Post</button>
+    <button id="closeModal">Cancel</button>
   </div>
+
   <div id="postsContainer"></div>
+
   <script>
-    const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -46,152 +138,118 @@
       messagingSenderId: "886745899016",
       appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
     };
+
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
     const db = firebase.database();
     const storage = firebase.storage();
-    let currentUserProfile = null;
+    const postsContainer = document.getElementById("postsContainer");
 
-    auth.onAuthStateChanged(async user => {
-      if (!user) return window.location.href = 'login.html';
-      const snap = await db.ref(`users/${user.uid}`).once('value');
-      currentUserProfile = snap.val();
-      if (!currentUserProfile) return window.location.href = 'create_profile.html';
-      setupPostModal();
-      listenForPosts();
+    const avatars = [
+      "https://randomuser.me/api/portraits/men/32.jpg",
+      "https://randomuser.me/api/portraits/women/44.jpg",
+      "https://randomuser.me/api/portraits/men/12.jpg",
+      "https://randomuser.me/api/portraits/women/68.jpg"
+    ];
+
+    function displayPost(content, timestamp, imageUrl = "") {
+      const postElement = document.createElement("div");
+      postElement.className = "post-item";
+
+      const avatar = document.createElement("img");
+      avatar.className = "avatar";
+      avatar.src = avatars[Math.floor(Math.random() * avatars.length)];
+      postElement.appendChild(avatar);
+
+      const text = document.createElement("div");
+      text.innerHTML = `<strong>${new Date(timestamp).toLocaleString()}</strong><br>${content}`;
+      postElement.appendChild(text);
+
+      if (imageUrl) {
+        const postImg = document.createElement("img");
+        postImg.src = imageUrl;
+        postImg.className = "uploaded";
+        postElement.appendChild(postImg);
+      }
+
+      postsContainer.prepend(postElement);
+    }
+
+    db.ref("posts").on("value", (snapshot) => {
+      postsContainer.innerHTML = "";
+      snapshot.forEach((child) => {
+        const post = child.val();
+        displayPost(post.content || "", post.timestamp, post.imageUrl || "");
+      });
     });
 
-    document.getElementById('logoutBtn').onclick = async () => {
-      await auth.signOut();
-      window.location.href = 'login.html';
-    };
+    document.getElementById("openModal").addEventListener("click", () => {
+      document.getElementById("postModal").style.display = "flex";
+    });
 
-    document.getElementById('profileBtn').onclick = () => {
-      window.location.href = 'view_profile.html';
-    };
+    document.getElementById("closeModal").addEventListener("click", () => {
+      document.getElementById("postModal").style.display = "none";
+    });
 
-    function setupPostModal() {
-      const openBtn = document.getElementById('openModal');
-      const modal = document.getElementById('postModal');
-      const closeBtn = document.getElementById('closeModal');
-      const preview = document.getElementById('imagePreview');
-      const txt = document.getElementById('postText');
-      const fileInp = document.getElementById('postImage');
-      const postBtn = document.getElementById('postButton');
+    document.getElementById("postButton").addEventListener("click", async () => {
+      const content = document.getElementById("newPostContent").value.trim();
+      const file = document.getElementById("postImageUpload").files[0];
 
-      openBtn.onclick = () => {
-        modal.classList.add('show');
-        preview.style.display = 'none';
-        txt.value = '';
-        fileInp.value = '';
-      };
-      closeBtn.onclick = () => modal.classList.remove('show');
+      if (!content && !file) {
+        alert("Please add text or select an image.");
+        return;
+      }
 
-      fileInp.onchange = () => {
-        const img = fileInp.files[0];
-        if (img) {
-          if (img.size > MAX_FILE_SIZE) {
-            alert('Image too large! Max 5MB.');
-            fileInp.value = '';
-            preview.style.display = 'none';
-            return;
-          }
-          const reader = new FileReader();
-          reader.onload = () => {
-            preview.src = reader.result;
-            preview.style.display = 'block';
-          };
-          reader.readAsDataURL(img);
-        } else {
-          preview.style.display = 'none';
-        }
-      };
-
-      postBtn.onclick = async () => {
-        const content = txt.value.trim();
-        const imgFile = fileInp.files[0];
-        if (!content && !imgFile) return alert('Enter text or choose an image.');
-        postBtn.disabled = true;
+      let imageUrl = "";
+      if (file) {
         try {
-          let imageUrl = '';
-          if (imgFile) {
-            const path = `postImages/${auth.currentUser.uid}_${Date.now()}_${imgFile.name}`;
-            const snap = await storage.ref().child(path).put(imgFile);
-            imageUrl = await snap.ref.getDownloadURL();
-          }
-          const postData = {
-            uid: auth.currentUser.uid,
-            username: currentUserProfile?.username || 'Anonymous',
-            avatar: currentUserProfile?.avatar || '',
-            content,
-            imageUrl,
-            timestamp: Date.now(),
-            likes: 0
-          };
-          await db.ref('posts').push(postData);
-          modal.classList.remove('show');
-          txt.value = '';
-          fileInp.value = '';
-          preview.style.display = 'none';
-        } catch (e) {
-          alert('Failed to post: ' + e.message);
-          console.error(e);
-        } finally {
-          postBtn.disabled = false;
+          const imageRef = storage.ref("postImages/" + Date.now() + "_" + file.name);
+          const snapshot = await imageRef.put(file);
+          imageUrl = await snapshot.ref.getDownloadURL();
+        } catch (err) {
+          console.error("Image upload failed:", err);
+          alert("Upload failed, try again.");
         }
-      };
-    }
+      }
 
-    function listenForPosts() {
-      const container = document.getElementById('postsContainer');
-      db.ref('posts').orderByChild('timestamp').on('value', snapshot => {
-        container.innerHTML = '';
-        snapshot.forEach(child => {
-          const p = child.val();
-          const div = document.createElement('div');
-          div.className = 'post-item';
-
-          const avatar = document.createElement('img');
-          avatar.className = 'avatar';
-          avatar.src = p.avatar || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" fill="%23ccc"/><text x="24" y="28" font-size="16" fill="%23666" text-anchor="middle" font-family="Arial">?</text></svg>';
-          div.appendChild(avatar);
-
-          const cd = document.createElement('div');
-          cd.className = 'post-content';
-
-          const safeText = (p.content || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-
-          cd.innerHTML = `
-            <span class="username">${p.username}</span>
-            <span class="timestamp">${new Date(p.timestamp).toLocaleString()}</span>
-            <div class="text">${safeText}</div>
-            ${p.imageUrl ? `<img class="uploaded" src="${p.imageUrl}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;120&quot; height=&quot;120&quot;><rect width=&quot;120&quot; height=&quot;120&quot; fill=&quot;%23eee&quot;/><text x=&quot;60&quot; y=&quot;70&quot; font-size=&quot;18&quot; fill=&quot;%23666&quot; text-anchor=&quot;middle&quot; font-family=&quot;Arial&quot;>No Img</text></svg>';">` : ''}
-          `;
-          div.appendChild(cd);
-          container.prepend(div);
-        });
+      await db.ref("posts").push({
+        content,
+        imageUrl,
+        timestamp: Date.now()
       });
-    }
 
-    // Globe rendering (unchanged)
-    const canvas = document.getElementById('globeCanvas');
+      document.getElementById("newPostContent").value = "";
+      document.getElementById("postImageUpload").value = "";
+      document.getElementById("postModal").style.display = "none";
+    });
+
+    // 🌍 Spinning 3D Globe
+    const canvas = document.getElementById("globeCanvas");
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
     renderer.setSize(400, 400);
+
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
     camera.position.z = 3;
-    const loader = new THREE.TextureLoader();
-    const earthTex = loader.load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg');
-    const sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshStandardMaterial({ map: earthTex }));
+
+    const textureLoader = new THREE.TextureLoader();
+    const earthTexture = textureLoader.load("https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg");
+
+    const sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 32, 32),
+      new THREE.MeshStandardMaterial({ map: earthTexture })
+    );
     scene.add(sphere);
-    const light = new THREE.DirectionalLight(0xffffff, 1.2);
+
+    const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(5, 3, 5);
     scene.add(light);
-    (function animate() {
+
+    function animate() {
       requestAnimationFrame(animate);
       sphere.rotation.y += 0.002;
       renderer.render(scene, camera);
-    })();
+    }
+    animate();
   </script>
 </body>
 </html>
