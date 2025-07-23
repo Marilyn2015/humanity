@@ -13,34 +13,113 @@
   <style>
     * { box-sizing: border-box; margin:0; padding:0; }
     body { background:#fff; color:#202020; font-family:'Merriweather',serif; text-align:center; padding:20px; position:relative; }
-    .top-right { position:absolute; top:16px; right:16px; background:#000; color:#fff; border:none; border-radius:6px; padding:8px 16px; cursor:pointer; font-family:'Merriweather',serif; transition:background .2s; }
-    .top-right:hover { background:#333; }
+    .top-right { position:absolute; top:16px; right:16px; background:#000; color:#fff; border:none; border-radius:8px; padding:10px 22px; cursor:pointer; font-family:'Merriweather',serif; transition:background .2s; font-size:1rem; }
+    .top-right:hover { background:#222; }
     h1 { font-family:'Playfair Display',serif; font-size:2.4rem; margin:16px 0; }
     #globeCanvas { display:block; margin:0 auto 16px; width:90vw; max-width:380px; height:380px; }
-    #openModal { background:#000; color:#fff; border:none; border-radius:6px; padding:12px 32px; font-size:1rem; cursor:pointer; margin-bottom:16px; font-family:'Merriweather',serif; transition:background .2s; }
-    #openModal:hover { background:#333; }
-    .modal { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:999; }
+    #openModal {
+      background:#000;
+      color:#fff;
+      border:none;
+      border-radius:10px;
+      padding:16px 36px;
+      font-size:1.05rem;
+      font-family:'Merriweather',serif;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+      margin-bottom:18px;
+      letter-spacing:.03em;
+      cursor:pointer;
+      transition: background .25s, box-shadow .25s;
+    }
+    #openModal:hover { background:#222; box-shadow:0 4px 24px rgba(0,0,0,0.14); }
+    .modal { display:none; position:fixed; z-index:999; inset:0; background:rgba(0,0,0,0.52); justify-content:center; align-items:center; animation: fadeIn .18s; }
     .modal.show { display:flex; }
-    .modal-content { background:#fff; padding:24px; border-radius:12px; max-width:360px; width:90vw; text-align:left; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
-    .modal-content h2 { font-family:'Playfair Display',serif; margin-top:0; margin-bottom:12px; }
-    .modal-content textarea { width:100%; min-height:80px; padding:8px; border:1px solid #ccc; border-radius:6px; resize:vertical; font-family:'Merriweather',serif; }
-    .modal-content input[type=file] { margin:12px 0; width:100%; }
-    #imagePreview { max-width:100%; display:none; margin-bottom:12px; border-radius:6px; }
-    .file-info { font-size:0.85rem; color:#555; margin-bottom:8px; }
+    .modal-content {
+      background:rgba(25,25,28,0.96);
+      border-radius: 20px;
+      max-width: 420px;
+      width: 92vw;
+      padding:32px 30px 22px 30px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px #1e1e1e inset;
+      text-align:left;
+      color: #fafcff;
+      position:relative;
+      animation: popIn .22s cubic-bezier(.45,1.7,.54,.98);
+      backdrop-filter: blur(16px) saturate(180%);
+    }
+    .modal-content h2 { font-family:'Playfair Display',serif; margin-bottom:16px; font-size:1.25rem; font-weight:700; }
+    .modal-content textarea {
+      width:100%; min-height:96px; font-size:1rem;
+      padding:10px; border-radius:10px; border:1.5px solid #3a3a3a;
+      background:rgba(255,255,255,0.06); color:#fff;
+      font-family:'Merriweather',serif; margin-bottom:16px;
+      transition: border .18s;
+    }
+    .modal-content textarea:focus { border:1.5px solid #0af; outline:none; }
+    .modal-content input[type=file] { margin:8px 0 16px 0; width:100%; color:#fff; }
+    #imagePreview {
+      max-width: 220px;
+      max-height: 140px;
+      object-fit:cover;
+      display:none;
+      margin:0 auto 14px auto;
+      border-radius:10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+      border:1.5px solid #222;
+      background:#fff;
+    }
     .modal-actions { text-align:right; }
-    .modal-actions button { font-family:'Merriweather',serif; padding:8px 20px; border:none; border-radius:6px; margin-left:8px; cursor:pointer; }
-    #postButton { background:#000; color:#fff; }
-    #postButton:hover { background:#333; }
-    #closeModal { background:#fff; color:#000; border:1px solid #ccc; }
-    #closeModal:hover { background:#e0e0e0; }
-    #postsContainer { margin:24px auto; max-width:600px; text-align:left; }
-    .post-item { background:#f0f0f0; border:1px solid #ccc; border-radius:12px; padding:16px; margin-bottom:20px; display:flex; gap:12px; align-items:flex-start; }
-    .avatar { width:48px; height:48px; border-radius:50%; object-fit:cover; }
+    .modal-actions button {
+      font-family:'Merriweather',serif;
+      padding:10px 26px; font-size:1rem;
+      border:none; border-radius:10px;
+      margin-left:10px; margin-top:8px;
+      cursor:pointer; font-weight:600;
+      transition: background .17s, color .17s;
+    }
+    #postButton { background:#0af; color:#fff; }
+    #postButton:hover { background:#07c; }
+    #closeModal { background:#fff; color:#333; border:1.5px solid #bbb; }
+    #closeModal:hover { background:#eaeaea; color:#111; }
+    #postsContainer { margin:28px auto; max-width:630px; text-align:left; }
+    .post-item {
+      background:rgba(245,245,245,1);
+      border:1.5px solid #eee;
+      border-radius:16px;
+      padding:18px 16px 16px 16px;
+      margin-bottom:22px;
+      display:flex; gap:16px; align-items:flex-start;
+      box-shadow:0 1px 6px rgba(0,0,0,0.04);
+      transition:box-shadow .2s;
+    }
+    .post-item:hover { box-shadow: 0 2px 18px rgba(0,0,0,0.10); }
+    .avatar {
+      width:54px; height:54px;
+      border-radius:50%; object-fit:cover;
+      box-shadow:0 0 0 1.5px #0af;
+      background:#fff;
+      margin-top:2px;
+    }
     .post-content { flex:1; }
-    .post-content .username { font-weight:700; margin-right:8px; }
-    .post-content .timestamp { font-size:.85rem; color:#555; }
-    .post-content .text { margin:8px 0; }
-    .uploaded { max-width:200px; margin-top:8px; border-radius:6px; }
+    .post-content .username { font-weight:800; margin-right:10px; color:#20253a; font-size:1.06rem;}
+    .post-content .timestamp { font-size:.91rem; color:#666; }
+    .post-content .text { margin:10px 0 2px 0; color:#191919; font-size:1.05rem;}
+    .uploaded {
+      max-width:180px;
+      max-height:120px;
+      margin-top:9px;
+      border-radius:10px;
+      object-fit:cover;
+      border:1.2px solid #ddd;
+      background:#fff;
+      display:block;
+      box-shadow:0 1px 6px rgba(0,0,0,0.09);
+    }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    @keyframes popIn {
+      from { transform: scale(0.88) translateY(22px); opacity:.65; }
+      to { transform: scale(1) translateY(0); opacity:1; }
+    }
   </style>
 </head>
 <body>
@@ -62,7 +141,6 @@
     </div>
   </div>
   <div id="postsContainer"></div>
-
   <script>
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
     const firebaseConfig = {
@@ -72,7 +150,7 @@
       projectId: "hashhumanity-58b9a",
       storageBucket: "hashhumanity-58b9a.appspot.com",
       messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e0434379d71bd"
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
@@ -136,43 +214,51 @@
       };
 
       postBtn.onclick = async () => {
-        const content = txt.value.trim();
-        const imgFile = fileInp.files[0];
-        if (!content && !imgFile) return alert('Enter text or choose an image.');
-
-        postBtn.disabled = true;
-
-        try {
-          let imageUrl = '';
-          if (imgFile) {
-            const path = `postImages/${auth.currentUser.uid}_${Date.now()}_${imgFile.name}`;
-            const snap = await storage.ref().child(path).put(imgFile);
-            imageUrl = await snap.ref.getDownloadURL();
-          }
-
-          const postData = {
-            uid: auth.currentUser.uid,
-            username: currentUserProfile?.username || 'Anonymous',
-            avatar: currentUserProfile?.avatar || '',
-            content,
-            imageUrl,
-            timestamp: Date.now(),
-            likes: 0
-          };
-
-          await db.ref('posts').push(postData);
-
-          modal.classList.remove('show');
-          txt.value = '';
-          fileInp.value = '';
-          preview.style.display = 'none';
-
-        } catch (e) {
-          alert('Failed to post: ' + e.message);
-        } finally {
-          postBtn.disabled = false;
-        }
-      };
+  alert("Hello from POST button!");
+  console.log("POST button clicked");
+  const content = txt.value.trim();
+  const imgFile = fileInp.files[0];
+  if (!content && !imgFile) return alert('Enter text or choose an image.');
+  postBtn.disabled = true;
+  try {
+    let imageUrl = '';
+    if (imgFile) {
+      // EXTRA LOGGING
+      console.log("Uploading image:", imgFile);
+      const path = `postImages/${auth.currentUser.uid}_${Date.now()}_${imgFile.name}`;
+      try {
+        const snap = await storage.ref().child(path).put(imgFile);
+        imageUrl = await snap.ref.getDownloadURL();
+        console.log("Image uploaded, URL:", imageUrl);
+      } catch (err) {
+        console.error("Image upload failed:", err);
+        alert("Image upload failed. Check your internet and Firebase storage rules.");
+        postBtn.disabled = false;
+        return;
+      }
+    }
+    const postData = {
+      uid: auth.currentUser.uid,
+      username: currentUserProfile?.username || 'Anonymous',
+      avatar: currentUserProfile?.avatar || '',
+      content,
+      imageUrl,
+      timestamp: Date.now(),
+      likes: 0
+    };
+    await db.ref('posts').push(postData);
+    console.log("Post pushed to DB:", postData);
+    modal.classList.remove('show');
+    txt.value = '';
+    fileInp.value = '';
+    preview.style.display = 'none';
+  } catch (e) {
+    alert('Failed to post: ' + e.message);
+    console.error(e);
+  } finally {
+    postBtn.disabled = false;
+  }
+};
     }
 
     function listenForPosts() {
@@ -180,28 +266,34 @@
       db.ref('posts').orderByChild('timestamp').on('value', snapshot => {
         container.innerHTML = '';
         snapshot.forEach(child => {
+          console.log("Got post:", child.val());
           const p = child.val();
           const div = document.createElement('div');
           div.className = 'post-item';
           const avatar = document.createElement('img');
           avatar.className = 'avatar';
-          avatar.src = p.avatar || 'https://via.placeholder.com/48';
+          avatar.src = p.avatar || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><rect width="48" height="48" fill="%23ccc"/><text x="24" y="28" font-size="16" fill="%23666" text-anchor="middle" font-family="Arial">?</text></svg>';
           div.appendChild(avatar);
           const cd = document.createElement('div');
           cd.className = 'post-content';
-          cd.innerHTML = `
-            <span class="username">${p.username}</span>
-            <span class="timestamp">${new Date(p.timestamp).toLocaleString()}</span>
-            <div class="text">${p.content.replace(/</g,'&lt;')}</div>
-            ${p.imageUrl ? `<img class="uploaded" src="${p.imageUrl}">` : ''}
-          `;
+          console.log("Rendering post:", p);
+if (p.imageUrl) console.log("Image in feed:", p.imageUrl);
+cd.innerHTML = `
+  <span class="username">${p.username}</span>
+  <span class="timestamp">${new Date(p.timestamp).toLocaleString()}</span>
+  <div class="text">${p.content.replace(/</g,'&lt;')}</div>
+  ${typeof p.imageUrl === 'string' && p.imageUrl.startsWith('http')
+    ? `<img class="uploaded" src="${p.imageUrl}" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"120\"><rect width=\"120\" height=\"120\" fill=\"%23eee\"/><text x=\"60\" y=\"70\" font-size=\"18\" fill=\"%23666\" text-anchor=\"middle\" font-family=\"Arial\">No Img</text></svg>';">`
+    : ''}
+`;
+
+
           div.appendChild(cd);
           container.prepend(div);
         });
       });
     }
-
-    // Simple globe render (optional)
+    // Globe render (unchanged)
     const canvas = document.getElementById('globeCanvas');
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
     renderer.setSize(400, 400);
