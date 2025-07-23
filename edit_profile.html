@@ -2,91 +2,64 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Edit Profile • #HUMANITY</title>  <!-- Google Fonts -->  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet" />  <!-- Firebase SDKs -->  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>  <style>
+  <title>Edit Profile • #HUMANITY</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet" />
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+  <style>
     body {
       font-family: 'Merriweather', serif;
-      background: #f5f5f5;
-      color: #222;
-      margin: 0;
+      background: #f0f0f0;
+      color: #333;
       padding: 20px;
     }
     .container {
-      max-width: 600px;
+      max-width: 500px;
       margin: 0 auto;
-      background: #fff;
+      background: white;
       padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      border-radius: 8px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
-    h1 {
-      font-size: 28px;
-      margin-bottom: 20px;
-      color: #000;
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: 600;
-    }
-    .form-group input[type="text"],
-    .form-group input[type="file"],
-    .form-group textarea {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: #fff;
-    }
-    .profile-pic-preview {
-      display: block;
+    .avatar {
       width: 120px;
       height: 120px;
-      margin-bottom: 10px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid #ccc;
+      display: block;
+      margin: 10px auto;
+      border: 3px solid #000;
+    }
+    .input-field {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
     }
     .btn {
-      display: inline-block;
+      padding: 10px 20px;
       background: #000;
       color: #fff;
-      padding: 10px 20px;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
       cursor: pointer;
-      text-decoration: none;
-      font-size: 16px;
     }
     .btn:hover {
-      background: #333;
+      background: #444;
     }
-  </style></head>
+  </style>
+</head>
 <body>
   <div class="container">
-    <h1>Edit Profile</h1>
-    <img id="profilePicPreview" class="profile-pic-preview" src="default-avatar.png" alt="Profile Picture Preview" />
-    <div class="form-group">
-      <label for="profilePicInput">Profile Picture</label>
-      <input type="file" id="profilePicInput" accept="image/*" />
-    </div>
-    <div class="form-group">
-      <label for="displayNameInput">Display Name</label>
-      <input type="text" id="displayNameInput" placeholder="Enter your display name" />
-    </div>
-    <div class="form-group">
-      <label for="bioInput">Bio</label>
-      <textarea id="bioInput" rows="4" placeholder="Tell us about yourself"></textarea>
-    </div>
-    <div class="form-group">
-      <label for="websiteInput">Website</label>
-      <input type="text" id="websiteInput" placeholder="Your personal website URL" />
-    </div>
-    <button id="saveProfileBtn" class="btn">Save Profile</button>
+    <h2>Edit Profile</h2>
+    <img id="avatarPreview" class="avatar" src="default_avatar.png" alt="Avatar" />
+    <input type="file" id="avatarInput" accept="image/*" class="input-field" />
+    <input type="text" id="username" placeholder="Username" class="input-field" />
+    <input type="text" id="bio" placeholder="Bio" class="input-field" />
+    <button class="btn" onclick="saveProfile()">Save Profile</button>
   </div>  <script>
-    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -97,87 +70,51 @@
       appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
     };
     firebase.initializeApp(firebaseConfig);
-
-    const auth = firebase.auth();
     const database = firebase.database();
     const storage = firebase.storage();
 
-    let selectedFile = null;
+    const avatarInput = document.getElementById('avatarInput');
+    const avatarPreview = document.getElementById('avatarPreview');
+    let avatarFile = null;
 
-    const profilePicInput = document.getElementById('profilePicInput');
-    const profilePicPreview = document.getElementById('profilePicPreview');
-    const displayNameInput = document.getElementById('displayNameInput');
-    const bioInput = document.getElementById('bioInput');
-    const websiteInput = document.getElementById('websiteInput');
-    const saveProfileBtn = document.getElementById('saveProfileBtn');
-
-    profilePicInput.addEventListener('change', (e) => {
-      selectedFile = e.target.files[0];
-      if (selectedFile) {
+    avatarInput.addEventListener('change', (e) => {
+      avatarFile = e.target.files[0];
+      if (avatarFile) {
         const reader = new FileReader();
-        reader.onload = (e) => {
-          profilePicPreview.src = e.target.result;
+        reader.onload = () => {
+          avatarPreview.src = reader.result;
         };
-        reader.readAsDataURL(selectedFile);
-      } else {
-        profilePicPreview.src = 'default-avatar.png';
+        reader.readAsDataURL(avatarFile);
       }
     });
 
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        const userId = user.uid;
-        database.ref('users/' + userId).once('value').then((snapshot) => {
-          const data = snapshot.val() || {};
-          displayNameInput.value = data.displayName || '';
-          bioInput.value = data.bio || '';
-          websiteInput.value = data.website || '';
-          if (data.profilePictureUrl) {
-            profilePicPreview.src = data.profilePictureUrl;
-          }
-        }).catch((error) => console.error('Error loading profile data:', error));
-      } else {
-        window.location.href = 'login.html';
-      }
-    });
+    function saveProfile() {
+      const userId = firebase.auth().currentUser?.uid;
+      if (!userId) return alert("User not logged in");
+      const username = document.getElementById('username').value;
+      const bio = document.getElementById('bio').value;
 
-    saveProfileBtn.addEventListener('click', () => {
-      const user = auth.currentUser;
-      if (!user) return alert('You must be logged in.');
-      saveProfileBtn.disabled = true;
-      saveProfileBtn.textContent = 'Saving...';
-
-      const updates = {
-        displayName: displayNameInput.value,
-        bio: bioInput.value,
-        website: websiteInput.value
-      };
-
-      const completeSave = () => {
-        database.ref('users/' + user.uid).update(updates).then(() => {
-          alert('Profile updated successfully.');
-          window.location.href = 'view_profile.html';
-        }).catch((err) => {
-          console.error('Error saving profile:', err);
-          alert('Failed to save profile.');
-        }).finally(() => {
-          saveProfileBtn.disabled = false;
-          saveProfileBtn.textContent = 'Save Profile';
-        });
-      };
-
-      if (selectedFile) {
-        const storageRef = storage.ref(`profile_pictures/${user.uid}/${selectedFile.name}`);
-        storageRef.put(selectedFile).then(snapshot => snapshot.ref.getDownloadURL()).then((url) => {
-          updates.profilePictureUrl = url;
-          completeSave();
-        }).catch((err) => {
-          console.error('Error uploading picture:', err);
-          completeSave();
+      if (avatarFile) {
+        const avatarRef = storage.ref(`avatars/${userId}`);
+        avatarRef.put(avatarFile).then(snapshot => {
+          snapshot.ref.getDownloadURL().then(url => {
+            database.ref('users/' + userId).set({
+              username: username,
+              bio: bio,
+              avatar: url
+            }).then(() => {
+              window.location.href = 'my_profile.html';
+            });
+          });
         });
       } else {
-        completeSave();
+        database.ref('users/' + userId).update({
+          username: username,
+          bio: bio
+        }).then(() => {
+          window.location.href = 'my_profile.html';
+        });
       }
-    });
+    }
   </script></body>
 </html>
