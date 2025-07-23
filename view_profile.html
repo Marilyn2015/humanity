@@ -3,144 +3,202 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>View Profile - #HUMANITY</title>
+  <title>View Profile – #HUMANITY</title>
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+  <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    /* — GLOBAL — */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Inter', sans-serif;
-      background-color: #ffffff;
-      color: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: #000;
+      color: #eee;
       min-height: 100vh;
-      margin: 0;
-      position: relative;
-    }
-
-    .back-button {
-      position: absolute;
-      top: 20px;
-      right: 30px;
-      text-decoration: none;
-      font-weight: 600;
-      background: #eaeaea;
-      padding: 8px 14px;
-      border-radius: 8px;
-      color: #000;
-      border: 2px solid #000;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      transition: background 0.2s ease;
-    }
-
-    .back-button:hover {
-      background: #d5d5d5;
-    }
-
-    .container {
-      width: 1000px;
-      padding: 60px;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-
-    .profile-header {
-      background: #eaeaea;
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    a { color: #fff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* — CONTAINER — */
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(255,255,255,0.1);
+      overflow: hidden;
+    }
+
+    /* — HEADER & NAV — */
+    .nav {
+      display: flex;
+      justify-content: flex-end;
       padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      margin-bottom: 20px;
+      background: #0a0a0a;
     }
-
-    .profile-header img {
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #000;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-bottom: 15px;
-    }
-
-    .profile-section, .posts-section {
-      background: #eaeaea;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .profile-section h2, .posts-section h2 {
-      margin-bottom: 15px;
-      border-bottom: 2px solid #ccc;
-      padding-bottom: 8px;
-      font-weight: 600;
-    }
-
-    .info {
-      margin: 8px 0;
-      text-align: center;
-    }
-
-    a {
-      color: #000;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    .post-item {
+    .nav a {
+      margin-left: 12px;
       background: #fff;
-      border: 1px solid #ccc;
-      padding: 20px;
-      margin-bottom: 12px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      color: #000;
+      transition: background 0.2s;
+    }
+    .nav a:hover { background: #ddd; }
+
+    /* — PROFILE HEADER — */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      padding: 40px;
+      background: #1a1a1a;
+    }
+    .profile-header img {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      border: 4px solid #fff;
+      object-fit: cover;
+      margin-right: 40px;
+    }
+    .profile-details {
+      flex: 1;
+    }
+    .profile-details h1 {
+      font-size: 2em;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    .profile-details p {
+      margin-bottom: 16px;
+      opacity: 0.8;
+    }
+    .profile-actions button {
+      margin-right: 12px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background: #fff;
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .profile-actions button:hover { background: #ddd; }
+
+    /* — FOLLOWERS POPUP — */
+    .followers-popup {
+      position: absolute;
+      top: 100px;
+      right: 40px;
+      background: #1a1a1a;
+      border: 1px solid #333;
       border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      text-align: left;
+      padding: 16px;
+      width: 280px;
+      box-shadow: 0 4px 12px rgba(255,255,255,0.2);
+      display: none;
+      z-index: 10;
+    }
+    .followers-popup h3 {
+      margin-bottom: 12px;
+      font-size: 1.1em;
+      color: #fff;
+    }
+    .followers-popup ul {
+      list-style: none;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .followers-popup li {
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+    }
+    .followers-popup img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
+      object-fit: cover;
+    }
+
+    /* — POSTS SECTION — */
+    .posts-section {
+      padding: 40px;
+      background: #111;
+    }
+    .posts-section h2 {
+      margin-bottom: 24px;
+      font-size: 1.5em;
+      border-bottom: 2px solid #333;
+      padding-bottom: 8px;
+      color: #fff;
+    }
+    .post-item {
+      background: #1a1a1a;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .post-item img {
+      max-width: 100%;
+      border-radius: 6px;
+      margin-top: 12px;
+    }
+    .post-item .post-meta {
+      margin-bottom: 12px;
+      font-size: 0.9em;
+      opacity: 0.7;
     }
   </style>
 </head>
 <body>
-  <a href="universe.html" class="back-button" title="Return to Universe">&#8678; Back</a>
-
   <div class="container">
+    <!-- top nav -->
+    <div class="nav">
+      <a href="universe.html">← Universe</a>
+      <a href="edit_profile.html">Edit Profile</a>
+    </div>
+
+    <!-- profile header -->
     <div class="profile-header">
-      <img src="https://via.placeholder.com/120" alt="Profile Picture" id="profileImage">
-      <div class="details">
-        <h2 id="username"></h2>
-        <div id="bio"></div>
+      <img src="https://via.placeholder.com/180" alt="Avatar" id="profileImage">
+      <div class="profile-details">
+        <h1 id="username">Loading…</h1>
+        <p id="bio">Fetching bio…</p>
+        <div class="profile-actions">
+          <button id="messageBtn">Message</button>
+          <button id="followersBtn">Followers</button>
+        </div>
       </div>
     </div>
 
-    <div class="profile-section">
-      <h2>Contact & Links</h2>
-      <div class="info">
-        <strong>GitHub:</strong> <a id="github" href="#" target="_blank">View GitHub Profile</a>
-      </div>
-      <div class="info">
-        <strong>Website:</strong> <a id="website" href="#" target="_blank">Visit Personal Website</a>
-      </div>
+    <!-- followers pop-up -->
+    <div class="followers-popup" id="followersPopup">
+      <h3>Followers</h3>
+      <ul id="followersList">
+        <!-- JS will inject -->
+      </ul>
     </div>
 
+    <!-- posts -->
     <div class="posts-section">
       <h2>Previous Posts</h2>
-      <div id="userPosts">Loading posts...</div>
+      <div id="userPosts">Loading posts…</div>
     </div>
   </div>
 
   <script>
+    // Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -153,56 +211,65 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const queryParams = new URLSearchParams(window.location.search);
-    const username = queryParams.get('user');
+    // Helpers
+    function cleanKey(str) {
+      return str.replace(/[.#$\[\]]/g, '_');
+    }
 
-    function loadUserProfile(user) {
-      db.ref('users/' + user.replace(/[.#$
+    // Load profile & posts
+    const params = new URLSearchParams(location.search);
+    const userKey = params.get('user') || 'defaultUser';
+    db.ref('users/' + cleanKey(userKey)).once('value').then(snap => {
+      const u = snap.val() || {};
+      document.getElementById('username').textContent = u.username || userKey;
+      document.getElementById('bio').textContent = u.bio || 'No bio yet.';
+      if (u.avatar) document.getElementById('profileImage').src = u.avatar;
+      loadFollowers(u.username);
+      loadPosts(u.username);
+    });
 
-\[\]
-
-]/g, '_')).once('value').then(snapshot => {
-        const data = snapshot.val();
-        if (data) {
-          document.getElementById('username').textContent = data.username || 'Unnamed';
-          document.getElementById('bio').textContent = data.bio || 'No bio available.';
-          document.getElementById('github').href = data.github || '#';
-          document.getElementById('website').href = data.website || '#';
-          if (data.avatar) {
-            document.getElementById('profileImage').src = data.avatar;
-          }
-          loadUserPosts(data.username);
-        }
+    function loadFollowers(username) {
+      db.ref('followers/' + cleanKey(username)).once('value').then(snap => {
+        const list = document.getElementById('followersList');
+        list.innerHTML = '';
+        (snap.val() || []).forEach(f => {
+          const li = document.createElement('li');
+          li.innerHTML = `<img src="${f.avatar || 'https://via.placeholder.com/32'}">
+                          <span>${f.username}</span>`;
+          list.appendChild(li);
+        });
       });
     }
 
-    function loadUserPosts(username) {
-      const postsRef = db.ref('posts/' + username.replace(/[.#$
-
-\[\]
-
-]/g, '_'));
-      postsRef.once('value').then(snapshot => {
-        const posts = snapshot.val();
-        const postsContainer = document.getElementById('userPosts');
-        postsContainer.innerHTML = '';
-
-        if (posts) {
-          Object.values(posts).forEach(post => {
-            const postElement = document.createElement('div');
-            postElement.className = 'post-item';
-            postElement.textContent = post.content;
-            postsContainer.appendChild(postElement);
-          });
-        } else {
-          postsContainer.textContent = 'No previous posts available.';
-        }
+    function loadPosts(username) {
+      db.ref('posts/' + cleanKey(username)).once('value').then(snap => {
+        const container = document.getElementById('userPosts');
+        container.innerHTML = '';
+        const posts = snap.val() || {};
+        Object.values(posts).reverse().forEach(p => {
+          const div = document.createElement('div');
+          div.className = 'post-item';
+          div.innerHTML = `
+            <div class="post-meta">${p.date || ''}</div>
+            <div class="post-content">${p.content || ''}</div>
+            ${p.imageURL ? `<img src="${p.imageURL}" alt="Post image">` : ''}
+          `;
+          container.appendChild(div);
+        });
       });
     }
 
-    if (username) {
-      loadUserProfile(username);
-    }
+    // Followers pop-up toggle
+    const btn = document.getElementById('followersBtn');
+    const popup = document.getElementById('followersPopup');
+    btn.addEventListener('click', () => {
+      popup.style.display = popup.style.display === 'block' ? 'none' : 'block';
+    });
+    window.addEventListener('click', e => {
+      if (!btn.contains(e.target) && !popup.contains(e.target)) {
+        popup.style.display = 'none';
+      }
+    });
   </script>
 </body>
 </html>
