@@ -1,170 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>#HUMANITY Universe</title>
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
-  <!-- Three.js for Globe -->
+
+  <!-- Firebase & Three.js -->
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+
+  <!-- Styles -->
   <style>
-    /* Base & Fonts */
     body {
-      font-family: 'Merriweather', serif;
-      background: #000;
-      color: #fff;
+      font-family: 'Roboto', sans-serif;
+      background: #fff;
+      text-align: center;
       margin: 0;
       padding: 0;
     }
-    header {
-      font-family: 'Playfair Display', serif;
-      padding: 20px;
-      text-align: center;
-      background: #111;
+
+    #globeCanvas {
+      display: block;
+      margin: 20px auto;
+      width: 400px;
+      height: 400px;
+    }
+
+    h1 {
       font-size: 2rem;
-      letter-spacing: 1px;
+      color: #333;
     }
-    /* Globe */
-    #globeContainer {
-      width: 100%;
-      height: 300px;
-      /* no border, just the raw canvas */
-    }
-    /* New Post Button */
-    #newPostBtn {
-      position: fixed;
-      bottom: 30px;
-      right: 30px;
+
+    .post-item {
       background: #fff;
-      color: #000;
-      border: none;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      font-size: 32px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin: 10px auto;
+      width: 60%;
+      border-radius: 8px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
-    /* Modal */
-    #postModal {
+
+    .post-item img.avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+
+    .post-item img.uploaded {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .modal {
       display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: #222;
+      background: #fff;
       padding: 20px;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      z-index: 100;
+      border: 2px solid #000;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
-    .modal.show { display: block; }
-    textarea, input[type="file"] {
-      width: 100%;
-      margin-bottom: 10px;
+
+    textarea {
+      width: 300px;
+      height: 80px;
+      margin: 10px 0;
       padding: 10px;
-      border-radius: 6px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    input[type='file'] {
+      margin: 10px 0;
+    }
+
+    button {
+      padding: 10px 20px;
       border: none;
-      font-family: inherit;
-    }
-    /* Posts */
-    #postFeed {
-      padding: 20px 0;
-    }
-    .post {
-      background: #111;
-      margin: 20px auto;
-      padding: 15px;
-      max-width: 600px;
-      border-radius: 10px;
-    }
-    .post-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-    .post img {
-      width: 100%;
-      height: auto;
-      border-radius: 6px;
-      margin-top: 10px;
-    }
-    .like-btn, .delete-btn {
-      background: none;
-      border: none;
-      color: #ccc;
+      background: #000;
+      color: #fff;
+      border-radius: 4px;
       cursor: pointer;
-      margin-right: 10px;
-      font-size: 1.2rem;
+      margin: 5px;
     }
-    .like-btn.liked {
-      color: #1db954;
+
+    .top-left {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+    }
+
+    .top-right {
+      position: absolute;
+      top: 10px;
+      right: 10px;
     }
   </style>
 </head>
 <body>
-  <header>#HUMANITY Universe</header>
+  <button class="top-left" onclick="window.location.href='view_profile.html'">My Profile</button>
+  <button class="top-right" onclick="window.location.href='login.html'">Logout</button>
 
-  <!-- Globe Visualization -->
-  <div id="globeContainer"></div>
+  <canvas id="globeCanvas"></canvas>
+  <h1>The Universe</h1>
+  <button id="openModal">Feed the Human Feed...</button>
 
-  <!-- Post Feed & Button -->
-  <div id="postFeed"></div>
-  <button id="newPostBtn">+</button>
-
-  <!-- Post Modal -->
   <div id="postModal" class="modal">
-    <textarea id="postText" placeholder="What's on your mind?"></textarea>
-    <input type="file" id="postImage" accept="image/*">
-    <button onclick="submitPost()">Post</button>
-    <button onclick="closeModal()">Cancel</button>
+    <textarea id="newPostContent" placeholder="Feed the Human Feed..."></textarea><br />
+    <input type="file" id="postImageUpload" accept="image/*" /><br />
+    <button id="postButton">Post</button>
+    <button id="closeModal">Cancel</button>
   </div>
 
+  <div id="postsContainer"></div>
+
   <script>
-    // ——— Three.js Globe Setup ———
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 300, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(window.innerWidth, 300);
-    document.getElementById('globeContainer').appendChild(renderer.domElement);
-
-    const geometry = new THREE.SphereGeometry(2, 64, 64);
-    const texture = new THREE.TextureLoader().load('https://threejs.org/examples/textures/earth_atmos_2048.jpg');
-    const material = new THREE.MeshBasicMaterial({ map: texture });
-    const globe = new THREE.Mesh(geometry, material);
-    scene.add(globe);
-
-    camera.position.z = 5;
-    function animate() {
-      requestAnimationFrame(animate);
-      globe.rotation.y += 0.001;
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    window.addEventListener('resize', () => {
-      renderer.setSize(window.innerWidth, 300);
-      camera.aspect = window.innerWidth / 300;
-      camera.updateProjectionMatrix();
-    });
-
-    // ——— Firebase Initialization ———
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -174,95 +138,118 @@
       messagingSenderId: "886745899016",
       appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
     };
+
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
     const db = firebase.database();
     const storage = firebase.storage();
+    const postsContainer = document.getElementById("postsContainer");
 
-    // ——— Modal & Posting Logic ———
-    const modal = document.getElementById('postModal');
-    document.getElementById('newPostBtn').onclick = () => modal.classList.add('show');
-    function closeModal() { modal.classList.remove('show'); }
+    const avatars = [
+      "https://randomuser.me/api/portraits/men/32.jpg",
+      "https://randomuser.me/api/portraits/women/44.jpg",
+      "https://randomuser.me/api/portraits/men/12.jpg",
+      "https://randomuser.me/api/portraits/women/68.jpg"
+    ];
 
-    function submitPost() {
-      const user = auth.currentUser;
-      const text = document.getElementById('postText').value.trim();
-      const imageFile = document.getElementById('postImage').files[0];
-      if (!text && !imageFile) return alert("Nothing to post.");
+    function displayPost(content, timestamp, imageUrl = "") {
+      const postElement = document.createElement("div");
+      postElement.className = "post-item";
 
-      const userId = user.uid;
-      db.ref('users/' + userId).once('value').then(snap => {
-        const u = snap.val();
-        const postData = {
-          uid: userId,
-          username: u.username,
-          avatar: u.avatar,
-          text,
-          timestamp: Date.now()
-        };
-        const postRef = db.ref('posts').push();
-        if (imageFile) {
-          storage.ref('posts/' + postRef.key)
-            .put(imageFile)
-            .then(s => s.ref.getDownloadURL())
-            .then(url => {
-              postData.image = url;
-              postRef.set(postData);
-            });
-        } else {
-          postRef.set(postData);
-        }
-        document.getElementById('postText').value = '';
-        document.getElementById('postImage').value = '';
-        closeModal();
-        loadPosts();
+      const avatar = document.createElement("img");
+      avatar.className = "avatar";
+      avatar.src = avatars[Math.floor(Math.random() * avatars.length)];
+      postElement.appendChild(avatar);
+
+      const text = document.createElement("div");
+      text.innerHTML = `<strong>${new Date(timestamp).toLocaleString()}</strong><br>${content}`;
+      postElement.appendChild(text);
+
+      if (imageUrl) {
+        const postImg = document.createElement("img");
+        postImg.src = imageUrl;
+        postImg.className = "uploaded";
+        postElement.appendChild(postImg);
+      }
+
+      postsContainer.prepend(postElement);
+    }
+
+    db.ref("posts").on("value", (snapshot) => {
+      postsContainer.innerHTML = "";
+      snapshot.forEach((child) => {
+        const post = child.val();
+        displayPost(post.content || "", post.timestamp, post.imageUrl || "");
       });
-    }
-
-    function loadPosts() {
-      const feed = document.getElementById('postFeed');
-      feed.innerHTML = '';
-      db.ref('posts').orderByChild('timestamp').once('value').then(snap => {
-        snap.forEach(child => {
-          const p = child.val(), id = child.key;
-          const el = document.createElement('div');
-          el.className = 'post';
-          el.innerHTML = `
-            <div class="post-header">
-              <img src="${p.avatar}" class="avatar">
-              <strong>${p.username}</strong>
-            </div>
-            <div>${p.text || ''}</div>
-            ${p.image ? `<img src="${p.image}">` : ''}
-            <div style="margin-top:10px;">
-              <button class="like-btn" onclick="likePost('${id}', this)">❤️</button>
-              <button class="delete-btn" onclick="deletePost('${id}')">🗑️</button>
-            </div>
-          `;
-          feed.prepend(el);
-        });
-      });
-    }
-
-    function likePost(postId, btn) {
-      btn.classList.toggle('liked');
-    }
-
-    function deletePost(postId) {
-      const user = auth.currentUser;
-      db.ref('posts/' + postId).once('value').then(snap => {
-        if (snap.val().uid === user.uid) {
-          db.ref('posts/' + postId).remove().then(loadPosts);
-        } else {
-          alert("You can only delete your own posts.");
-        }
-      });
-    }
-
-    auth.onAuthStateChanged(user => {
-      if (!user) return window.location.href = 'login.html';
-      loadPosts();
     });
+
+    document.getElementById("openModal").addEventListener("click", () => {
+      document.getElementById("postModal").style.display = "flex";
+    });
+
+    document.getElementById("closeModal").addEventListener("click", () => {
+      document.getElementById("postModal").style.display = "none";
+    });
+
+    document.getElementById("postButton").addEventListener("click", async () => {
+      const content = document.getElementById("newPostContent").value.trim();
+      const file = document.getElementById("postImageUpload").files[0];
+
+      if (!content && !file) {
+        alert("Please add text or select an image.");
+        return;
+      }
+
+      let imageUrl = "";
+      if (file) {
+        try {
+          const imageRef = storage.ref("postImages/" + Date.now() + "_" + file.name);
+          const snapshot = await imageRef.put(file);
+          imageUrl = await snapshot.ref.getDownloadURL();
+        } catch (err) {
+          console.error("Image upload failed:", err);
+          alert("Upload failed, try again.");
+        }
+      }
+
+      await db.ref("posts").push({
+        content,
+        imageUrl,
+        timestamp: Date.now()
+      });
+
+      document.getElementById("newPostContent").value = "";
+      document.getElementById("postImageUpload").value = "";
+      document.getElementById("postModal").style.display = "none";
+    });
+
+    // 🌍 Spinning 3D Globe
+    const canvas = document.getElementById("globeCanvas");
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+    renderer.setSize(400, 400);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+    camera.position.z = 3;
+
+    const textureLoader = new THREE.TextureLoader();
+    const earthTexture = textureLoader.load("https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg");
+
+    const sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 32, 32),
+      new THREE.MeshStandardMaterial({ map: earthTexture })
+    );
+    scene.add(sphere);
+
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 3, 5);
+    scene.add(light);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      sphere.rotation.y += 0.002;
+      renderer.render(scene, camera);
+    }
+    animate();
   </script>
 </body>
 </html>
