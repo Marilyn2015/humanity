@@ -129,6 +129,7 @@
   <div id="postsContainer"></div>
 
   <script>
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -208,6 +209,7 @@
         } catch (err) {
           console.error("Image upload failed:", err);
           alert("Upload failed, try again.");
+          return;
         }
       }
 
@@ -222,7 +224,7 @@
       document.getElementById("postModal").style.display = "none";
     });
 
-    // 🌍 Spinning 3D Globe
+    // Spinning globe
     const canvas = document.getElementById("globeCanvas");
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
     renderer.setSize(400, 400);
