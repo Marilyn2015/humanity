@@ -483,6 +483,121 @@
       }
       btn.disabled = false; btn.textContent = "Post"; postInProgress = false;
     });
+    // Open Modal
+document.getElementById('openModal').onclick = () => {
+  document.getElementById('modalBlur').style.display = 'block';
+  document.getElementById('postModal').style.display = 'block';
+};
+
+// Close Modal
+document.getElementById('closeModal').onclick = () => {
+  document.getElementById('modalBlur').style.display = 'none';
+  document.getElementById('postModal').style.display = 'none';
+};
+
+// Error Banner
+function showErrorBanner(msg) {
+  const b = document.getElementById('errorBanner');
+  b.innerText = msg;
+  b.style.display = 'block';
+  setTimeout(() => { b.style.display = 'none'; }, 4000);
+}
+
+window.onerror = function(msg) {
+  showErrorBanner('ERROR: ' + msg);
+  return false;
+};
+
+// Handle Post Submission
+document.getElementById('postButton').onclick = () => {
+  const content = document.getElementById('newPostContent').value.trim();
+  const imageInput = document.getElementById('postImageUpload');
+
+  if (!content) {
+    showErrorBanner('Post content cannot be empty!');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const postData = {
+      username: 'You',
+      timestamp: Date.now(),
+      content: content,
+      avatar: null, // You can later customize this
+      imageUrl: imageInput.files[0] ? e.target.result : null,
+    };
+
+    const postElement = displayPost(Date.now(), postData);
+    document.getElementById('postsContainer').prepend(postElement);
+  };
+
+  if (imageInput.files[0]) {
+    reader.readAsDataURL(imageInput.files[0]);
+  } else {
+    const postData = {
+      username: 'You',
+      timestamp: Date.now(),
+      content: content,
+      avatar: null,
+      imageUrl: null,
+    };
+
+    const postElement = displayPost(Date.now(), postData);
+    document.getElementById('postsContainer').prepend(postElement);
+  }
+
+  // Reset & Close Modal
+  document.getElementById('newPostContent').value = '';
+  imageInput.value = '';
+  document.getElementById('modalBlur').style.display = 'none';
+  document.getElementById('postModal').style.display = 'none';
+};
+
+// Render Post
+function displayPost(postId, data) {
+  const postElement = document.createElement("div");
+  postElement.className = "post-item";
+  postElement.setAttribute("data-post-id", postId);
+
+  const header = document.createElement("div");
+  header.className = "post-header";
+
+  const avatar = document.createElement("img");
+  avatar.className = "avatar";
+  avatar.src = data.avatar || "https://randomuser.me/api/portraits/lego/1.jpg";
+  header.appendChild(avatar);
+
+  const userSpan = document.createElement("span");
+  userSpan.className = "post-user";
+  userSpan.textContent = data.username || "Unknown";
+  header.appendChild(userSpan);
+
+  const dateSpan = document.createElement("span");
+  dateSpan.className = "post-date";
+  dateSpan.textContent = " • " + new Date(data.timestamp).toLocaleString();
+  header.appendChild(dateSpan);
+
+  postElement.appendChild(header);
+
+  const text = document.createElement("div");
+  text.className = "post-content";
+  text.innerText = data.content || "";
+  postElement.appendChild(text);
+
+  if (data.imageUrl) {
+    const postImg = document.createElement("img");
+    postImg.src = data.imageUrl;
+    postImg.className = "uploaded";
+    postImg.onerror = () => {
+      postImg.src = 'fallback-image.jpg';
+    };
+    postElement.appendChild(postImg);
+  }
+
+  return postElement;
+}
+
   </script>
 </body>
 </html>
