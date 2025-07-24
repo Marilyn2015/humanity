@@ -35,7 +35,6 @@
       width: 400px; height: 400px;
       position: relative;
       z-index: 2;
-      border-radius: 0 !important;
     }
     #globeCanvas {
       width: 400px; height: 400px;
@@ -266,12 +265,12 @@
   </div>
   <div id="postsContainer"></div>
   <script>
-    // === GLOBAL ERROR HANDLER ===
+    // === ERROR BANNER ===
     function showErrorBanner(msg) {
       const b = document.getElementById('errorBanner');
       b.innerText = msg;
       b.style.display = 'block';
-      setTimeout(() => { b.style.display = 'none'; }, 5000);
+      setTimeout(() => { b.style.display = 'none'; }, 6000);
     }
     window.onerror = function(msg, url, line, col, error) {
       showErrorBanner('ERROR: ' + msg);
@@ -399,8 +398,7 @@
       if (data.username === currentUsername) {
         const deleteBtn = document.createElement("button");
         deleteBtn.className = "delete-btn";
-        delete
-deleteBtn.innerHTML = "&#128465;";
+        deleteBtn.innerHTML = "&#128465;";
         deleteBtn.onclick = () => {
           if (confirm("Delete this post?")) {
             db.ref("posts/" + postId).remove();
@@ -413,6 +411,7 @@ deleteBtn.innerHTML = "&#128465;";
     }
 
     // Fetch & render all posts, newest first
+// Fetch & render all posts, newest first
     db.ref("posts").on("value", (snapshot) => {
       postsContainer.innerHTML = "";
       const posts = [];
