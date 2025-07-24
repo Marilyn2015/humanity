@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>#HUMANITY Universe</title>
+  <!-- Firebase & Three.js -->
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
@@ -13,12 +14,11 @@
       font-family: 'Roboto', sans-serif;
       background: #080c19;
       color: #fff;
-      text-align: center;
       margin: 0;
       padding: 0;
-      position: relative;
       min-height: 100vh;
       overflow-x: hidden;
+      text-align: center;
     }
     #star-bg {
       position: fixed;
@@ -32,22 +32,18 @@
       justify-content: center;
       align-items: center;
       margin: 32px auto 16px auto;
-      width: 400px;
-      height: 400px;
+      width: 400px; height: 400px;
       position: relative;
       z-index: 2;
       border-radius: 0 !important;
     }
     #globeCanvas {
-      width: 400px;
-      height: 400px;
+      width: 400px; height: 400px;
       border-radius: 0 !important;
       background: transparent;
       display: block;
       position: absolute;
-      left: 0;
-      top: 0;
-      z-index: 2;
+      left: 0; top: 0; z-index: 2;
       box-shadow: none;
     }
     h1 {
@@ -118,10 +114,7 @@
       backdrop-filter: blur(8px);
       border-radius: 0 !important;
     }
-    .modal-blur.active {
-      display: block;
-      border-radius: 0 !important;
-    }
+    .modal-blur.active { display: block; border-radius: 0 !important; }
     .modal {
       display: none;
       flex-direction: column;
@@ -242,10 +235,21 @@
       outline: 0;
       border-radius: 0 !important;
     }
- </style>
+    .error-banner {
+      background: #ff6870;
+      color: #fff;
+      font-weight: 600;
+      padding: 8px 0;
+      margin-bottom: 10px;
+      width: 100%;
+      border-radius: 0;
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <canvas id="star-bg"></canvas>
+  <div class="error-banner" id="errorBanner"></div>
   <button class="top-left" onclick="window.location.href='view_profile.html'">My Profile</button>
   <button class="top-right" onclick="window.location.href='login.html'">Logout</button>
   <div class="globe-glow">
@@ -262,212 +266,224 @@
   </div>
   <div id="postsContainer"></div>
   <script>
-   // === STAR FIELD ===
-const starCanvas = document.getElementById('star-bg');
-const ctx = starCanvas.getContext('2d');
-function resizeStarCanvas() {
-  starCanvas.width = window.innerWidth;
-  starCanvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeStarCanvas);
-resizeStarCanvas();
-function drawStars() {
-  ctx.clearRect(0,0,starCanvas.width,starCanvas.height);
-  let numStars = Math.floor(window.innerWidth * window.innerHeight / 1400);
-  for (let i=0; i<numStars; i++) {
-    let x = Math.random()*starCanvas.width;
-    let y = Math.random()*starCanvas.height;
-    let r = Math.random()*1.2 + 0.3;
-    let o = Math.random()*0.8+0.18;
-    ctx.beginPath();
-    ctx.arc(x,y,r,0,2*Math.PI);
-    ctx.fillStyle = `rgba(255,255,255,${o})`;
-    ctx.shadowColor = '#fff';
-    ctx.shadowBlur = r*3;
-    ctx.fill();
-    ctx.closePath();
-  }
-}
-drawStars();
-setInterval(drawStars, 4000);
-
-// ---- 3D Globe ----
-const canvas = document.getElementById("globeCanvas");
-const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
-renderer.setSize(400, 400);
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
-camera.position.z = 3;
-const textureLoader = new THREE.TextureLoader();
-const earthTexture = textureLoader.load("https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg");
-const sphere = new THREE.Mesh(
-  new THREE.SphereGeometry(1, 32, 32),
-  new THREE.MeshStandardMaterial({ map: earthTexture })
-);
-scene.add(sphere);
-const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(5, 3, 5);
-scene.add(light);
-function animate() {
-  requestAnimationFrame(animate);
-  sphere.rotation.y += 0.002;
-  renderer.render(scene, camera);
-}
-animate();
-
-// === FEED & POST LOGIC ===
-const currentUsername = "Marilyn";
-const currentUserAvatar = "https://randomuser.me/api/portraits/women/44.jpg";
-const firebaseConfig = {
-  apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-  authDomain: "hashhumanity-58b9a.firebaseapp.com",
-  databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-  projectId: "hashhumanity-58b9a",
-  storageBucket: "hashhumanity-58b9a.appspot.com",
-  messagingSenderId: "886745899016",
-  appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const storage = firebase.storage();
-const postsContainer = document.getElementById("postsContainer");
-
-// Render posts
-function displayPost(postId, data) {
-  const postElement = document.createElement("div");
-  postElement.className = "post-item";
-  // Header: avatar, user, date
-  const header = document.createElement("div");
-  header.className = "post-header";
-  const avatar = document.createElement("img");
-  avatar.className = "avatar";
-  avatar.src = data.avatar || "https://randomuser.me/api/portraits/men/32.jpg";
-  header.appendChild(avatar);
-  const userSpan = document.createElement("span");
-  userSpan.className = "post-user";
-  userSpan.textContent = data.username || "Unknown";
-  header.appendChild(userSpan);
-  const dateSpan = document.createElement("span");
-  dateSpan.className = "post-date";
-  dateSpan.textContent = " • " + new Date(data.timestamp).toLocaleString();
-  header.appendChild(dateSpan);
-  postElement.appendChild(header);
-  // Content
-  const text = document.createElement("div");
-  text.style.margin = "12px 0 0 0";
-  text.innerHTML = data.content || "";
-  postElement.appendChild(text);
-  // Image
-  if (data.imageUrl) {
-    const postImg = document.createElement("img");
-    postImg.src = data.imageUrl;
-    postImg.className = "uploaded";
-    postElement.appendChild(postImg);
-  }
-  // Actions
-  const actions = document.createElement("div");
-  actions.className = "post-actions";
-  const likeBtn = document.createElement("button");
-  likeBtn.className = "like-btn";
-  likeBtn.innerHTML = "&#10084;";
-  let likes = data.likes || {};
-  let likeCount = Object.keys(likes).length;
-  if (likes[currentUsername]) likeBtn.classList.add("liked");
-  const likeCountSpan = document.createElement("span");
-  likeCountSpan.textContent = likeCount > 0 ? likeCount : "";
-  likeBtn.onclick = () => {
-    const userLiked = !!(likes && likes[currentUsername]);
-    db.ref("posts/" + postId + "/likes/" + currentUsername).set(userLiked ? null : true);
-  };
-  actions.appendChild(likeBtn);
-  actions.appendChild(likeCountSpan);
-  if (data.username === currentUsername) {
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className = "delete-btn";
-    deleteBtn.innerHTML = "&#128465;";
-    deleteBtn.onclick = () => {
-      if (confirm("Delete this post?")) {
-        db.ref("posts/" + postId).remove();
-      }
-    };
-    actions.appendChild(deleteBtn);
-  }
-  postElement.appendChild(actions);
-  postsContainer.appendChild(postElement);
-}
-
-// Fetch & render all posts, newest first
-db.ref("posts").on("value", (snapshot) => {
-  postsContainer.innerHTML = "";
-  const posts = [];
-  snapshot.forEach((child) => {
-    posts.push({ id: child.key, ...child.val() });
-  });
-  posts.sort((a, b) => b.timestamp - a.timestamp);
-  for (const post of posts) displayPost(post.id, post);
-});
-// === MODAL POPUP LOGIC ===
-const openModalBtn = document.getElementById("openModal");
-const postModal = document.getElementById("postModal");
-const modalBlur = document.getElementById("modalBlur");
-const closeModalBtn = document.getElementById("closeModal");
-
-function showModal() {
-  modalBlur.classList.add("active");
-  postModal.classList.add("active");
-  postModal.focus();
-}
-function hideModal() {
-  modalBlur.classList.remove("active");
-  postModal.classList.remove("active");
-}
-openModalBtn.addEventListener("click", showModal);
-closeModalBtn.addEventListener("click", hideModal);
-modalBlur.addEventListener("click", hideModal);
-document.addEventListener('keydown', e => {
-  if (postModal.classList.contains("active") && e.key === "Escape") hideModal();
-});
-
-// === POST CREATION (with image upload) ===
-let postInProgress = false;
-document.getElementById("postButton").addEventListener("click", async () => {
-  if (postInProgress) return;
-  postInProgress = true;
-  const btn = document.getElementById("postButton");
-  btn.disabled = true;
-  btn.textContent = "Posting...";
-  const content = document.getElementById("newPostContent").value.trim();
-  const file = document.getElementById("postImageUpload").files[0];
-  if (!content && !file) {
-    alert("Please add text or select an image.");
-    btn.disabled = false; btn.textContent = "Post"; postInProgress = false;
-    return;
-  }
-  let imageUrl = "";
-  try {
-    if (file) {
-      const imageRef = storage.ref("postImages/" + Date.now() + "_" + file.name);
-      const snapshot = await imageRef.put(file);
-      imageUrl = await snapshot.ref.getDownloadURL();
+    // === GLOBAL ERROR HANDLER ===
+    function showErrorBanner(msg) {
+      const b = document.getElementById('errorBanner');
+      b.innerText = msg;
+      b.style.display = 'block';
+      setTimeout(() => { b.style.display = 'none'; }, 5000);
     }
-    await db.ref("posts").push({
-      content,
-      imageUrl,
-      timestamp: Date.now(),
-      username: currentUsername,
-      avatar: currentUserAvatar,
-      likes: {}
+    window.onerror = function(msg, url, line, col, error) {
+      showErrorBanner('ERROR: ' + msg);
+      return false;
+    };
+
+    // === STAR FIELD ===
+    const starCanvas = document.getElementById('star-bg');
+    const ctx = starCanvas.getContext('2d');
+    function resizeStarCanvas() {
+      starCanvas.width = window.innerWidth;
+      starCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeStarCanvas);
+    resizeStarCanvas();
+    function drawStars() {
+      ctx.clearRect(0,0,starCanvas.width,starCanvas.height);
+      let numStars = Math.floor(window.innerWidth * window.innerHeight / 1400);
+      for (let i=0; i<numStars; i++) {
+        let x = Math.random()*starCanvas.width;
+        let y = Math.random()*starCanvas.height;
+        let r = Math.random()*1.2 + 0.3;
+        let o = Math.random()*0.8+0.18;
+        ctx.beginPath();
+        ctx.arc(x,y,r,0,2*Math.PI);
+        ctx.fillStyle = `rgba(255,255,255,${o})`;
+        ctx.shadowColor = '#fff';
+        ctx.shadowBlur = r*3;
+        ctx.fill();
+        ctx.closePath();
+      }
+    }
+    drawStars();
+    setInterval(drawStars, 4000);
+
+    // ---- 3D Globe ----
+    const canvas = document.getElementById("globeCanvas");
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
+    renderer.setSize(400, 400);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+    camera.position.z = 3;
+    const textureLoader = new THREE.TextureLoader();
+    const earthTexture = textureLoader.load("https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg");
+    const sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 32, 32),
+      new THREE.MeshStandardMaterial({ map: earthTexture })
+    );
+    scene.add(sphere);
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 3, 5);
+    scene.add(light);
+    function animate() {
+      requestAnimationFrame(animate);
+      sphere.rotation.y += 0.002;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // === FEED & POST LOGIC ===
+    const currentUsername = "Marilyn"; // Change as needed
+    const currentUserAvatar = "https://randomuser.me/api/portraits/women/44.jpg"; // Change as needed
+    const firebaseConfig = {
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const storage = firebase.storage();
+    const postsContainer = document.getElementById("postsContainer");
+
+    function displayPost(postId, data) {
+      const postElement = document.createElement("div");
+      postElement.className = "post-item";
+      // Header
+      const header = document.createElement("div");
+      header.className = "post-header";
+      const avatar = document.createElement("img");
+      avatar.className = "avatar";
+      avatar.src = data.avatar || "https://randomuser.me/api/portraits/men/32.jpg";
+      header.appendChild(avatar);
+      const userSpan = document.createElement("span");
+      userSpan.className = "post-user";
+      userSpan.textContent = data.username || "Unknown";
+      header.appendChild(userSpan);
+      const dateSpan = document.createElement("span");
+      dateSpan.className = "post-date";
+      dateSpan.textContent = " • " + new Date(data.timestamp).toLocaleString();
+      header.appendChild(dateSpan);
+      postElement.appendChild(header);
+      // Content
+      const text = document.createElement("div");
+      text.style.margin = "12px 0 0 0";
+      text.innerHTML = data.content || "";
+      postElement.appendChild(text);
+      // Image
+      if (data.imageUrl) {
+        const postImg = document.createElement("img");
+        postImg.src = data.imageUrl;
+        postImg.className = "uploaded";
+        postElement.appendChild(postImg);
+      }
+      // Actions
+      const actions = document.createElement("div");
+      actions.className = "post-actions";
+      const likeBtn = document.createElement("button");
+      likeBtn.className = "like-btn";
+      likeBtn.innerHTML = "&#10084;";
+      let likes = data.likes || {};
+      let likeCount = Object.keys(likes).length;
+      if (likes[currentUsername]) likeBtn.classList.add("liked");
+      const likeCountSpan = document.createElement("span");
+      likeCountSpan.textContent = likeCount > 0 ? likeCount : "";
+      likeBtn.onclick = () => {
+        const userLiked = !!(likes && likes[currentUsername]);
+        db.ref("posts/" + postId + "/likes/" + currentUsername).set(userLiked ? null : true);
+      };
+      actions.appendChild(likeBtn);
+      actions.appendChild(likeCountSpan);
+      if (data.username === currentUsername) {
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-btn";
+        delete
+deleteBtn.innerHTML = "&#128465;";
+        deleteBtn.onclick = () => {
+          if (confirm("Delete this post?")) {
+            db.ref("posts/" + postId).remove();
+          }
+        };
+        actions.appendChild(deleteBtn);
+      }
+      postElement.appendChild(actions);
+      postsContainer.appendChild(postElement);
+    }
+
+    // Fetch & render all posts, newest first
+    db.ref("posts").on("value", (snapshot) => {
+      postsContainer.innerHTML = "";
+      const posts = [];
+      snapshot.forEach((child) => {
+        posts.push({ id: child.key, ...child.val() });
+      });
+      posts.sort((a, b) => b.timestamp - a.timestamp);
+      for (const post of posts) displayPost(post.id, post);
     });
-    document.getElementById("newPostContent").value = "";
-    document.getElementById("postImageUpload").value = "";
-    hideModal();
-  } catch (err) {
-    console.error("Image upload failed or posting failed:", err);
-    alert("Upload failed, try again.");
-  }
-  btn.disabled = false; btn.textContent = "Post"; postInProgress = false;
-});
+
+    // === MODAL POPUP LOGIC ===
+    const openModalBtn = document.getElementById("openModal");
+    const postModal = document.getElementById("postModal");
+    const modalBlur = document.getElementById("modalBlur");
+    const closeModalBtn = document.getElementById("closeModal");
+
+    function showModal() {
+      modalBlur.classList.add("active");
+      postModal.classList.add("active");
+      postModal.focus();
+    }
+    function hideModal() {
+      modalBlur.classList.remove("active");
+      postModal.classList.remove("active");
+      document.getElementById("newPostContent").value = "";
+      document.getElementById("postImageUpload").value = "";
+    }
+    openModalBtn.addEventListener("click", showModal);
+    closeModalBtn.addEventListener("click", hideModal);
+    modalBlur.addEventListener("click", hideModal);
+    document.addEventListener('keydown', e => {
+      if (postModal.classList.contains("active") && e.key === "Escape") hideModal();
+    });
+
+    // === POST CREATION (with image upload) ===
+    let postInProgress = false;
+    document.getElementById("postButton").addEventListener("click", async () => {
+      if (postInProgress) return;
+      postInProgress = true;
+      const btn = document.getElementById("postButton");
+      btn.disabled = true;
+      btn.textContent = "Posting...";
+      const content = document.getElementById("newPostContent").value.trim();
+      const file = document.getElementById("postImageUpload").files[0];
+      if (!content && !file) {
+        showErrorBanner("Please add text or select an image.");
+        btn.disabled = false; btn.textContent = "Post"; postInProgress = false;
+        return;
+      }
+      let imageUrl = "";
+      try {
+        if (file) {
+          const imageRef = storage.ref("postImages/" + Date.now() + "_" + file.name);
+          const snapshot = await imageRef.put(file);
+          imageUrl = await snapshot.ref.getDownloadURL();
+        }
+        await db.ref("posts").push({
+          content,
+          imageUrl,
+          timestamp: Date.now(),
+          username: currentUsername,
+          avatar: currentUserAvatar,
+          likes: {}
+        });
+        hideModal();
+      } catch (err) {
+        showErrorBanner("Upload/post failed: " + err.message);
+        console.error("Image upload failed or posting failed:", err);
+      }
+      btn.disabled = false; btn.textContent = "Post"; postInProgress = false;
+    });
   </script>
 </body>
 </html>
-  
