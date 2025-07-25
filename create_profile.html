@@ -11,148 +11,57 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
-  <!-- Fonts & Styles -->
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+  <!-- Font & Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin:0; padding:0; }
-    body {
-      background: #fff; color: #202020;
-      font-family: 'Merriweather', serif;
-      display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; padding: 20px;
-    }
-    .profile-container {
-      background: #f0f0f0; padding: 40px 30px;
-      border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-      width: 100%; max-width: 480px; text-align: center;
-      position: relative;
-    }
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem; margin-bottom: 1.5rem; color: #000;
-    }
-    .avatar-wrapper {
-      width: 140px; height: 140px; margin: 0 auto 16px;
-      border-radius: 50%; border: 3px solid #ccc;
-      overflow: hidden; background: #ddd;
-    }
-    .avatar-wrapper img {
-      width: 100%; height: 100%; object-fit: cover;
-    }
-    #openAvatarModal {
-      background: #000; color: #fff; border:none;
-      border-radius:6px; padding:8px 16px; cursor:pointer;
-      margin-bottom:20px; font-family:'Merriweather', serif;
-      box-shadow:0 4px 12px rgba(0,0,0,0.2);
-      transition:background .2s;
-    }
-    #openAvatarModal:hover { background: #333; }
-
-    input, textarea {
-      width:100%; background:#fff; border:1px solid #ccc;
-      border-radius:6px; padding:12px; margin:12px 0;
-      font-family:'Merriweather', serif; font-size:1rem;
-      resize:vertical;
-    }
+    body { font-family: 'Inter', sans-serif; background: #080c19; color: #eee; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+    .container { background: #111; padding: 40px; border-radius: 12px; box-shadow: 0 0 30px rgba(14,248,255,0.2); width: 100%; max-width: 480px; }
+    h1 { text-align: center; color: #0ef8; margin-bottom: 24px; font-size: 2rem; }
+    .avatar-wrapper { width:140px; height:140px; margin:0 auto 16px; border-radius:50%; border:3px solid #0ef8; overflow:hidden; background:#222; }
+    .avatar-wrapper img { width:100%; height:100%; object-fit:cover; }
+    .glow-btn { display:block; width:100%; text-align:center; background: linear-gradient(90deg, #fff, #e9e9e9); color: #191919; padding: 10px 0; border: none; border-radius: 6px; box-shadow: 0 0 12px #fff9; cursor: pointer; font-weight: 600; margin: 12px 0; transition: 0.2s; }
+    .glow-btn:hover { background: linear-gradient(90deg, #0ef8, #0af0); color: #fff; box-shadow: 0 0 20px #0ef8; transform: translateY(-2px); }
+    input, textarea { width:100%; background:#222; border:1px solid #333; border-radius:6px; padding:12px; margin:10px 0; color:#eee; }
     ::placeholder { color:#888; }
-
-    label.checkbox-label {
-      display:block; width:100%; text-align:center;
-      margin:12px 0; font-family:'Merriweather', serif;
-    }
+    label.checkbox-label { display:flex; align-items:center; margin:10px 0; }
     label.checkbox-label input { margin-right:8px; }
-
-    button#createProfileBtn {
-      background:#000; color:#fff; border:none;
-      border-radius:8px; padding:12px 28px;
-      font-size:1rem; font-weight:700; cursor:pointer;
-      width:100%; margin-top:16px;
-      font-family:'Merriweather', serif;
-      box-shadow:0 4px 12px rgba(0,0,0,0.2);
-      transition:background .2s,transform .1s;
-    }
-    button#createProfileBtn:hover {
-      background:#333; transform:translateY(-2px);
-    }
-    button#createProfileBtn:active {
-      transform:translateY(0);
-    }
-
-    /* Avatar-Modal */
-    .modal { display:none; position:fixed;
-      top:0;left:0;right:0;bottom:0;
-      background:rgba(0,0,0,0.3);
-      justify-content:center;align-items:center;
-      z-index:1000;
-    }
+    .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); justify-content:center; align-items:center; z-index:1000; }
     .modal.show { display:flex; }
-    .modal-content {
-      background:#fff; padding:20px; text-align:center;
-      border-radius:8px; width:90%; max-width:320px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.2);
-    }
-    .modal-content h3 {
-      font-family:'Playfair Display', serif;
-      margin-bottom:12px;
-    }
-    .modal-content input[type="file"] {
-      margin:12px 0; width:100%;
-    }
-    #avatarModalPreview {
-      width:100%; max-height:200px;
-      object-fit:contain; margin:12px 0;
-      border:1px solid #ccc; border-radius:6px;
-    }
-    .modal-buttons {
-      display:flex; justify-content:space-between;
-      margin-top:16px;
-    }
-    .modal-buttons button {
-      flex:1; margin:0 4px; padding:8px;
-      border:none; border-radius:6px;
-      font-family:'Merriweather', serif; cursor:pointer;
-    }
-    #saveAvatarBtn {
-      background:#000; color:#fff;
-    }
-    #saveAvatarBtn:hover { background:#333; }
-    #cancelAvatarBtn {
-      background:#ccc; color:#202020;
-    }
-    #cancelAvatarBtn:hover { background:#bbb; }
+    .modal-content { background:#111; padding:20px; border-radius:8px; width:90%; max-width:320px; }
+    .modal-content h3 { color:#0ef8; text-align:center; margin-bottom:12px; }
+    .modal-content input[type=file] { margin:12px 0; }
+    #avatarModalPreview { width:100%; max-height:200px; object-fit:contain; border:1px solid #333; border-radius:6px; margin:12px 0; }
+    .modal-buttons { display:flex; gap:8px; }
+    .modal-buttons button { flex:1; padding:8px; border:none; border-radius:6px; cursor:pointer; }
+    #cancelAvatarBtn { background:#333; color:#eee; }
+    #saveAvatarBtn { background: linear-gradient(90deg, #fff, #e9e9e9); color:#191919; box-shadow:0 0 12px #fff9; }
+    #saveAvatarBtn:hover { background: linear-gradient(90deg, #0ef8, #0af0); color:#fff; }
   </style>
 </head>
 <body>
-  <div class="profile-container">
+  <div class="container">
     <h1>Create Your Profile</h1>
-
-    <!-- Main avatar circle -->
     <div class="avatar-wrapper">
       <img id="avatarPreview" src="https://via.placeholder.com/140" alt="Avatar">
     </div>
-    <button id="openAvatarModal">Upload File</button>
-
-    <!-- Profile fields -->
-    <input type="email"    id="profileEmail"    placeholder="Email Address" required>
+    <button class="glow-btn" id="openAvatarModal">Upload Photo</button>
+    <input type="email" id="profileEmail" placeholder="Email Address" required>
     <input type="password" id="profilePassword" placeholder="Password" required>
-    <input type="text"     id="profileUsername" placeholder="Username" required>
-    <input type="text"     id="firstName"       placeholder="First Name">
-    <input type="text"     id="lastName"        placeholder="Last Name">
-    <input type="date"     id="dob"             placeholder="Date of Birth">
+    <input type="text" id="profileUsername" placeholder="Username" required>
+    <input type="text" id="firstName" placeholder="First Name">
+    <input type="text" id="lastName" placeholder="Last Name">
+    <input type="date" id="dob">
     <textarea id="profileBio" placeholder="Bio…"></textarea>
-    <input type="text"     id="location"        placeholder="Location">
-    <input type="text"     id="interests"       placeholder="Interests (comma-separated)">
-    <input type="text"     id="githubLink"      placeholder="GitHub Profile URL">
-    <input type="text"     id="websiteLink"     placeholder="Website URL">
+    <input type="text" id="location" placeholder="Location">
+    <input type="text" id="interests" placeholder="Interests (comma-separated)">
+    <input type="text" id="githubLink" placeholder="GitHub URL">
+    <input type="text" id="websiteLink" placeholder="Website URL">
     <label class="checkbox-label">
-      <input type="checkbox" id="emailNotifications">
-      Receive Email Notifications
+      <input type="checkbox" id="emailNotifications"> Receive Email Notifications
     </label>
-
-    <button id="createProfileBtn">Save Profile</button>
+    <button id="createProfileBtn" class="glow-btn">Save Profile</button>
   </div>
-
-  <!-- Avatar Modal -->
   <div id="avatarModal" class="modal">
     <div class="modal-content">
       <h3>Select Profile Picture</h3>
@@ -164,9 +73,7 @@
       </div>
     </div>
   </div>
-
   <script>
-    // 1) Firebase init
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -174,108 +81,66 @@
       projectId: "hashhumanity-58b9a",
       storageBucket: "hashhumanity-58b9a.appspot.com",
       messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e0434379d71bd"
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
     };
     firebase.initializeApp(firebaseConfig);
-    const auth    = firebase.auth();
-    const db      = firebase.database();
-    const storage = firebase.storage();
-
-    // 2) Avatar modal logic
-    const avatarModal       = document.getElementById('avatarModal');
-    const openAvatarModal   = document.getElementById('openAvatarModal');
-    const avatarFileInput   = document.getElementById('avatarFileInput');
-    const avatarModalPreview= document.getElementById('avatarModalPreview');
-    const cancelAvatarBtn   = document.getElementById('cancelAvatarBtn');
-    const saveAvatarBtn     = document.getElementById('saveAvatarBtn');
-    const avatarPreview     = document.getElementById('avatarPreview');
+    const auth = firebase.auth(), db = firebase.database(), storage = firebase.storage();
     let avatarFile = null;
-
-    openAvatarModal.addEventListener('click', () => {
-      avatarModal.classList.add('show');
-      avatarFileInput.value = '';
-      avatarModalPreview.src = '';
+    document.getElementById('openAvatarModal').addEventListener('click', () => {
+      document.getElementById('avatarModal').classList.add('show');
       avatarFile = null;
+      document.getElementById('avatarFileInput').value = '';
+      document.getElementById('avatarModalPreview').src = '';
     });
-    avatarFileInput.addEventListener('change', e => {
-      const f = e.target.files[0];
-      if (!f) return;
-      avatarFile = f;
-      const r = new FileReader();
-      r.onload = ev => avatarModalPreview.src = ev.target.result;
+    document.getElementById('avatarFileInput').addEventListener('change', e => {
+      const f = e.target.files[0]; if (!f) return; avatarFile = f;
+      const r = new FileReader(); r.onload = ev => document.getElementById('avatarModalPreview').src = ev.target.result;
       r.readAsDataURL(f);
     });
-    cancelAvatarBtn.addEventListener('click', () => {
-      avatarModal.classList.remove('show');
-    });
-    saveAvatarBtn.addEventListener('click', () => {
-      if (avatarFile && avatarModalPreview.src) {
-        avatarPreview.src = avatarModalPreview.src;
+    document.getElementById('cancelAvatarBtn').addEventListener('click', () => document.getElementById('avatarModal').classList.remove('show'));
+    document.getElementById('saveAvatarBtn').addEventListener('click', () => {
+      if (avatarFile && document.getElementById('avatarModalPreview').src) {
+        document.getElementById('avatarPreview').src = document.getElementById('avatarModalPreview').src;
       }
-      avatarModal.classList.remove('show');
+      document.getElementById('avatarModal').classList.remove('show');
     });
-
-    // 3) Upload helper
     async function uploadAvatar(uid) {
       if (!avatarFile) return '';
       const ref = storage.ref(`avatars/${uid}_${Date.now()}`);
-      const snap= await ref.put(avatarFile);
+      const snap = await ref.put(avatarFile);
       return await snap.ref.getDownloadURL();
     }
-
-    // 4) Save Profile & redirect
     document.getElementById('createProfileBtn').addEventListener('click', async e => {
       e.preventDefault();
-
-      // gather form values
-      const email    = document.getElementById('profileEmail').value.trim();
+      const email = document.getElementById('profileEmail').value.trim();
       const password = document.getElementById('profilePassword').value;
       const username = document.getElementById('profileUsername').value.trim();
-      const firstName= document.getElementById('firstName').value.trim();
-      const lastName = document.getElementById('lastName').value.trim();
-      const dob      = document.getElementById('dob').value;
-      const bio      = document.getElementById('profileBio').value.trim();
-      const location= document.getElementById('location').value.trim();
-      const interests = document.getElementById('interests').value
-                        .split(',').map(s=>s.trim()).filter(Boolean);
-      const github   = document.getElementById('githubLink').value.trim();
-      const website  = document.getElementById('websiteLink').value.trim();
-      const emailNotif= document.getElementById('emailNotifications').checked;
-
-      if (!email||!password||!username) {
-        return alert('Email, password & username are required.');
-      }
-
+      if (!email || !password || !username) return alert('Email, password & username are required.');
+      let uid;
       try {
-        // a) Auth signup
-        const cred = await auth.createUserWithEmailAndPassword(email,password);
-        const uid  = cred.user.uid;
-
-        // b) Upload avatar
+        const cred = await auth.createUserWithEmailAndPassword(email, password);
+        uid = cred.user.uid;
         let avatarURL = '';
-        try {
-          avatarURL = await uploadAvatar(uid);
-        } catch(err){
-          console.warn('Avatar upload error',err);
-        }
-
-        // c) Save profile data
-        const profileData = {
-          uid,email,username,
-          firstName,lastName,dob,
-          bio,location,interests,
-          github,website,
-          emailNotifications: emailNotif,
+        try { avatarURL = await uploadAvatar(uid); } catch(err) { console.warn(err); }
+        const data = {
+          uid, email, username,
+          firstName: document.getElementById('firstName').value.trim(),
+          lastName: document.getElementById('lastName').value.trim(),
+          dob: document.getElementById('dob').value,
+          bio: document.getElementById('profileBio').value.trim(),
+          location: document.getElementById('location').value.trim(),
+          interests: document.getElementById('interests').value.split(',').map(s=>s.trim()).filter(Boolean),
+          github: document.getElementById('githubLink').value.trim(),
+          website: document.getElementById('websiteLink').value.trim(),
+          emailNotifications: document.getElementById('emailNotifications').checked,
           avatar: avatarURL,
           createdAt: new Date().toISOString()
         };
-        await db.ref(`users/${uid}`).set(profileData);
+        await db.ref(`users/${uid}`).set(data);
+        window.location.href = `view_profile.html?user=${uid}`;
       } catch(err) {
-        console.error('Create profile error',err);
-        return alert(err.message||'Failed to create profile.');
-      } finally {
-        // always redirect after success
-        window.location.href = 'universe.html';
+        console.error('Create profile error', err);
+        alert(err.message || 'Failed to create profile.');
       }
     });
   </script>
