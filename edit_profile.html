@@ -4,105 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Edit Profile • #HUMANITY</title>
-  <!-- Fonts & Firebase -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
   <style>
-    body {
-      font-family: 'Inter', 'Merriweather', serif;
-      background: #17191b;
-      color: #f6f6f7;
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .edit-profile-container {
-      background: #23272e;
-      border-radius: 20px;
-      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.40);
-      padding: 36px 28px;
-      width: 100%;
-      max-width: 400px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .avatar-preview {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 18px;
-      border: 3px solid #00ffe7;
-      background: #131417;
-      box-shadow: 0 0 16px #00ffe766;
-      transition: box-shadow .2s;
-    }
-    .avatar-preview:hover {
-      box-shadow: 0 0 32px #00ffe7cc;
-    }
-    .input-field {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 16px;
-      border: none;
-      border-radius: 10px;
-      background: #1a1d22;
-      color: #f6f6f7;
-      font-size: 1rem;
-      box-shadow: 0 1px 6px #1112;
-      outline: none;
-    }
-    .input-field:focus {
-      background: #22242a;
-      border: 1px solid #00ffe7;
-    }
-    .btn {
-      width: 100%;
-      padding: 14px 0;
-      background: linear-gradient(90deg, #00ffe7, #01c7fa 90%);
-      color: #131417;
-      font-weight: bold;
-      font-size: 1.08rem;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: background .18s, color .18s;
-      box-shadow: 0 2px 8px #00ffe744;
-    }
-    .btn:hover {
-      background: linear-gradient(90deg, #01c7fa, #00ffe7 90%);
-      color: #000;
-    }
-    .label-upload {
-      color: #00ffe7;
-      font-weight: 500;
-      margin-bottom: 6px;
-      cursor: pointer;
-      display: inline-block;
-      transition: color .18s;
-    }
-    .label-upload:hover {
-      color: #01c7fa;
-      text-decoration: underline;
-    }
-    input[type="file"] {
-      display: none;
-    }
-    .edit-title {
-      font-size: 1.7rem;
-      font-weight: 700;
-      margin-bottom: 14px;
-      letter-spacing: 1.2px;
-      color: #00ffe7;
-      text-align: center;
-    }
+    body { background: #17191b; color: #f6f6f7; font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .edit-profile-container { background: #23272e; border-radius: 20px; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.40); padding: 36px 28px; max-width: 400px; width: 100%; }
+    .avatar-preview { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 18px; border: 3px solid #00ffe7; background: #131417; box-shadow: 0 0 16px #00ffe766; }
+    .input-field { width: 100%; padding: 12px; margin-bottom: 16px; border: none; border-radius: 10px; background: #1a1d22; color: #f6f6f7; font-size: 1rem; }
+    .btn { width: 100%; padding: 14px 0; background: linear-gradient(90deg, #00ffe7, #01c7fa 90%); color: #131417; font-weight: bold; font-size: 1.08rem; border: none; border-radius: 10px; cursor: pointer; }
+    .btn:hover { background: linear-gradient(90deg, #01c7fa, #00ffe7 90%); color: #000; }
+    .label-upload { color: #00ffe7; font-weight: 500; margin-bottom: 6px; cursor: pointer; display: inline-block; }
+    .edit-title { font-size: 1.7rem; font-weight: 700; margin-bottom: 14px; letter-spacing: 1.2px; color: #00ffe7; text-align: center; }
+    input[type="file"] { display: none; }
   </style>
 </head>
 <body>
@@ -131,16 +47,13 @@
     const database = firebase.database();
     const storage = firebase.storage();
 
-    // UI elements
     const avatarInput = document.getElementById('avatarInput');
     const avatarPreview = document.getElementById('avatarPreview');
     let avatarFile = null;
-    let userId = null;
 
-    // Auth and load profile data
     auth.onAuthStateChanged(user => {
       if (user) {
-        userId = user.uid;
+        const userId = user.uid;
         database.ref('users/' + userId).once('value').then(snapshot => {
           const data = snapshot.val();
           if (data) {
@@ -155,7 +68,6 @@
       }
     });
 
-    // Avatar preview + image file load
     avatarInput.addEventListener('change', (e) => {
       avatarFile = e.target.files[0];
       if (avatarFile) {
@@ -167,44 +79,34 @@
       }
     });
 
-    // Save profile to Firebase, redirect to view_profile.html
     function saveProfile() {
       const user = auth.currentUser;
       if (!user) {
-        alert("You are not logged in.");
+        alert("Not authenticated");
         return;
       }
+      const userId = user.uid;
       const username = document.getElementById('username').value.trim();
       const bio = document.getElementById('bio').value.trim();
 
-      if (username.length < 3) {
-        alert("Username must be at least 3 characters.");
-        return;
-      }
-
-      // Inner save logic
       const updateUserData = (avatarURL = null) => {
         const updateData = { username, bio };
         if (avatarURL) updateData.avatar = avatarURL;
-        database.ref('users/' + user.uid).update(updateData)
+        database.ref('users/' + userId).update(updateData)
           .then(() => {
-            // Save to localStorage for instant profile preview (optional)
-            localStorage.setItem("profileData", JSON.stringify({username, bio, avatar: avatarURL || avatarPreview.src}));
-            // Redirect to view profile page
+            // All saved, now redirect
             window.location.href = 'view_profile.html';
           })
-          .catch(err => alert("Profile save failed: " + err.message));
+          .catch(err => alert("Database update failed: " + err.message));
       };
 
-      // Handle avatar upload
       if (avatarFile) {
-        const avatarRef = storage.ref('avatars/' + user.uid);
+        const avatarRef = storage.ref('avatars/' + userId);
         avatarRef.put(avatarFile)
           .then(snapshot => snapshot.ref.getDownloadURL())
           .then(url => updateUserData(url))
           .catch(err => alert("Image upload failed: " + err.message));
       } else {
-        // Save without changing avatar
         updateUserData();
       }
     }
