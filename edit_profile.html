@@ -1,66 +1,122 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Edit Profile • #HUMANITY</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet" />
+  <!-- Fonts & Firebase -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
   <style>
     body {
-      font-family: 'Merriweather', serif;
-      background: #f0f0f0;
-      color: #333;
-      padding: 20px;
+      font-family: 'Inter', 'Merriweather', serif;
+      background: #17191b;
+      color: #f6f6f7;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .container {
-      max-width: 500px;
-      margin: 0 auto;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    .edit-profile-container {
+      background: #23272e;
+      border-radius: 20px;
+      box-shadow: 0 8px 32px 0 rgba(0,0,0,0.40);
+      padding: 36px 28px;
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    .avatar {
+    .avatar-preview {
       width: 120px;
       height: 120px;
       border-radius: 50%;
       object-fit: cover;
-      display: block;
-      margin: 10px auto;
-      border: 3px solid #000;
+      margin-bottom: 18px;
+      border: 3px solid #00ffe7;
+      background: #131417;
+      box-shadow: 0 0 16px #00ffe766;
+      transition: box-shadow .2s;
+    }
+    .avatar-preview:hover {
+      box-shadow: 0 0 32px #00ffe7cc;
     }
     .input-field {
       width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+      border: none;
+      border-radius: 10px;
+      background: #1a1d22;
+      color: #f6f6f7;
+      font-size: 1rem;
+      box-shadow: 0 1px 6px #1112;
+      outline: none;
+    }
+    .input-field:focus {
+      background: #22242a;
+      border: 1px solid #00ffe7;
     }
     .btn {
-      padding: 10px 20px;
-      background: #000;
-      color: #fff;
+      width: 100%;
+      padding: 14px 0;
+      background: linear-gradient(90deg, #00ffe7, #01c7fa 90%);
+      color: #131417;
+      font-weight: bold;
+      font-size: 1.08rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
+      margin-top: 10px;
+      transition: background .18s, color .18s;
+      box-shadow: 0 2px 8px #00ffe744;
     }
     .btn:hover {
-      background: #444;
+      background: linear-gradient(90deg, #01c7fa, #00ffe7 90%);
+      color: #000;
+    }
+    .label-upload {
+      color: #00ffe7;
+      font-weight: 500;
+      margin-bottom: 6px;
+      cursor: pointer;
+      display: inline-block;
+      transition: color .18s;
+    }
+    .label-upload:hover {
+      color: #01c7fa;
+      text-decoration: underline;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    .edit-title {
+      font-size: 1.7rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      letter-spacing: 1.2px;
+      color: #00ffe7;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Edit Profile</h2>
-    <img id="avatarPreview" class="avatar" src="default_avatar.png" alt="Avatar" />
-    <input type="file" id="avatarInput" accept="image/*" class="input-field" />
-    <input type="text" id="username" placeholder="Username" class="input-field" />
-    <input type="text" id="bio" placeholder="Bio" class="input-field" />
+  <div class="edit-profile-container">
+    <div class="edit-title">Edit Profile</div>
+    <img id="avatarPreview" class="avatar-preview" src="default_avatar.png" alt="Profile picture" />
+    <label class="label-upload" for="avatarInput">Change Avatar</label>
+    <input type="file" id="avatarInput" accept="image/*" />
+    <input type="text" id="username" class="input-field" placeholder="Username" maxlength="18" autocomplete="off" />
+    <input type="text" id="bio" class="input-field" placeholder="Bio (max 120 chars)" maxlength="120" autocomplete="off" />
     <button class="btn" onclick="saveProfile()">Save Profile</button>
-  </div>  <script>
+  </div>
+  <script>
+    // Firebase setup
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -75,13 +131,16 @@
     const database = firebase.database();
     const storage = firebase.storage();
 
+    // UI elements
     const avatarInput = document.getElementById('avatarInput');
     const avatarPreview = document.getElementById('avatarPreview');
     let avatarFile = null;
+    let userId = null;
 
+    // Auth and load profile data
     auth.onAuthStateChanged(user => {
       if (user) {
-        const userId = user.uid;
+        userId = user.uid;
         database.ref('users/' + userId).once('value').then(snapshot => {
           const data = snapshot.val();
           if (data) {
@@ -96,6 +155,7 @@
       }
     });
 
+    // Avatar preview + image file load
     avatarInput.addEventListener('change', (e) => {
       avatarFile = e.target.files[0];
       if (avatarFile) {
@@ -107,39 +167,47 @@
       }
     });
 
+    // Save profile to Firebase, redirect to view_profile.html
     function saveProfile() {
       const user = auth.currentUser;
       if (!user) {
-        alert("Not authenticated");
+        alert("You are not logged in.");
         return;
       }
-      const userId = user.uid;
-      const username = document.getElementById('username').value;
-      const bio = document.getElementById('bio').value;
+      const username = document.getElementById('username').value.trim();
+      const bio = document.getElementById('bio').value.trim();
 
+      if (username.length < 3) {
+        alert("Username must be at least 3 characters.");
+        return;
+      }
+
+      // Inner save logic
       const updateUserData = (avatarURL = null) => {
-        const updateData = {
-          username: username,
-          bio: bio
-        };
+        const updateData = { username, bio };
         if (avatarURL) updateData.avatar = avatarURL;
-
-        database.ref('users/' + userId).update(updateData)
+        database.ref('users/' + user.uid).update(updateData)
           .then(() => {
-            window.location.href = 'my_profile.html';
+            // Save to localStorage for instant profile preview (optional)
+            localStorage.setItem("profileData", JSON.stringify({username, bio, avatar: avatarURL || avatarPreview.src}));
+            // Redirect to view profile page
+            window.location.href = 'view_profile.html';
           })
-          .catch(err => alert("Database update failed: " + err.message));
+          .catch(err => alert("Profile save failed: " + err.message));
       };
 
+      // Handle avatar upload
       if (avatarFile) {
-        const avatarRef = storage.ref('avatars/' + userId);
+        const avatarRef = storage.ref('avatars/' + user.uid);
         avatarRef.put(avatarFile)
           .then(snapshot => snapshot.ref.getDownloadURL())
           .then(url => updateUserData(url))
           .catch(err => alert("Image upload failed: " + err.message));
       } else {
+        // Save without changing avatar
         updateUserData();
       }
     }
-  </script></body>
+  </script>
+</body>
 </html>
