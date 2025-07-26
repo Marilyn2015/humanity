@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="#HUMANITY: Prove you're real in the digital age">
   <meta name="author" content="#HUMANITY Team">
-  <title>#HUMANITY</title>
+  <title>#HUMANITY Landing</title>
 
   <!-- Three.js & Fonts -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
@@ -14,92 +14,18 @@
   <style>
     :root {
       --bg-image: url('https://source.unsplash.com/1600x900/?outer-space,stars');
-      --text-color: #000;
-      --button-bg: #fff;
-      --button-text: #000;
-      --button-border: #000;
-      --button-hover: #eee;
+      --button-color: #0ef8;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
-      width: 100%; height: 100%;
-      font-family: 'Roboto', sans-serif;
-      background: var(--bg-image) center/cover no-repeat fixed;
-      color: var(--text-color);
-      overflow: hidden;
-    }
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      background-color: #000;
-    }
-    #starfield {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: 0;
-      pointer-events: none;
-    }
-    .container {
-      background: transparent;
-      padding: 20px 40px;
-      border-radius: 8px;
-      text-align: center;
-      max-width: 600px;
-      width: 90%;
-      position: relative;
-      z-index: 1;
-    }
-    canvas#globe {
-      width: 100%;
-      max-width: 300px;
-      height: auto;
-      display: block;
-      margin: 0 auto 20px;
-      position: relative;
-      z-index: 1;
-    }
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.2rem;
-      margin-bottom: 10px;
-    }
-    p {
-      font-size: 1rem;
-      margin-bottom: 24px;
-    }
-    .button {
-      display: inline-block;
-      width: 200px;
-      margin: 8px auto;
-      padding: 12px 0;
-      background: transparent;
-      color: #0ef8;
-      border: 2px solid #0ef8;
-      font-family: 'Playfair Display', serif;
-      font-size: 1rem;
-      font-weight: 700;
-      text-decoration: none;
-      transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-      position: relative;
-      z-index: 1;
-      border-radius: 0;
-      box-shadow: 0 0 8px rgba(14,248,255,0.7);
-    }
-    .button:hover {
-      background: #0ef8;
-      color: #111;
-      box-shadow: 0 0 20px #0ef8, inset 0 0 10px #0ef8;
-    }
-    @media (max-width: 600px) {
-      .container { padding: 16px; width: 95%; }
-      canvas#globe { max-width: 200px; margin-bottom: 16px; }
-      h1 { font-size: 1.6rem; }
-      p { font-size: 0.9rem; margin-bottom: 16px; }
-      .button { padding: 8px 16px; font-size: 0.8rem; margin: 4px auto; }
-    }
+    html, body { width:100%; height:100%; overflow:hidden; font-family:'Roboto',sans-serif; background: var(--bg-image) center/cover no-repeat fixed; background-color:#000; color:#fff; }
+    #starfield { position: fixed; top:0; left:0; width:100vw; height:100vh; z-index:0; pointer-events:none; }
+    .container { position:relative; z-index:1; text-align:center; padding:20px 40px; max-width:600px; margin:auto; }
+    canvas#globe { display:block; width:100%; max-width:300px; margin:0 auto 20px; }
+    h1 { font-family:'Playfair Display',serif; font-size:2.2rem; margin-bottom:10px; }
+    p { font-size:1rem; margin-bottom:24px; }
+    .button { display:inline-block; width:200px; margin:8px auto; padding:12px 0; background:transparent; color: var(--button-color); border:2px solid var(--button-color); font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; text-decoration:none; transition:background .3s, color .3s, box-shadow .3s; box-shadow:0 0 8px rgba(14,248,255,0.7); }
+    .button:hover { background: var(--button-color); color:#111; box-shadow:0 0 20px var(--button-color), inset 0 0 10px var(--button-color); }
+    @media(max-width:600px){ .container{padding:16px;} canvas#globe{max-width:200px;margin-bottom:16px;} h1{font-size:1.6rem;} p{font-size:.9rem;margin-bottom:16px;} .button{padding:8px 16px;font-size:.8rem;margin:4px auto;} }
   </style>
 </head>
 <body>
@@ -108,69 +34,55 @@
     <canvas id="globe" width="300" height="300"></canvas>
     <h1>#HUMANITY</h1>
     <p>Sign in or register to continue</p>
-    <a href="portal.html" class="button">Log in with World ID</a>
-    <a href="register.html" class="button">Register for World ID</a>
+    <a href="login.html" class="button">Log in</a>
+    <a href="create_profile.html" class="button">Create Profile</a>
   </div>
 
   <script>
-    // Twinkling static stars
+    // Starfield
     const starCanvas = document.getElementById('starfield');
     const sCtx = starCanvas.getContext('2d');
-    const resizeStars = () => {
-      starCanvas.width = window.innerWidth;
-      starCanvas.height = window.innerHeight;
-    };
+    const resizeStars = () => { starCanvas.width = window.innerWidth; starCanvas.height = window.innerHeight; };
     window.addEventListener('resize', resizeStars);
     resizeStars();
-    const stars = Array.from({ length: 300 }, () => ({
-      x: Math.random() * starCanvas.width,
-      y: Math.random() * starCanvas.height,
-      r: Math.random() * 1.2 + 0.3,
-      base: Math.random() * 0.5 + 0.2,
-      phase: Math.random() * Math.PI * 2
-    }));
-    const drawStars = () => {
+    const stars = Array.from({ length: 300 }, () => ({ x: Math.random()*starCanvas.width, y: Math.random()*starCanvas.height, r: Math.random()*1.2+0.3, base: Math.random()*0.5+0.2, phase: Math.random()*Math.PI*2 }));
+    (function drawStars() {
       sCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
       const t = Date.now() * 0.002;
       stars.forEach(st => {
         const o = st.base + Math.sin(t + st.phase) * 0.1;
+        sCtx.globalAlpha = o;
         sCtx.beginPath();
-        sCtx.arc(st.x, st.y, st.r, 0, 2 * Math.PI);
-        sCtx.fillStyle = `rgba(255,255,255,${o.toFixed(2)})`;
+        sCtx.arc(st.x, st.y, st.r, 0, 2*Math.PI);
+        sCtx.fillStyle = '#fff';
         sCtx.fill();
       });
       requestAnimationFrame(drawStars);
-    };
-    drawStars();
+    })();
 
-    // Globe initialization
-    const canvas = document.getElementById('globe');
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
-    renderer.setSize(canvas.width, canvas.height);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    // Globe
+    const globeCanvas = document.getElementById('globe');
+    const renderer = new THREE.WebGLRenderer({ canvas: globeCanvas, alpha: true });
+    renderer.setSize(globeCanvas.width, globeCanvas.height);
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, canvas.width / canvas.height, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(50, globeCanvas.width/globeCanvas.height, 0.1, 1000);
     camera.position.z = 3;
-    const geometry = new THREE.SphereGeometry(1, 32, 32);
     new THREE.TextureLoader().load('https://marilyn2015.github.io/Humanity/earthmap1k.jpg', texture => {
-      const material = new THREE.MeshStandardMaterial({ map: texture });
-      const globe = new THREE.Mesh(geometry, material);
+      const globe = new THREE.Mesh(new THREE.SphereGeometry(1,32,32), new THREE.MeshStandardMaterial({ map: texture }));
       scene.add(globe);
-      const light = new THREE.DirectionalLight(0xffffff, 1);
-      light.position.set(5, 3, 5);
+      const light = new THREE.DirectionalLight(0xffffff,1);
+      light.position.set(5,3,5);
       scene.add(light);
-      const animate = () => {
+      (function animate() {
         requestAnimationFrame(animate);
         globe.rotation.y += 0.005;
         renderer.render(scene, camera);
-      };
-      animate();
+      })();
     });
     window.addEventListener('resize', () => {
       resizeStars();
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
-      camera.aspect = w / h;
+      const w = globeCanvas.clientWidth, h = globeCanvas.clientHeight;
+      camera.aspect = w/h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     });
