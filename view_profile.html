@@ -1,3 +1,4 @@
+<!-- view_profile.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -64,6 +65,7 @@
       padding: 1rem;
       z-index: 100;
     }
+    .modal.active { display: flex; }
     .modal-content {
       background: var(--modal-bg);
       border-radius: 12px;
@@ -80,11 +82,6 @@
     .modal-header h2 { font-size: 1.25rem; color: var(--accent-light); }
     .close-btn { background: transparent; border: none; font-size: 1.2rem; color: var(--text-secondary); cursor: pointer; }
     .modal-body { max-height: 250px; overflow-y: auto; margin-bottom: 1rem; }
-    .message-item, .follower-item, .request-item, .preview { 
-      padding: 0.75rem;
-      border-bottom: 1px solid #444;
-    }
-    .message-item:last-child, .follower-item:last-child, .request-item:last-child { border-bottom: none; }
     .preview { display:block; width:80px; height:80px; border-radius:50%; object-fit:cover; margin:0 auto 1rem; border:2px solid var(--accent); }
     .form-group { margin-bottom:1rem; }
     .form-group label { display:block; margin-bottom:0.25rem; color:var(--text-main); font-size:0.9rem; }
@@ -107,63 +104,6 @@
     </div>
   </div>
 
-  <!-- Inbox Modal -->
-  <div id="inboxModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Inbox</h2>
-        <button class="close-btn" id="closeInbox">×</button>
-      </div>
-      <div class="modal-body" id="inboxList">
-        <div class="message-item">Message 1 from UserA</div>
-        <div class="message-item">Message 2 from UserB</div>
-        <button class="btn" id="viewOutboxBtn">View Outbox</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Outbox Modal -->
-  <div id="outboxModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Outbox</h2>
-        <button class="close-btn" id="closeOutbox">×</button>
-      </div>
-      <div class="modal-body" id="outboxList">
-        <div class="message-item">Sent 1 to UserC</div>
-        <div class="message-item">Sent 2 to UserD</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Followers Modal -->
-  <div id="followersModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Following</h2>
-        <button class="close-btn" id="closeFollowers">×</button>
-      </div>
-      <div class="modal-body" id="followersList">
-        <div class="follower-item">UserA</div>
-        <div class="follower-item">UserB</div>
-        <div class="follower-item">UserC</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Requests Modal -->
-  <div id="requestsModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>Friend Requests</h2>
-        <button class="close-btn" id="closeRequests">×</button>
-      </div>
-      <div class="modal-body" id="requestsList">
-        <div class="request-item">UserX <button class="btn small" id="acceptBtn">Accept</button> <button class="btn small" id="declineBtn">Decline</button></div>
-      </div>
-    </div>
-  </div>
-
   <!-- Edit Profile Modal -->
   <div id="editModal" class="modal">
     <div class="modal-content">
@@ -172,8 +112,8 @@
         <button class="close-btn" id="closeEdit">×</button>
       </div>
       <div class="modal-body">
-        <div class="form-group" style="text-align:center;">
-          <img id="previewAvatar" class="preview" src="default_avatar.png" alt="Preview Avatar" />
+        <img id="previewAvatar" class="preview" src="default_avatar.png" alt="Preview Avatar" />
+        <div class="form-group">
           <label for="avatarInput">Change Avatar</label>
           <input type="file" id="avatarInput" accept="image/*" />
         </div>
@@ -195,77 +135,34 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Inbox
-      const messagesBtn = document.getElementById('messagesBtn');
-      const inboxModal = document.getElementById('inboxModal');
-      const closeInbox = document.getElementById('closeInbox');
-      const viewOutboxBtn = document.getElementById('viewOutboxBtn');
-      const outboxModal = document.getElementById('outboxModal');
-      const closeOutbox = document.getElementById('closeOutbox');
-
-      if (messagesBtn && inboxModal && closeInbox) {
-        messagesBtn.onclick = () => inboxModal.style.display = 'flex';
-        closeInbox.onclick = () => inboxModal.style.display = 'none';
-      }
-      if (viewOutboxBtn && outboxModal) viewOutboxBtn.onclick = () => outboxModal.style.display = 'flex';
-      if (closeOutbox) closeOutbox.onclick = () => outboxModal.style.display = 'none';
-
-      // Followers
-      const followersBtn = document.getElementById('followersBtn');
-      const followersModal = document.getElementById('followersModal');
-      const closeFollowers = document.getElementById('closeFollowers');
-      if (followersBtn && followersModal && closeFollowers) {
-        followersBtn.onclick = () => followersModal.style.display = 'flex';
-        closeFollowers.onclick = () => followersModal.style.display = 'none';
-      }
-
-      // Requests
-      const requestsBtn = document.getElementById('requestsBtn');
-      const requestsModal = document.getElementById('requestsModal');
-      const closeRequests = document.getElementById('closeRequests');
-      if (requestsBtn && requestsModal && closeRequests) {
-        requestsBtn.onclick = () => requestsModal.style.display = 'flex';
-        closeRequests.onclick = () => requestsModal.style.display = 'none';
-      }
-
-      // Universe
-      const universeBtn = document.getElementById('universeBtn');
-      if (universeBtn) universeBtn.onclick = () => {
-        const profileData = { username: document.getElementById('username').textContent, bio: document.getElementById('bio').textContent, avatar: document.getElementById('avatar').src };
-        localStorage.setItem('profileData', JSON.stringify(profileData)); window.location.href = 'universe.html';
+      // Utility to toggle modals
+      const toggleModal = (id, show) => {
+        const m = document.getElementById(id);
+        if (m) m.classList[show ? 'add' : 'remove']('active');
       };
 
       // Edit Profile
-      const editBtn = document.getElementById('editBtn');
-      const editModal = document.getElementById('editModal');
-      const closeEdit = document.getElementById('closeEdit');
-      const cancelEdit = document.getElementById('cancelEdit');
-      const saveEdit = document.getElementById('saveEdit');
-      const avatar = document.getElementById('avatar');
-      const previewAvatar = document.getElementById('previewAvatar');
-      const avatarInput = document.getElementById('avatarInput');
-      const usernameEl = document.getElementById('username');
-      const bioEl = document.getElementById('bio');
-      const usernameInput = document.getElementById('usernameInput');
-      const bioInput = document.getElementById('bioInput');
-      if (editBtn && editModal && closeEdit && cancelEdit && saveEdit) {
-        editBtn.onclick = () => {
-          previewAvatar.src = avatar.src;
-          usernameInput.value = usernameEl.textContent;
-          bioInput.value = bioEl.textContent;
-          editModal.style.display = 'flex';
-        };
-        closeEdit.onclick = cancelEdit.onclick = () => editModal.style.display = 'none';
-        avatarInput.onchange = () => { const file = avatarInput.files[0]; if (file) previewAvatar.src = URL.createObjectURL(file); };
-        saveEdit.onclick = () => {
-          const file = avatarInput.files[0]; if (file) avatar.src = previewAvatar.src;
-          usernameEl.textContent = usernameInput.value.trim() || usernameEl.textContent;
-          bioEl.textContent = bioInput.value.trim() || bioEl.textContent;
-          editModal.style.display = 'none';
-        };
-      }
+      document.getElementById('editBtn')?.addEventListener('click', () => {
+        document.getElementById('previewAvatar').src = document.getElementById('avatar').src;
+        document.getElementById('usernameInput').value = document.getElementById('username').textContent;
+        document.getElementById('bioInput').value = document.getElementById('bio').textContent;
+        toggleModal('editModal', true);
+      });
+      document.getElementById('closeEdit')?.addEventListener('click', () => toggleModal('editModal', false));
+      document.getElementById('cancelEdit')?.addEventListener('click', () => toggleModal('editModal', false));
+      document.getElementById('avatarInput')?.addEventListener('change', e => {
+        const f = e.target.files[0]; if (f) document.getElementById('previewAvatar').src = URL.createObjectURL(f);
+      });
+      document.getElementById('saveEdit')?.addEventListener('click', () => {
+        const fileInput = document.getElementById('avatarInput');
+        if (fileInput.files[0]) document.getElementById('avatar').src = document.getElementById('previewAvatar').src;
+        const uname = document.getElementById('usernameInput').value.trim();
+        const bio = document.getElementById('bioInput').value.trim();
+        if (uname) document.getElementById('username').textContent = uname;
+        if (bio) document.getElementById('bio').textContent = bio;
+        toggleModal('editModal', false);
+      });
     });
   </script>
 </body>
 </html>
-
