@@ -1,214 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="View and edit your #HUMANITY profile." />
+  <link rel="icon" href="favicon.ico" />
   <title>Profile • #HUMANITY</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet"/>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <style>
+    :root {
+      --bg-start: #101115;
+      --bg-end: #23272e;
+      --card-bg: #1b1e24;
+      --accent: #00ffe7;
+      --accent-light: #01c7fa;
+      --text-main: #f6f6f7;
+      --text-secondary: #c4fff8;
+      --shadow-color: rgba(0,255,231,0.8);
+      --modal-bg: #272b33;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: linear-gradient(135deg, #101115 0%, #23272e 100%);
-      font-family: 'Inter', 'Merriweather', serif;
-      min-height: 100vh;
-      margin: 0;
+      background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+      font-family: 'Inter', sans-serif;
+      color: var(--text-main);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #f6f6f7;
-      overflow-x: hidden;
+      min-height: 100vh;
+      padding: 1rem;
     }
     .profile-card {
-      background: rgba(26, 30, 34, 0.96);
-      border-radius: 20px;
-      box-shadow: 0 8px 32px 0 #00ffe799, 0 1.5px 8px #0007;
-      padding: 40px 34px 30px 34px;
-      max-width: 430px;
-      min-width: 300px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%; max-width: 360px;
+      box-shadow: 0 4px 20px var(--shadow-color);
+      text-align: center;
       position: relative;
-      animation: popIn 0.7s cubic-bezier(.22,1,.36,1.04);
-    }
-    @keyframes popIn {
-      0% { transform: scale(0.88) translateY(20px); opacity: 0; }
-      100% { transform: scale(1) translateY(0); opacity: 1; }
     }
     .avatar {
-      width: 140px;
-      height: 140px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 4px solid #00ffe7;
-      box-shadow: 0 0 40px #00ffe7cc, 0 0 6px #23272e;
-      margin-bottom: 22px;
-      background: #15171a;
-      transition: box-shadow 0.3s;
-    }
-    .avatar:hover {
-      box-shadow: 0 0 60px #00ffe7, 0 0 12px #23272e;
-    }
-    .username {
-      font-size: 2.1rem;
-      font-weight: 700;
-      color: #00ffe7;
-      text-shadow: 0 0 16px #00ffe766;
-      margin-bottom: 6px;
-      letter-spacing: 1.2px;
-      text-align: center;
-      word-break: break-word;
-    }
-    .bio {
-      color: #c4fff8;
-      font-size: 1.13rem;
-      font-style: italic;
-      margin-bottom: 18px;
-      text-align: center;
-      max-width: 95%;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-    .profile-actions {
-      margin-top: 12px;
-      display: flex;
-      gap: 12px;
-      width: 100%;
-      justify-content: center;
-    }
-    .btn {
-      padding: 11px 24px;
-      background: linear-gradient(90deg, #00ffe7, #01c7fa 90%);
-      color: #23272e;
-      font-weight: bold;
-      font-size: 1.05rem;
-      border: none;
-      border-radius: 8px;
+      width: 100px; height: 100px;
+      border-radius: 50%; object-fit: cover;
+      border: 2px solid var(--accent);
+      margin: 0 auto 1rem;
+      transition: box-shadow .3s;
       cursor: pointer;
-      box-shadow: 0 2px 10px #00ffe740;
-      transition: background .2s, color .2s, transform .18s;
-      outline: none;
     }
-    .btn:hover {
-      background: linear-gradient(90deg, #01c7fa, #00ffe7 90%);
-      color: #000;
-      transform: scale(1.04);
+    .avatar:hover { box-shadow: 0 0 40px var(--accent-light); }
+    .username { font-size: 1.5rem; font-weight: 600; color: var(--accent); margin-bottom: 0.5rem; }
+    .bio { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4; font-style: italic; }
+    .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem; }
+    .btn { flex: 1 1 auto; min-width: 100px; padding: 0.5rem 1rem; background: var(--accent); color: #000;
+      border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: background .2s; }
+    .btn:hover { background: var(--accent-light); }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 100;
     }
-    .profile-header {
-      position: absolute;
-      top: 18px; right: 28px;
-      font-size: 1rem;
-      color: #e0e0e0bb;
-      font-weight: 400;
-      letter-spacing: 1px;
-      opacity: 0.6;
+    .modal-content {
+      background: var(--modal-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 100%; max-width: 400px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      color: var(--text-main);
+      text-align: left;
     }
-    .profile-card::after {
-      content: '';
-      position: absolute;
-      inset: -2px;
-      border-radius: 24px;
-      pointer-events: none;
-      z-index: 0;
-      border: 2px solid #00ffe7cc;
-      filter: blur(6px);
-      opacity: 0.2;
-      animation: borderGlow 2.5s linear infinite;
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1rem;
     }
-    @keyframes borderGlow {
-      0% { filter: blur(4px) brightness(1.2); }
-      40% { filter: blur(7px) brightness(1.9);}
-      100% { filter: blur(4px) brightness(1.2);}
+    .modal-header h2 { font-size: 1.25rem; color: var(--accent-light); }
+    .close-btn { background: transparent; border: none; font-size: 1.2rem; color: var(--text-secondary); cursor: pointer; }
+    .modal-body { max-height: 250px; overflow-y: auto; margin-bottom: 1rem; }
+    .message-item, .follower-item, .request-item, .preview { 
+      padding: 0.75rem;
+      border-bottom: 1px solid #444;
     }
-    .loading {
-      font-size: 1.1rem;
-      color: #80f6ff;
-      margin-top: 28px;
-      letter-spacing: 1px;
-    }
-    @media (max-width: 480px) {
-      .profile-card {
-        max-width: 98vw;
-        padding: 18vw 2vw 7vw 2vw;
-      }
-      .avatar { width: 96px; height: 96px; }
-      .username { font-size: 1.3rem; }
-    }
+    .message-item:last-child, .follower-item:last-child, .request-item:last-child { border-bottom: none; }
+    .preview { display:block; width:80px; height:80px; border-radius:50%; object-fit:cover; margin:0 auto 1rem; border:2px solid var(--accent); }
+    .form-group { margin-bottom:1rem; }
+    .form-group label { display:block; margin-bottom:0.25rem; color:var(--text-main); font-size:0.9rem; }
+    .form-group input[type="text"], .form-group textarea { width:100%; padding:0.5rem; background:var(--card-bg); border:1px solid #444; border-radius:6px; color:var(--text-main); }
+    .form-group input[type="file"] { color:var(--text-secondary); }
+    .modal-buttons { display:flex; justify-content:flex-end; gap:0.5rem; }
   </style>
 </head>
 <body>
-  <div class="profile-card" id="profileCard">
-    <div class="profile-header">#HUMANITY Profile</div>
-    <img id="avatar" class="avatar" src="default_avatar.png" alt="Profile picture" />
-    <div class="username" id="username">Loading...</div>
-    <div class="bio" id="bio"></div>
-    <div class="profile-actions">
-      <button class="btn" onclick="editProfile()">Edit Profile</button>
-      <button class="btn" onclick="logout()">Log Out</button>
+  <div class="profile-card">
+    <img id="avatar" class="avatar" src="default_avatar.png" alt="Avatar" />
+    <div class="username" id="username">John Doe</div>
+    <div class="bio" id="bio">This is a sample bio.</div>
+    <div class="actions">
+      <button class="btn" id="editBtn">Edit Profile</button>
+      <button class="btn" id="messagesBtn">Messages</button>
+      <button class="btn" id="followersBtn">Followers</button>
+      <button class="btn" id="requestsBtn">Friend Requests</button>
+      <button class="btn" id="universeBtn">Universe</button>
     </div>
-    <div class="loading" id="loadingText" style="display:none;">Loading profile...</div>
   </div>
+
+  <!-- Inbox Modal -->
+  <div id="inboxModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Inbox</h2>
+        <button class="close-btn" id="closeInbox">×</button>
+      </div>
+      <div class="modal-body" id="inboxList">
+        <div class="message-item">Message 1 from UserA</div>
+        <div class="message-item">Message 2 from UserB</div>
+        <button class="btn" id="viewOutboxBtn">View Outbox</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Outbox Modal -->
+  <div id="outboxModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Outbox</h2>
+        <button class="close-btn" id="closeOutbox">×</button>
+      </div>
+      <div class="modal-body" id="outboxList">
+        <div class="message-item">Sent 1 to UserC</div>
+        <div class="message-item">Sent 2 to UserD</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Followers Modal -->
+  <div id="followersModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Following</h2>
+        <button class="close-btn" id="closeFollowers">×</button>
+      </div>
+      <div class="modal-body" id="followersList">
+        <div class="follower-item">UserA</div>
+        <div class="follower-item">UserB</div>
+        <div class="follower-item">UserC</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Requests Modal -->
+  <div id="requestsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Friend Requests</h2>
+        <button class="close-btn" id="closeRequests">×</button>
+      </div>
+      <div class="modal-body" id="requestsList">
+        <div class="request-item">UserX <button class="btn small" id="acceptBtn">Accept</button> <button class="btn small" id="declineBtn">Decline</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Edit Profile</h2>
+        <button class="close-btn" id="closeEdit">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group" style="text-align:center;">
+          <img id="previewAvatar" class="preview" src="default_avatar.png" alt="Preview Avatar" />
+          <label for="avatarInput">Change Avatar</label>
+          <input type="file" id="avatarInput" accept="image/*" />
+        </div>
+        <div class="form-group">
+          <label for="usernameInput">Username</label>
+          <input type="text" id="usernameInput" value="John Doe" />
+        </div>
+        <div class="form-group">
+          <label for="bioInput">Bio</label>
+          <textarea id="bioInput" rows="3">This is a sample bio.</textarea>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn" id="saveEdit">Save</button>
+        <button class="btn" id="cancelEdit">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // FIREBASE INIT
-    const firebaseConfig = {
-      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-      authDomain: "hashhumanity-58b9a.firebaseapp.com",
-      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-      projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.appspot.com",
-      messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
-    };
-    if (!firebase.apps.length) {
-      firebase.initializeApp(firebaseConfig);
-    }
-    const auth = firebase.auth();
-    const database = firebase.database();
+    document.addEventListener('DOMContentLoaded', () => {
+      // Inbox
+      const messagesBtn = document.getElementById('messagesBtn');
+      const inboxModal = document.getElementById('inboxModal');
+      const closeInbox = document.getElementById('closeInbox');
+      const viewOutboxBtn = document.getElementById('viewOutboxBtn');
+      const outboxModal = document.getElementById('outboxModal');
+      const closeOutbox = document.getElementById('closeOutbox');
 
-    function showLoading(state) {
-      document.getElementById('loadingText').style.display = state ? '' : 'none';
-      document.getElementById('username').style.opacity = state ? 0.4 : 1;
-      document.getElementById('bio').style.opacity = state ? 0.4 : 1;
-      document.getElementById('avatar').style.opacity = state ? 0.4 : 1;
-    }
+      if (messagesBtn && inboxModal && closeInbox) {
+        messagesBtn.onclick = () => inboxModal.style.display = 'flex';
+        closeInbox.onclick = () => inboxModal.style.display = 'none';
+      }
+      if (viewOutboxBtn && outboxModal) viewOutboxBtn.onclick = () => outboxModal.style.display = 'flex';
+      if (closeOutbox) closeOutbox.onclick = () => outboxModal.style.display = 'none';
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        const userId = user.uid;
-        showLoading(true);
-        database.ref('users/' + userId).once('value').then(snapshot => {
-          const data = snapshot.val();
-          showLoading(false);
-          if (data) {
-            document.getElementById('username').textContent = data.username || 'Anonymous Human';
-            document.getElementById('bio').textContent = data.bio || '';
-            document.getElementById('avatar').src = data.avatar || 'default_avatar.png';
-          } else {
-            document.getElementById('username').textContent = 'No profile found';
-            document.getElementById('bio').textContent = '';
-            document.getElementById('avatar').src = 'default_avatar.png';
-          }
-        }).catch(() => {
-          showLoading(false);
-          document.getElementById('username').textContent = 'Error loading profile';
-        });
-      } else {
-        alert('You must be logged in to view your profile.');
-        window.location.href = 'login.html';
+      // Followers
+      const followersBtn = document.getElementById('followersBtn');
+      const followersModal = document.getElementById('followersModal');
+      const closeFollowers = document.getElementById('closeFollowers');
+      if (followersBtn && followersModal && closeFollowers) {
+        followersBtn.onclick = () => followersModal.style.display = 'flex';
+        closeFollowers.onclick = () => followersModal.style.display = 'none';
+      }
+
+      // Requests
+      const requestsBtn = document.getElementById('requestsBtn');
+      const requestsModal = document.getElementById('requestsModal');
+      const closeRequests = document.getElementById('closeRequests');
+      if (requestsBtn && requestsModal && closeRequests) {
+        requestsBtn.onclick = () => requestsModal.style.display = 'flex';
+        closeRequests.onclick = () => requestsModal.style.display = 'none';
+      }
+
+      // Universe
+      const universeBtn = document.getElementById('universeBtn');
+      if (universeBtn) universeBtn.onclick = () => {
+        const profileData = { username: document.getElementById('username').textContent, bio: document.getElementById('bio').textContent, avatar: document.getElementById('avatar').src };
+        localStorage.setItem('profileData', JSON.stringify(profileData)); window.location.href = 'universe.html';
+      };
+
+      // Edit Profile
+      const editBtn = document.getElementById('editBtn');
+      const editModal = document.getElementById('editModal');
+      const closeEdit = document.getElementById('closeEdit');
+      const cancelEdit = document.getElementById('cancelEdit');
+      const saveEdit = document.getElementById('saveEdit');
+      const avatar = document.getElementById('avatar');
+      const previewAvatar = document.getElementById('previewAvatar');
+      const avatarInput = document.getElementById('avatarInput');
+      const usernameEl = document.getElementById('username');
+      const bioEl = document.getElementById('bio');
+      const usernameInput = document.getElementById('usernameInput');
+      const bioInput = document.getElementById('bioInput');
+      if (editBtn && editModal && closeEdit && cancelEdit && saveEdit) {
+        editBtn.onclick = () => {
+          previewAvatar.src = avatar.src;
+          usernameInput.value = usernameEl.textContent;
+          bioInput.value = bioEl.textContent;
+          editModal.style.display = 'flex';
+        };
+        closeEdit.onclick = cancelEdit.onclick = () => editModal.style.display = 'none';
+        avatarInput.onchange = () => { const file = avatarInput.files[0]; if (file) previewAvatar.src = URL.createObjectURL(file); };
+        saveEdit.onclick = () => {
+          const file = avatarInput.files[0]; if (file) avatar.src = previewAvatar.src;
+          usernameEl.textContent = usernameInput.value.trim() || usernameEl.textContent;
+          bioEl.textContent = bioInput.value.trim() || bioEl.textContent;
+          editModal.style.display = 'none';
+        };
       }
     });
-
-    function editProfile() {
-      window.location.href = 'edit_profile.html';
-    }
-    function logout() {
-      auth.signOut().then(() => {
-        window.location.href = 'login.html';
-      });
-    }
   </script>
 </body>
 </html>
+
