@@ -2,262 +2,191 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>#HUMANITY Universe</title>
-  <!-- Firebase & Three.js -->
+  <!-- Three.js for Globe Visualization -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <style>
     body { margin:0; padding:0; background:#080c19; color:#fff; font-family:'Roboto',sans-serif; overflow:hidden; }
-    #star-bg {
-      position:absolute; top:0; left:0; width:100vw; height:100vh; z-index:0;
-    }
-    #globe-canvas {
-      position:absolute;
-      width:300px; height:300px;
-      top:120px; left:50%; transform:translateX(-50%);
-      z-index:1; pointer-events:none;
-    }
-#star-bg {
-      z-index: 0;
-}
-#globe-canvas {
-      z-index: 1;
-      pointer-events: none;
-}
-    #globe-canvas { z-index:1; pointer-events:none; }
+    #star-bg, #globe-canvas { position:absolute; z-index:0; }
+    #star-bg { top:0; left:0; width:100vw; height:100vh; }
+    #globe-canvas { width:300px; height:300px; top:120px; left:50%; transform:translateX(-50%); pointer-events:none; }
     .tabs { position:absolute; top:16px; left:50%; transform:translateX(-50%); z-index:2; display:flex; gap:12px; }
-    .tab {
-      padding: 9px 24px;
-      font-size: 1.08rem;
-      background: linear-gradient(90deg, #0ef8, #00af);
-      color: #fff;
-      text-decoration: none;
-      border: 2px solid #0ef8;
-      border-radius: 4px;
-      box-shadow: 0 0 12px #0ef8, 0 2px 8px rgba(0,239,248,0.5);
-      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-    }
-    .tab:hover {
-      background: linear-gradient(90deg, #00af, #0ef8);
-      box-shadow: 0 0 20px #0ef8, 0 2px 10px rgba(0,239,248,0.7);
-      transform: translateY(-2px);
-    }
-    .tab:hover {
-      background: linear-gradient(90deg, #0ef8, #00af);
-      color: #fff;
-      box-shadow: 0 0 20px #0ef8, 0 2px 10px rgba(0,239,248,0.7);
-      transform: translateY(-2px);
-    }
-    .tab:hover { background:linear-gradient(90deg,#fff,#ffbdbd); color:#a20000; }
-    h1 {
-      position:absolute; top:40px; width:100%; text-align:center;
-      font-size:2.4rem; z-index:2;
-    }
-    #openModal {
-      position: absolute;
-      top: 440px; left: 50%; transform: translateX(-50%);
-      z-index: 2;
-      padding: 12px 32px;
-      font-size: 1.1rem;
-      background: linear-gradient(90deg, #0ef8, #00af);
-      color: #fff;
-      border: 2px solid #0ef8;
-      box-shadow: 0 0 12px #0ef8, 0 2px 8px rgba(0, 239, 248, 0.5);
-      border-radius: 4px;
-      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-    }
-    #openModal:hover {
-      background: linear-gradient(90deg, #00af, #0ef8);
-      box-shadow: 0 0 20px #0ef8, 0 2px 10px rgba(0, 239, 248, 0.7);
-      transform: translate(-50%, -3px);
-    }
-    #openModal:hover {
-      background: linear-gradient(90deg, #0ef8, #0af0);
-      color: #fff;
-      box-shadow: 0 0 20px #0ef8;
-      transform: translate(-50%, -2px);
-    }
-    #openModal:hover { transform:translate(-50%,-2px); box-shadow:0 0 32px #00eaff99; }
-    .modal-blur { position:absolute; top:0; left:0; width:100%; height:100%; display:none; background:rgba(10,30,44,0.75); backdrop-filter:blur(6px); z-index:3; }
-.modal { position:absolute; top:0; left:0; width:100%; height:100%; display:none; justify-content:center; align-items:center; z-index:3; }
-.modal.active, .modal-blur.active { display:flex; }
-.modal .content { display:flex; flex-direction:column; align-items:center; background:#1f2733; padding:24px; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.7); max-width:460px; width:90%; color:#fff; gap:12px; }
-.modal.active, .modal-blur.active { display:flex; }
-#postsContainer { position: relative; margin-top: 500px; padding-bottom: 40px; width: 100%; overflow-x: hidden; z-index:2; }
-    .modal-blur { display:none; background:rgba(10,30,44,0.75); backdrop-filter:blur(6px); }
-    .modal { display:none; justify-content:center; align-items:center; }
-    .modal.active, .modal-blur.active { display:flex; }
-    .modal .content { background:#1f2733; padding:24px; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.7); max-width:460px; width:90%; color:#fff; }
-    .modal textarea, .modal input[type=file] {
-      width:100%; max-width:420px;
-      margin:0;
-      padding:12px;
-      border-radius:4px;
-      border:1px solid #444;
-      background:#2a2f36;
-      color:#fff;
-      font-size:1rem;
-      text-align:center;
-    }
-    .actions { display:flex; justify-content:center; gap:12px; }
-    .actions button {
-      background: linear-gradient(90deg, #0ef8, #00af);
-      color: #fff;
-      border: 2px solid #0ef8;
-      padding: 10px 24px;
-      font-size: 1rem;
-      font-weight: 700;
-      border-radius: 4px;
-      box-shadow: 0 0 12px #0ef8, 0 2px 8px rgba(0,239,248,0.5);
-      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-    }
-    .actions button#closeModal {
-      background: linear-gradient(90deg, #ff5e5e, #c43b3b);
-      border-color: #ff5e5e;
-      box-shadow: 0 0 12px #ff5e5e, 0 2px 8px rgba(255,94,94,0.5);
-    }
-    .actions button:hover {
-      background: linear-gradient(90deg, #00af, #0ef8);
-      box-shadow: 0 0 20px #0ef8, 0 2px 10px rgba(0,239,248,0.7);
-      transform: translateY(-2px);
-    }
-    .actions button#closeModal:hover {
-      background: linear-gradient(90deg, #c43b3b, #ff5e5e);
-      box-shadow: 0 0 20px #ff5e5e, 0 2px 10px rgba(255,94,94,0.7);
-      transform: translateY(-2px);
-    }
-    #postButton {
-      background: linear-gradient(90deg, #0ef8, #00af);
-      color: #fff;
-      border: 2px solid #0ef8;
-      padding: 10px 24px;
-      font-size: 1rem;
-      font-weight: 700;
-      border-radius: 4px;
-      box-shadow: 0 0 12px #0ef8, 0 2px 8px rgba(0, 239, 248, 0.5);
-      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-    }
-    #postButton:hover {
-      background: linear-gradient(90deg, #00af, #0ef8);
-      box-shadow: 0 0 20px #0ef8, 0 2px 10px rgba(0, 239, 248, 0.7);
-      transform: translateY(-2px);
-    }
-    #postButton:hover {
-      background: linear-gradient(90deg, #0ef8, #0af0);
-      color: #fff;
-      box-shadow: 0 0 20px #0ef8;
-      transform: translateY(-2px);
-    }
-    #postButton:hover { transform:translateY(-3px); box-shadow:0 0 16px #00eaff; }
-    #closeModal {
-      background: linear-gradient(90deg, #ff5e5e, #c43b3b);
-      color: #fff;
-      border: 2px solid #ff5e5e;
-      padding: 10px 24px;
-      font-size: 1rem;
-      font-weight: 700;
-      border-radius: 4px;
-      box-shadow: 0 0 12px #ff5e5e, 0 2px 8px rgba(255,94,94,0.5);
-      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
-    }
-    #closeModal:hover {
-      background: linear-gradient(90deg, #c43b3b, #ff5e5e);
-      box-shadow: 0 0 20px #ff5e5e, 0 2px 10px rgba(255,94,94,0.7);
-      transform: translateY(-2px);
-    }
-    #closeModal:hover {
-      background: linear-gradient(90deg, #ff5e5e, #c43b3b);
-      color: #fff;
-      box-shadow: 0 0 20px #ff5e5e;
-      transform: translateY(-2px);
-    }
-    #closeModal:hover { transform:translateY(-3px); box-shadow:0 0 16px #ff5e5e; }
-    #postsContainer { top:auto; bottom:0; height:auto; padding:150px 0 20px; overflow-y:auto; z-index:2; }
-    .post-item { background:#2e2e2e; border:1px solid #222; margin:12px auto; max-width:480px; padding:12px 24px; border-radius:4px; box-shadow:0 4px 18px #00f6ff7a; color:#fff; }
+    .tab { padding:14px 32px; background:linear-gradient(90deg,#00bfff,#ff0080); color:#fff; border:none; border-radius:8px; cursor:pointer; box-shadow:0 6px 16px rgba(0,191,255,0.6); transition:transform .2s, box-shadow .2s; }
+    .tab:hover { transform:translateY(-4px); box-shadow:0 8px 20px rgba(255,0,128,0.7); }
+    h1 { position:absolute; top:40px; width:100%; text-align:center; font-size:2.4rem; z-index:2; text-shadow:0 2px 4px rgba(0,0,0,0.5); }
+    #openModal { position:absolute; top:440px; left:50%; transform:translateX(-50%); padding:14px 36px; background:linear-gradient(90deg,#00bfff,#ff0080); color:#fff; border:none; border-radius:8px; cursor:pointer; z-index:2; box-shadow:0 6px 16px rgba(0,191,255,0.6); transition:transform .2s, box-shadow .2s; }
+    #openModal:hover { transform:translate(-50%,-6px); box-shadow:0 8px 20px rgba(255,0,128,0.7); }
+    .modal-blur, .modal { position:absolute; top:0; left:0; width:100%; height:100%; display:none; justify-content:center; align-items:center; }
+    .modal-blur.active, .modal.active { display:flex; }
+    .modal .content { background:rgba(30,38,47,0.95); padding:32px; border-radius:12px; max-width:600px; width:90%; color:#fff; display:flex; flex-direction:column; gap:24px; z-index:3; }
+    .modal textarea, .modal input[type=file] { width:100%; padding:16px; border-radius:8px; border:1px solid #555; background:#2f3642; color:#fff; }
+    .actions { display:flex; justify-content:space-between; gap:16px; }
+    .actions button { flex:1; padding:12px 0; border:none; border-radius:8px; cursor:pointer; background:linear-gradient(90deg,#ff0080,#00bfff); color:#fff; transition:transform .2s, box-shadow .2s; }
+    .actions button:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,191,255,0.7); }
+    #postsContainer { position:relative; margin-top:520px; padding:20px; overflow-y:auto; z-index:2; }
+    .post-item { background:#2e2e2e; padding:16px; margin:12px auto; max-width:480px; border-radius:8px; box-shadow:0 4px 18px #00f6ff7a; }
+    .post-item img { max-width:100%; margin-top:12px; border-radius:4px; }
+    #errorOverlay { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); color:#f66; display:none; align-items:center; justify-content:center; text-align:left; padding:20px; font-size:1rem; z-index:5; }
+    #errorOverlay pre { background:#222; padding:12px; border-radius:4px; overflow:auto; }
   </style>
 </head>
 <body>
   <canvas id="star-bg"></canvas>
   <canvas id="globe-canvas"></canvas>
   <div class="tabs">
-    <a class="tab" href="view_profile.html">My Profile</a>
-    <a class="tab" href="login.html">Logout</a>
+    <button class="tab">Profile</button>
+    <button class="tab" id="logoutBtn">Logout</button>
   </div>
   <h1>The Universe</h1>
   <button id="openModal">New Post</button>
   <div id="modalBlur" class="modal-blur"></div>
-  <div id="postModal" class="modal"><div class="content">
-    <textarea id="newPostContent" placeholder="What's on your mind?"></textarea>
-    <input type="file" id="postImageUpload" accept="image/*"/>
-    <div class="actions"><button id="closeModal">Cancel</button><button id="postButton">Post</button></div>
-  </div></div>
+  <div id="postModal" class="modal">
+    <div class="content">
+      <textarea id="newPostContent" placeholder="What's on your mind? (max 280 chars)"></textarea>
+      <input type="file" id="postImageUpload" accept="image/*" />
+      <div class="actions">
+        <button id="closeModal">Cancel</button>
+        <button id="postButton">Post</button>
+      </div>
+    </div>
+  </div>
   <div id="postsContainer"></div>
-  <script>
-    // === ELEMENT REFERENCES ===
-    const starCanvas = document.getElementById('star-bg');
-    const globeCanvas = document.getElementById('globe-canvas');
-    const sCtx = starCanvas.getContext('2d');
-
-    // === RESIZE HANDLER ===
-    function resizeCanvas(){
-      starCanvas.width = window.innerWidth;
-      starCanvas.height = window.innerHeight;
-      globeCanvas.width = window.innerWidth;
-      globeCanvas.height = window.innerHeight;
+  <div id="errorOverlay">
+    <p><strong>Permission Denied</strong></p>
+    <p>Your Firebase rules are blocking writes. To fix this, update your Realtime Database rules under <code>posts</code> to allow authenticated users:</p>
+    <pre>{
+  "rules": {
+    "posts": {
+      ".read":  "auth != null",
+      ".write": "auth != null"
     }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+  }
+}</pre>
+    <p>And ensure <strong>Anonymous Authentication</strong> is enabled in the Firebase Console under Authentication → Sign-in method.</p>
+  </div>
 
-    // === STARS ANIMATION ===
-    const stars=[];
-    for(let i=0;i<200;i++) stars.push({ x:Math.random()*starCanvas.width, y:Math.random()*starCanvas.height, r:Math.random()*1.2+0.3, base:Math.random()*0.5+0.2, phase:Math.random()*Math.PI*2 });
-    function drawStars(){
-      sCtx.clearRect(0,0,starCanvas.width,starCanvas.height);
-      const t=Date.now()*0.002;
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.module.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import { getDatabase, ref, push, query, orderByChild, onValue } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
+
+    // Starfield Initialization
+    const sCanvas = document.getElementById('star-bg'), gCanvas = document.getElementById('globe-canvas');
+    const sCtx = sCanvas.getContext('2d');
+    function resize() { sCanvas.width = window.innerWidth; sCanvas.height = window.innerHeight; gCanvas.width = 300; gCanvas.height = 300; }
+    window.addEventListener('resize', resize); resize();
+    const stars = Array.from({ length: 200 }, () => ({ x: Math.random() * sCanvas.width, y: Math.random() * sCanvas.height, r: Math.random() * 1.2 + 0.3, base: Math.random() * 0.5 + 0.2, phase: Math.random() * Math.PI * 2 }));
+    (function drawStars() {
+      sCtx.clearRect(0, 0, sCanvas.width, sCanvas.height);
+      const t = Date.now() * 0.002;
       stars.forEach(st => {
-        const o = st.base + Math.sin(t+st.phase)*0.1;
-        sCtx.globalAlpha = o;
+        sCtx.globalAlpha = st.base + Math.sin(t + st.phase) * 0.1;
         sCtx.beginPath();
-        sCtx.arc(st.x,st.y,st.r,0,2*Math.PI);
-        sCtx.fillStyle='#fff'; sCtx.fill();
+        sCtx.arc(st.x, st.y, st.r, 0, 2 * Math.PI);
+        sCtx.fillStyle = '#fff';
+        sCtx.fill();
       });
       requestAnimationFrame(drawStars);
+    })();
+
+    // Globe Initialization
+    (function initGlobe() {
+      const renderer = new THREE.WebGLRenderer({ canvas: gCanvas, alpha: true });
+      renderer.setSize(300, 300);
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+      camera.position.z = 3;
+      const light = new THREE.DirectionalLight(0xffffff, 1); light.position.set(5, 3, 5); scene.add(light);
+      new THREE.TextureLoader().load('https://marilyn2015.github.io/Humanity/earthmap1k.jpg', tex => {
+        const sphere = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 32), new THREE.MeshStandardMaterial({ map: tex })); scene.add(sphere);
+        (function animate() { requestAnimationFrame(animate); sphere.rotation.y += 0.005; renderer.render(scene, camera); })();
+      });
+    })();
+
+    // Firebase Configuration
+    const firebaseConfig = { apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A", authDomain: "hashhumanity-58b9a.firebaseapp.com", databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com", projectId: "hashhumanity-58b9a", storageBucket: "hashhumanity-58b9a.appspot.com", messagingSenderId: "886745899016", appId: "1:886745899016:web:2b0f7e043c2434379d71bd", measurementId: "G-3ZTCXL4374" };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+    const postsRef = ref(db, 'posts');
+    const errorOverlay = document.getElementById('errorOverlay');
+
+    // Enable anonymous authentication
+    signInAnonymously(auth).catch(err => { console.error('Auth error:', err); errorOverlay.style.display = 'flex'; });
+    onAuthStateChanged(auth, user => { if (!user) return; setupPosts(); setupModal(); });
+
+    // Load all posts
+    function setupPosts() {
+      const container = document.getElementById('postsContainer');
+      const postsQuery = query(postsRef, orderByChild('timestamp'));
+      onValue(postsQuery, snapshot => {
+        container.innerHTML = '';
+        snapshot.forEach(child => {
+          const d = child.val();
+          const el = document.createElement('div'); el.className = 'post-item';
+          el.innerHTML = `<strong>${d.username}</strong> <em>${new Date(d.timestamp).toLocaleString()}</em><p>${d.content}</p>${d.imageUrl ? `<img src="${d.imageUrl}"/>` : ''}`;
+          container.prepend(el);
+        });
+      }, err => { console.error('DB read error:', err); errorOverlay.style.display = 'flex'; });
     }
-    drawStars();
 
-    // === 3D GLOBE ===
-    const renderer=new THREE.WebGLRenderer({ canvas:globeCanvas, alpha:true });
-    renderer.setSize(globeCanvas.clientWidth,globeCanvas.clientHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    const scene=new THREE.Scene();
-    const camera=new THREE.PerspectiveCamera(50,globeCanvas.clientWidth/globeCanvas.clientHeight,0.1,1000);
-    camera.position.z=3;
-    new THREE.TextureLoader().load('https://marilyn2015.github.io/Humanity/earthmap1k.jpg',texture=>{
-      const mat=new THREE.MeshStandardMaterial({ map: texture });
-      const sphere=new THREE.Mesh(new THREE.SphereGeometry(1,32,32),mat);
-      scene.add(sphere);
-      const light=new THREE.DirectionalLight(0xffffff,1);
-      light.position.set(5,3,5); scene.add(light);
-      (function animate(){ requestAnimationFrame(animate); sphere.rotation.y+=0.005; renderer.render(scene,camera); })();
-    });
-    window.addEventListener('resize',()=>{ resizeCanvas(); const w=globeCanvas.clientWidth,h=globeCanvas.clientHeight; camera.aspect=w/h; camera.updateProjectionMatrix(); renderer.setSize(w,h); });
+    // Modal and logout setup
+    function setupModal() {
+      const openBtn = document.getElementById('openModal');
+      const blur = document.getElementById('modalBlur');
+      const modal = document.getElementById('postModal');
+      const closeBtn = document.getElementById('closeModal');
+      const logoutBtn = document.getElementById('logoutBtn');
+      openBtn.onclick = () => { blur.classList.add('active'); modal.classList.add('active'); openBtn.style.display = 'none'; };
+      closeBtn.onclick = resetModal;
+      blur.onclick = resetModal;
+      document.getElementById('postButton').onclick = postNew;
+      logoutBtn.onclick = () => { window.location.href = 'index.html'; };
+    }
 
-    // === FIREBASE & FEED ===
-    const firebaseConfig={ apiKey:'AIzaSyBT...', authDomain:'hashhumanity-58b9a.firebaseapp.com', databaseURL:'https://hashhumanity-58b9a-default-rtdb.firebaseio.com', projectId:'hashhumanity-58b9a', storageBucket:'hashhumanity-58b9a.appspot.com', messagingSenderId:'8867...', appId:'1:8867...' };
-    firebase.initializeApp(firebaseConfig);
-    const db=firebase.database(), storage=firebase.storage(), postsContainer=document.getElementById('postsContainer');
-    function displayPost(id,data){ const el=document.createElement('div'); el.className='post-item'; el.innerHTML=`<strong>${data.username}</strong> <em>${new Date(data.timestamp).toLocaleString()}</em><p>${data.content}</p>`; if(data.imageUrl) el.innerHTML+=`<img src="${data.imageUrl}" style="max-width:100%;margin-top:10px;">`; postsContainer.prepend(el); }
-    db.ref('posts').orderByChild('timestamp').on('child_added',snap=>displayPost(snap.key,snap.val()));
+    // Post submission
+    async function postNew() {
+      const content = document.getElementById('newPostContent').value.trim();
+      const file = document.getElementById('postImageUpload').files[0];
+      if (!content && !file) return;
+      try {
+        let imageUrl = '';
+        if (file) {
+          const fRef = storageRef(storage, `posts/${Date.now()}_${file.name}`);
+          await uploadBytes(fRef, file);
+          imageUrl = await getDownloadURL(fRef);
+        }
+        const ts = Date.now();
+        const pd = { username: 'Marilyn', content, imageUrl, timestamp: ts };
+        await push(postsRef, pd);
+        addPostToDOM(pd);
+        resetModal();
+      } catch (err) {
+        console.error('Write error:', err);
+        errorOverlay.style.display = 'flex';
+      }
+    }
 
-    // === MODAL HANDLERS ===
-    const openBtn=document.getElementById('openModal'), blur=document.getElementById('modalBlur'), modal=document.getElementById('postModal'), closeBtn=document.getElementById('closeModal');
-    openBtn.onclick=()=>{ blur.classList.add('active'); modal.classList.add('active'); };
-    closeBtn.onclick=()=>{ blur.classList.remove('active'); modal.classList.remove('active'); };
-    blur.onclick=closeBtn.onclick;
-    document.getElementById('postButton').onclick=async()=>{ const content=document.getElementById('newPostContent').value.trim(), file=document.getElementById('postImageUpload').files[0]; if(!content&&!file)return; let imgUrl=''; if(file){ const ref=storage.ref(`posts/${Date.now()}_${file.name}`); await ref.put(file); imgUrl=await ref.getDownloadURL(); } await db.ref('posts').push({ username:'Marilyn', avatar:'', content, imageUrl:imgUrl, timestamp:Date.now() }); closeBtn.onclick(); document.getElementById('newPostContent').value=''; document.getElementById('postImageUpload').value=''; };
+    // Utility to append post
+    function addPostToDOM({ username, content, imageUrl, timestamp }) {
+      const container = document.getElementById('postsContainer');
+      const el = document.createElement('div'); el.className = 'post-item';
+      el.innerHTML = `<strong>${username}</strong> <em>${new Date(timestamp).toLocaleString()}</em><p>${content}</p>${imageUrl ? `<img src="${imageUrl}"/>` : ''}`;
+      container.prepend(el);
+    }
+
+    // Reset modal
+    function resetModal() {
+      document.getElementById('newPostContent').value = '';
+      document.getElementById('postImageUpload').value = '';
+      document.getElementById('modalBlur').classList.remove('active');
+      document.getElementById('postModal').classList.remove('active');
+      document.getElementById('openModal').style.display = 'block';
+    }
   </script>
 </body>
 </html>
