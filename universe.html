@@ -4,59 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>#HUMANITY Universe</title>
-  <!-- Three.js for globe visualization -->
+  <!-- Three.js for Globe Visualization -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
   <style>
-    /* Base Styles */
-    body { margin:0; padding:0; background:#080c19; color:#fff; font-family:'Roboto',sans-serif; overflow:hidden; }
-    canvas { position:absolute; z-index:0; }
+    body { margin:0; background:#080c19; color:#fff; font-family:'Roboto',sans-serif; overflow:hidden; }
+    #star-bg, #globe-canvas { position:absolute; z-index:0; }
     #star-bg { top:0; left:0; width:100vw; height:100vh; }
     #globe-canvas { width:300px; height:300px; top:120px; left:50%; transform:translateX(-50%); pointer-events:none; }
-
-    /* Button Bar */
     .button-bar { position:absolute; top:24px; left:50%; transform:translateX(-50%); display:flex; gap:16px; z-index:2; }
-    .button-bar button, .centered-new-post button {
-      padding:12px 24px; background:rgba(255,255,255,0.05); border:1px solid #444; color:#fff;
-      cursor:pointer; font-weight:500; border-radius:4px; backdrop-filter: blur(4px);
-      transition: background 0.2s, box-shadow 0.2s;
-    }
-    .button-bar button:hover, .centered-new-post button:hover {
-      background:rgba(255,255,255,0.1); box-shadow:0 0 8px rgba(255,255,255,0.3);
-    }
-
-    /* New Post Button Centered */
+    .button-bar button { padding:12px 24px; background:rgba(255,255,255,0.1); border:1px solid #555; color:#fff; border-radius:4px; cursor:pointer; transition:background .3s,box-shadow .3s; }
+    .button-bar button:hover { background:rgba(255,255,255,0.2); box-shadow:0 0 12px rgba(255,255,255,0.4); }
     .centered-new-post { position:absolute; top:440px; left:50%; transform:translateX(-50%); z-index:2; }
-
-    /* Overlay */
-    .overlay { position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.6); backdrop-filter: blur(8px); display:none; align-items:center; justify-content:center; z-index:5; }
-    .overlay.active { display:flex; }
-
-    /* Sleek Modal */
-    .modal { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.8); opacity:0; width:90%; max-width:480px; background:#1c1c1e; border:1px solid #333; border-radius:8px; backdrop-filter: blur(8px);
-      box-shadow:0 8px 24px rgba(0,0,0,0.7), 0 0 8px rgba(255,255,255,0.3); transition: opacity 0.3s, transform 0.3s; z-index:6;
-    }
-    .modal.active { opacity:1; transform:translate(-50%,-50%) scale(1); }
-    .modal-header { padding:16px; border-bottom:1px solid #333; }
-    .modal-header h2 { margin:0; font-size:1.25rem; color:#e0e0e0; }
-    .modal-body { padding:16px; display:flex; flex-direction:column; align-items:center; gap:12px; }
-    .modal-body textarea, .modal-body input[type=file] {
-      width:100%; padding:12px; background:#2c2c2e; border:none; border-radius:4px; color:#fff;
-      font-size:1rem; resize:none;
-    }
-    .modal-footer { padding:16px; border-top:1px solid #333; display:flex; justify-content:flex-end; gap:8px; } { padding:16px; border-top:1px solid #333; display:flex; justify-content:flex-end; gap:8px; }
-    .modal-footer button {
-      padding:10px 20px; background:#fff; color:#1c1c1e; border:none; border-radius:4px;
-      font-weight:600; cursor:pointer; transition: background 0.2s, box-shadow 0.2s;
-    }
-    .modal-footer button:hover { background:#f0f0f0; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
-
-    /* Post Feed */
-    #postFeed { position:absolute; top:520px; left:50%; transform:translateX(-50%); width:90%; max-width:600px; z-index:1;
-      display:flex; flex-direction:column; gap:12px; }
-    .post { background:#242426; border:1px solid #333; border-radius:4px; padding:16px; }
+    .centered-new-post button { padding:14px 28px; background:rgba(255,255,255,0.1); border:1px solid #555; color:#fff; border-radius:4px; cursor:pointer; transition:background .3s,box-shadow .3s; }
+    .centered-new-post button:hover { background:rgba(255,255,255,0.2); box-shadow:0 0 12px rgba(255,255,255,0.4); }
+    .overlay, .modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:5; }
+    .overlay.active, .modal.active { display:flex; }
+    .overlay { backdrop-filter:blur(12px); background:rgba(0,0,0,0.6); }
+    .modal-box { background:#1c1c1e; padding:32px; width:90%; max-width:480px; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.8); display:flex; flex-direction:column; align-items:center; gap:24px; position:relative; }
+    .modal-box::before { content:'New Post'; position:absolute; top:-20px; background:#1c1c1e; padding:4px 12px; border-radius:4px; color:#0ef8; border:1px solid #0ef8; font-size:1.1rem; }
+    .modal-box textarea { width:100%; min-height:120px; background:#242428; color:#fff; border:none; border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none; }
+    .modal-box input[type=file] { width:100%; padding:12px; background:#242428; color:#fff; border:1px dashed #555; border-radius:6px; cursor:pointer; }
+    .modal-box .footer { display:flex; gap:12px; width:100%; }
+    .modal-box .footer button { flex:1; padding:12px; border:none; border-radius:6px; background:#0ef8; color:#080c19; font-weight:700; cursor:pointer; transition:background .3s,box-shadow .3s; }
+    .modal-box .footer button.cancel { background:transparent; color:#aaa; border:1px solid #555; }
+    .modal-box .footer button:hover { background:#0af0; box-shadow:0 0 16px rgba(14,248,255,0.6); }
+    .post-container { position:absolute; top:520px; left:50%; transform:translateX(-50%); width:90%; max-width:600px; z-index:1; display:flex; flex-direction:column; gap:12px; }
+    .post { background:#242428; border:1px solid #333; padding:16px; border-radius:6px; color:#ddd; }
     .post-time { font-size:0.75rem; color:#888; margin-bottom:8px; }
-    .post-content { color:#ddd; }
-    .post img { max-width:100%; margin-top:12px; border-radius:4px; }
+    .post img { max-width:100%; margin-top:12px; border-radius:6px; }
   </style>
 </head>
 <body>
@@ -64,37 +39,32 @@
   <canvas id="globe-canvas"></canvas>
 
   <div class="button-bar">
-    <button onclick="location.href='view_profile.html'">My Profile</button>
+    <button onclick="location.href='create_profile.html'">Create Profile</button>
     <button onclick="location.href='index.html'">Log Out</button>
   </div>
-  <div class="centered-new-post">
-    <button onclick="openModal()">New Post</button>
-  </div>
 
+  <div class="centered-new-post"><button onclick="openModal()">New Post</button></div>
   <div class="overlay" id="overlay"></div>
   <div class="modal" id="postModal">
-    <div class="modal-header"><h2>New Post</h2></div>
-    <div class="modal-body">
-      <textarea id="postContent" rows="4" placeholder="What's on your mind?"></textarea>
+    <div class="modal-box">
+      <textarea id="postContent" placeholder="What's on your mind?"></textarea>
       <input type="file" id="postImage" accept="image/*" />
-    </div>
-    <div class="modal-footer">
-      <button onclick="closeModal()">Cancel</button>
-      <button onclick="submitPost()">Post</button>
+      <div class="footer">
+        <button class="cancel" onclick="closeModal()">Cancel</button>
+        <button id="postButton">Post</button>
+      </div>
     </div>
   </div>
 
-  <div id="postFeed"></div>
+  <div class="post-container" id="postFeed"></div>
 
   <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.module.js';
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
     import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-    import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js';
     import { getDatabase, ref as dbRef, push, onValue } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
     import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
@@ -102,65 +72,118 @@
       projectId: "hashhumanity-58b9a",
       storageBucket: "hashhumanity-58b9a.appspot.com",
       messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
-      measurementId: "G-3ZTCXL4374"
+      appId: "1:886745899016:web:2f0f7e043c2434379d71bd"
     };
 
     const app = initializeApp(firebaseConfig);
-    getAnalytics(app);
     const auth = getAuth(app);
     const db = getDatabase(app);
     const storage = getStorage(app);
 
-    signInAnonymously(auth).catch(err => console.error('Auth error:', err));
+    // Redirect to profile creation if not authenticated
+    signInAnonymously(auth).catch(console.error);
     onAuthStateChanged(auth, user => {
-      if (!user) return;
-      const postsRef = dbRef(db, 'posts');
+      if (!user) {
+        window.location.href = 'create_profile.html';
+      } else {
+        setupModal();
+        setupPosts();
+      }
+    });
 
-      window.openModal = () => { document.getElementById('overlay').classList.add('active'); document.getElementById('postModal').classList.add('active'); };
-      window.closeModal = () => { document.getElementById('overlay').classList.remove('active'); document.getElementById('postModal').classList.remove('active'); };
-      window.submitPost = async () => {
+    function setupModal() {
+      window.openModal = () => {
+        document.getElementById('overlay').classList.add('active');
+        document.getElementById('postModal').classList.add('active');
+      };
+      window.closeModal = () => {
+        document.getElementById('overlay').classList.remove('active');
+        document.getElementById('postModal').classList.remove('active');
+      };
+      document.getElementById('postButton').addEventListener('click', async () => {
         const content = document.getElementById('postContent').value.trim();
-        const fileInput = document.getElementById('postImage');
+        const fileEl = document.getElementById('postImage');
         let imageUrl = '';
-        if (fileInput.files.length) {
-          const file = fileInput.files[0];
+        if (fileEl.files.length) {
+          const file = fileEl.files[0];
           const path = `posts/${Date.now()}_${file.name}`;
-          const fileRef = storageRef(storage, path);
-          await uploadBytes(fileRef, file);
-          imageUrl = await getDownloadURL(fileRef);
+          const ref = storageRef(storage, path);
+          await uploadBytes(ref, file);
+          imageUrl = await getDownloadURL(ref);
         }
         if (!content && !imageUrl) return;
-        await push(postsRef, { content, imageUrl, timestamp: Date.now() });
+        await push(dbRef(db, 'posts'), { content, imageUrl, timestamp: Date.now() });
         document.getElementById('postContent').value = '';
-        fileInput.value = '';
+        fileEl.value = '';
         closeModal();
-      };
+      });
+    }
 
+    function setupPosts() {
+      const postsRef = dbRef(db, 'posts');
       onValue(postsRef, snapshot => {
-        const feed = document.getElementById('postFeed'); if (!feed) return;
+        const feed = document.getElementById('postFeed');
         feed.innerHTML = '';
-        const posts = snapshot.val() || {};
-        Object.entries(posts).sort((a,b)=>b[1].timestamp - a[1].timestamp).forEach(([, post]) => {
-          const div = document.createElement('div'); div.className='post';
-          div.innerHTML = `<div class="post-time">${new Date(post.timestamp).toLocaleString()}</div><div class="post-content">${post.content}</div>${post.imageUrl?`<img src=\"${post.imageUrl}\"/>`:''}`;
+        const data = snapshot.val() || {};
+        Object.entries(data).sort(([,a],[,b]) => b.timestamp - a.timestamp).forEach(([, post]) => {
+          const div = document.createElement('div');
+          div.className = 'post';
+          div.innerHTML = `
+            <div class="post-time">${new Date(post.timestamp).toLocaleString()}</div>
+            <div class="post-content">${post.content}</div>
+            ${post.imageUrl ? `<img src="${post.imageUrl}"/>` : ''}
+          `;
           feed.appendChild(div);
         });
       });
+    }
 
+    // Starfield Animation
+    const starCanvas = document.getElementById('star-bg');
+    const starCtx = starCanvas.getContext('2d');
+    function resizeStars() {
+      starCanvas.width = window.innerWidth;
+      starCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeStars);
+    resizeStars();
+    const stars = Array.from({ length: 200 }, () => ({ x: Math.random()*starCanvas.width, y: Math.random()*starCanvas.height, r: Math.random()*1.2+0.3, base: Math.random()*0.5+0.2, phase: Math.random()*2*Math.PI }));
+    (function animateStars() {
+      const t = Date.now()*0.002;
+      starCtx.clearRect(0,0,starCanvas.width,starCanvas.height);
+      stars.forEach(s => {
+        starCtx.globalAlpha = s.base + Math.sin(t + s.phase)*0.1;
+        starCtx.beginPath();
+        starCtx.arc(s.x, s.y, s.r, 0, 2*Math.PI);
+        starCtx.fillStyle = '#fff';
+        starCtx.fill();
+      });
+      requestAnimationFrame(animateStars);
+    })();
+
+    // Globe Visualization
+    const globeCanvas = document.getElementById('globe-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas: globeCanvas, alpha:true });
+    renderer.setSize(300,300);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50,1,0.1,1000);
+    camera.position.z = 3;
+    const light = new THREE.DirectionalLight(0xffffff,1);
+    light.position.set(5,3,5);
+    scene.add(light);
+    new THREE.TextureLoader().load('https://marilyn2015.github.io/Humanity/earthmap1k.jpg', texture => {
+      const sphere = new THREE.Mesh(
+        new THREE.SphereGeometry(1,32,32),
+        new THREE.MeshStandardMaterial({ map: texture })
+      );
+      scene.add(sphere);
+      function render() {
+        requestAnimationFrame(render);
+        sphere.rotation.y += 0.005;
+        renderer.render(scene, camera);
+      }
+      render();
     });
-
-    // Starfield
-    const starCanvas = document.getElementById('star-bg'); const starCtx = starCanvas.getContext('2d');
-    function resizeStars(){ starCanvas.width=window.innerWidth; starCanvas.height=window.innerHeight;} window.addEventListener('resize',resizeStars); resizeStars();
-    const stars=Array.from({length:200},()=>({x:Math.random()*window.innerWidth,y:Math.random()*window.innerHeight,r:Math.random()*1.2+0.3,base:Math.random()*0.5+0.2,phase:Math.random()*Math.PI*2}));
-    (function animateStars(){const t=Date.now()*0.002;starCtx.clearRect(0,0,starCanvas.width,starCanvas.height);stars.forEach(s=>{starCtx.globalAlpha=s.base+Math.sin(t+s.phase)*0.1;starCtx.beginPath();starCtx.arc(s.x,s.y,s.r,0,2*Math.PI);starCtx.fillStyle='#fff';starCtx.fill();});requestAnimationFrame(animateStars);})();
-
-    // Globe
-    const globeCanvas=document.getElementById('globe-canvas');const renderer=new THREE.WebGLRenderer({canvas:globeCanvas,alpha:true});renderer.setSize(300,300);
-    const scene=new THREE.Scene();const camera=new THREE.PerspectiveCamera(50,1,0.1,1000);camera.position.z=3;
-    const light=new THREE.DirectionalLight(0xffffff,1);light.position.set(5,3,5);scene.add(light);
-    new THREE.TextureLoader().load('https://marilyn2015.github.io/Humanity/earthmap1k.jpg',tex=>{const sphere=new THREE.Mesh(new THREE.SphereGeometry(1,32,32),new THREE.MeshStandardMaterial({map:tex}));scene.add(sphere);(function anim(){requestAnimationFrame(anim);sphere.rotation.y+=0.005;renderer.render(scene,camera);})();});
   </script>
 </body>
 </html>
