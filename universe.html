@@ -4,34 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>#HUMANITY Universe</title>
-  <!-- Three.js for Globe Visualization -->
+  <!-- Three.js & Firebase -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
   <style>
+    /* Full CSS for layout, buttons, modal, posts, starfield, globe */
     body { margin:0; background:#080c19; color:#fff; font-family:'Roboto',sans-serif; overflow:hidden; }
     #star-bg, #globe-canvas { position:absolute; z-index:0; }
     #star-bg { top:0; left:0; width:100vw; height:100vh; }
     #globe-canvas { width:300px; height:300px; top:120px; left:50%; transform:translateX(-50%); pointer-events:none; }
     .button-bar { position:absolute; top:24px; left:50%; transform:translateX(-50%); display:flex; gap:16px; z-index:2; }
-    .button-bar button { padding:12px 24px; background:rgba(255,255,255,0.1); border:1px solid #555; color:#fff; border-radius:4px; cursor:pointer; transition:background .3s,box-shadow .3s; }
-    .button-bar button:hover { background:rgba(255,255,255,0.2); box-shadow:0 0 12px rgba(255,255,255,0.4); }
+    .btn { padding:13px 24px; background:linear-gradient(90deg,#fff 0%,#ededed 100%); color:#000; border:none; border-radius:6px; font-weight:bold; text-transform:uppercase; cursor:pointer; box-shadow:0 4px 32px rgba(14,248,255,0.47),0 1px 24px rgba(0,12,0,0.5); transition:background .3s,box-shadow .3s; }
+    .btn:hover { background:linear-gradient(90deg,#ededed 0%,#fff 100%); box-shadow:0 6px 40px rgba(14,248,255,0.6),inset 0 0 10px rgba(14,248,255,0.6); }
     .centered-new-post { position:absolute; top:440px; left:50%; transform:translateX(-50%); z-index:2; }
-    .centered-new-post button { padding:14px 28px; background:rgba(255,255,255,0.1); border:1px solid #555; color:#fff; border-radius:4px; cursor:pointer; transition:background .3s,box-shadow .3s; }
-    .centered-new-post button:hover { background:rgba(255,255,255,0.2); box-shadow:0 0 12px rgba(255,255,255,0.4); }
-    .overlay, .modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:5; }
-    .overlay.active, .modal.active { display:flex; }
+    .overlay,.modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:5; }
+    .overlay.active,.modal.active { display:flex; }
     .overlay { backdrop-filter:blur(12px); background:rgba(0,0,0,0.6); }
-    .modal-box { background:#1c1c1e; padding:32px; width:90%; max-width:480px; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.8); display:flex; flex-direction:column; align-items:center; gap:24px; position:relative; }
-    .modal-box::before { content:'New Post'; position:absolute; top:-20px; background:#1c1c1e; padding:4px 12px; border-radius:4px; color:#0ef8; border:1px solid #0ef8; font-size:1.1rem; }
-    .modal-box textarea { width:100%; min-height:120px; background:#242428; color:#fff; border:none; border-radius:6px; padding:12px; font-size:1rem; resize:vertical; outline:none; }
-    .modal-box input[type=file] { width:100%; padding:12px; background:#242428; color:#fff; border:1px dashed #555; border-radius:6px; cursor:pointer; }
-    .modal-box .footer { display:flex; gap:12px; width:100%; }
-    .modal-box .footer button { flex:1; padding:12px; border:none; border-radius:6px; background:#0ef8; color:#080c19; font-weight:700; cursor:pointer; transition:background .3s,box-shadow .3s; }
-    .modal-box .footer button.cancel { background:transparent; color:#aaa; border:1px solid #555; }
-    .modal-box .footer button:hover { background:#0af0; box-shadow:0 0 16px rgba(14,248,255,0.6); }
-    .post-container { position:absolute; top:520px; left:50%; transform:translateX(-50%); width:90%; max-width:600px; z-index:1; display:flex; flex-direction:column; gap:12px; }
-    .post { background:#242428; border:1px solid #333; padding:16px; border-radius:6px; color:#ddd; }
-    .post-time { font-size:0.75rem; color:#888; margin-bottom:8px; }
-    .post img { max-width:100%; margin-top:12px; border-radius:6px; }
+    .modal-box { background:#18181b; border:2px solid #fff; box-shadow:0 4px 32px rgba(14,248,255,0.7),0 1px 24px rgba(0,0,0,0.8); padding:32px; border-radius:8px; width:90%; max-width:400px; }
+    .modal-box h2 { margin:0 0 16px; color:#0ef8; text-transform:uppercase; font-size:1.25rem; text-shadow:0 2px 8px rgba(14,248,255,0.7); }
+    .modal-box img { max-width:100%; max-height:200px; display:none; margin-bottom:12px; border-radius:6px; }
+    .modal-box textarea,.modal-box input[type=file] { width:100%; padding:12px; margin-bottom:16px; background:#21212b; color:#fff; border:2px solid #fff; border-radius:6px; box-shadow:inset 0 0 8px rgba(255,255,255,0.2); font-size:1rem; outline:none; }
+    .modal-box .footer { display:flex; gap:8px; }
+    .modal-box .footer .btn { padding:8px 16px; font-size:0.9rem; }
+    .post-container { position:absolute; top:520px; left:50%; transform:translateX(-50%); width:90%; max-width:600px; max-height:calc(100vh - 540px); overflow-y:auto; z-index:1; }
+    .post { background:#242428; border:1px solid #333; border-radius:6px; padding:12px; margin-bottom:12px; }
+    .post-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .post-avatar { width:32px; height:32px; border-radius:50%; }
+    .post-author { font-weight:bold; }
+    .post-time { margin-left:auto; font-size:0.75rem; color:#888; }
+    .post-img { max-width:100%; margin-top:12px; border-radius:6px; }
   </style>
 </head>
 <body>
@@ -39,19 +39,21 @@
   <canvas id="globe-canvas"></canvas>
 
   <div class="button-bar">
-    <button onclick="location.href='create_profile.html'">Create Profile</button>
-    <button onclick="location.href='index.html'">Log Out</button>
+    <button class="btn" id="profileBtn">My Profile</button>
+    <button class="btn" id="logoutBtn">Log Out</button>
   </div>
+  <div class="centered-new-post"><button class="btn" id="newPostBtn">New Post</button></div>
 
-  <div class="centered-new-post"><button onclick="openModal()">New Post</button></div>
   <div class="overlay" id="overlay"></div>
   <div class="modal" id="postModal">
     <div class="modal-box">
+      <h2>New Post</h2>
+      <img id="previewImg" alt="Preview" />
       <textarea id="postContent" placeholder="What's on your mind?"></textarea>
       <input type="file" id="postImage" accept="image/*" />
       <div class="footer">
-        <button class="cancel" onclick="closeModal()">Cancel</button>
-        <button id="postButton">Post</button>
+        <button class="btn" id="cancelBtn">Cancel</button>
+        <button class="btn" id="postButton">Post</button>
       </div>
     </div>
   </div>
@@ -62,8 +64,8 @@
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.module.js';
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
     import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-    import { getDatabase, ref as dbRef, push, onValue } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
-    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
+    import { getDatabase, ref, push, onChildAdded } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
+    import { getStorage, ref as sref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
@@ -72,118 +74,81 @@
       projectId: "hashhumanity-58b9a",
       storageBucket: "hashhumanity-58b9a.appspot.com",
       messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2f0f7e043c2434379d71bd"
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
     };
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
     const storage = getStorage(app);
 
-    // Redirect to profile creation if not authenticated
-    signInAnonymously(auth).catch(console.error);
-    onAuthStateChanged(auth, user => {
-      if (!user) {
-        window.location.href = 'create_profile.html';
-      } else {
-        setupModal();
-        setupPosts();
-      }
-    });
+    const mockProfiles = [
+      { name: 'Alice', avatar: 'https://randomuser.me/api/portraits/women/68.jpg' },
+      { name: 'Bob', avatar: 'https://randomuser.me/api/portraits/men/34.jpg' }
+    ];
 
-    function setupModal() {
-      window.openModal = () => {
-        document.getElementById('overlay').classList.add('active');
-        document.getElementById('postModal').classList.add('active');
+    document.addEventListener('DOMContentLoaded', () => {
+      signInAnonymously(auth).catch(console.error);
+      onAuthStateChanged(auth, user => { if (!user) window.location.href = 'create_profile.html'; });
+
+      document.getElementById('profileBtn').onclick = () => location.href = 'create_profile.html';
+      document.getElementById('logoutBtn').onclick = () => location.href = 'index.html';
+
+      const overlay = document.getElementById('overlay');
+      const modal = document.getElementById('postModal');
+      const previewImg = document.getElementById('previewImg');
+      const fileInput = document.getElementById('postImage');
+
+      fileInput.onchange = () => {
+        const file = fileInput.files[0];
+        if (!file) return previewImg.style.display = 'none';
+        previewImg.src = URL.createObjectURL(file);
+        previewImg.style.display = 'block';
       };
-      window.closeModal = () => {
-        document.getElementById('overlay').classList.remove('active');
-        document.getElementById('postModal').classList.remove('active');
-      };
-      document.getElementById('postButton').addEventListener('click', async () => {
+
+      document.getElementById('newPostBtn').onclick = () => { overlay.classList.add('active'); modal.classList.add('active'); };
+      document.getElementById('cancelBtn').onclick = () => { overlay.classList.remove('active'); modal.classList.remove('active'); previewImg.style.display = 'none'; };
+
+      document.getElementById('postButton').addEventListener('click', async e => {
+        e.preventDefault();
         const content = document.getElementById('postContent').value.trim();
-        const fileEl = document.getElementById('postImage');
+        const file = fileInput.files[0];
         let imageUrl = '';
-        if (fileEl.files.length) {
-          const file = fileEl.files[0];
-          const path = `posts/${Date.now()}_${file.name}`;
-          const ref = storageRef(storage, path);
-          await uploadBytes(ref, file);
-          imageUrl = await getDownloadURL(ref);
+        if (file) {
+          const storageRef = sref(storage, `posts/${Date.now()}_${file.name}`);
+          await uploadBytes(storageRef, file);
+          imageUrl = await getDownloadURL(storageRef);
         }
-        if (!content && !imageUrl) return;
-        await push(dbRef(db, 'posts'), { content, imageUrl, timestamp: Date.now() });
-        document.getElementById('postContent').value = '';
-        fileEl.value = '';
-        closeModal();
+        if (content || imageUrl) {
+          await push(ref(db, 'posts'), { content, imageUrl, timestamp: Date.now() });
+        }
+        overlay.classList.remove('active'); modal.classList.remove('active'); previewImg.style.display = 'none';
+        document.getElementById('postContent').value = ''; fileInput.value = '';
       });
-    }
 
-    function setupPosts() {
-      const postsRef = dbRef(db, 'posts');
-      onValue(postsRef, snapshot => {
-        const feed = document.getElementById('postFeed');
-        feed.innerHTML = '';
-        const data = snapshot.val() || {};
-        Object.entries(data).sort(([,a],[,b]) => b.timestamp - a.timestamp).forEach(([, post]) => {
-          const div = document.createElement('div');
-          div.className = 'post';
-          div.innerHTML = `
+      const postsRef = ref(db, 'posts');
+      onChildAdded(postsRef, snapshot => {
+        const post = snapshot.val();
+        const key = snapshot.key;
+        const profile = mockProfiles[Math.abs(hashCode(key)) % mockProfiles.length];
+        const div = document.createElement('div'); div.className = 'post';
+        div.innerHTML = `
+          <div class="post-header">
+            <img class="post-avatar" src="${profile.avatar}" alt="avatar" />
+            <div class="post-author">${profile.name}</div>
             <div class="post-time">${new Date(post.timestamp).toLocaleString()}</div>
-            <div class="post-content">${post.content}</div>
-            ${post.imageUrl ? `<img src="${post.imageUrl}"/>` : ''}
-          `;
-          feed.appendChild(div);
-        });
+          </div>
+          <div class="post-content">${post.content || ''}</div>
+          ${post.imageUrl ? `<img class="post-img" src="${post.imageUrl}" alt="post image"/>` : ''}
+        `;
+        document.getElementById('postFeed').appendChild(div);
       });
-    }
 
-    // Starfield Animation
-    const starCanvas = document.getElementById('star-bg');
-    const starCtx = starCanvas.getContext('2d');
-    function resizeStars() {
-      starCanvas.width = window.innerWidth;
-      starCanvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeStars);
-    resizeStars();
-    const stars = Array.from({ length: 200 }, () => ({ x: Math.random()*starCanvas.width, y: Math.random()*starCanvas.height, r: Math.random()*1.2+0.3, base: Math.random()*0.5+0.2, phase: Math.random()*2*Math.PI }));
-    (function animateStars() {
-      const t = Date.now()*0.002;
-      starCtx.clearRect(0,0,starCanvas.width,starCanvas.height);
-      stars.forEach(s => {
-        starCtx.globalAlpha = s.base + Math.sin(t + s.phase)*0.1;
-        starCtx.beginPath();
-        starCtx.arc(s.x, s.y, s.r, 0, 2*Math.PI);
-        starCtx.fillStyle = '#fff';
-        starCtx.fill();
-      });
-      requestAnimationFrame(animateStars);
-    })();
-
-    // Globe Visualization
-    const globeCanvas = document.getElementById('globe-canvas');
-    const renderer = new THREE.WebGLRenderer({ canvas: globeCanvas, alpha:true });
-    renderer.setSize(300,300);
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50,1,0.1,1000);
-    camera.position.z = 3;
-    const light = new THREE.DirectionalLight(0xffffff,1);
-    light.position.set(5,3,5);
-    scene.add(light);
-    new THREE.TextureLoader().load('https://marilyn2015.github.io/Humanity/earthmap1k.jpg', texture => {
-      const sphere = new THREE.Mesh(
-        new THREE.SphereGeometry(1,32,32),
-        new THREE.MeshStandardMaterial({ map: texture })
-      );
-      scene.add(sphere);
-      function render() {
-        requestAnimationFrame(render);
-        sphere.rotation.y += 0.005;
-        renderer.render(scene, camera);
-      }
-      render();
+      initStars(); initGlobe();
     });
+
+    function hashCode(s) { let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; } return h; }
+    function initStars() { const c = document.getElementById('star-bg'), ctx = c.getContext('2d'); let stars; function resize() { c.width = innerWidth; c.height = innerHeight; stars = Array.from({ length: 100 }, () => ({ x: Math.random()*c.width, y: Math.random()*c.height, r: Math.random()*1.2+0.3, base: Math.random()*0.5+0.2, phase: Math.random()*Math.PI*2 })); } window.addEventListener('resize', resize); resize(); (function f() { const t = Date.now()*0.002; ctx.clearRect(0,0,c.width,c.height); stars.forEach(s => { ctx.globalAlpha = s.base + Math.sin(t+s.phase)*0.1; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,2*Math.PI); ctx.fillStyle='#fff'; ctx.fill(); }); requestAnimationFrame(f); })(); }
+    function initGlobe() { const gc = document.getElementById('globe-canvas'), renderer = new THREE.WebGLRenderer({ canvas: gc, alpha: true }), scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, gc.clientWidth/gc.clientHeight, 0.1, 1000); camera.position.z = 3; const light = new THREE.DirectionalLight(0xffffff,1); light.position.set(5,3,5); scene.add(light); renderer.setSize(gc.clientWidth, gc.clientHeight); new THREE.TextureLoader().load('https://marilyn2015.github.io/Humanity/earthmap1k.jpg', texture => { const sphere = new THREE.Mesh(new THREE.SphereGeometry(1,32,32), new THREE.MeshStandardMaterial({ map: texture })); scene.add(sphere); (function g() { requestAnimationFrame(g); sphere.rotation.y += 0.005; renderer.render(scene, camera); })(); }); }
   </script>
 </body>
 </html>
