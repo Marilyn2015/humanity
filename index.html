@@ -87,5 +87,86 @@
       renderer.setSize(w, h);
     });
   </script>
+  <!-- 🚀 Everything above this line remains unchanged -->
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
+  import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
+  import { getDatabase, ref as dbRef, push, set } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+    authDomain: "hashhumanity-58b9a.firebaseapp.com",
+    databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+    projectId: "hashhumanity-58b9a",
+    storageBucket: "hashhumanity-58b9a.firebasestorage.app",
+    messagingSenderId: "886745899016",
+    appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
+    measurementId: "G-3ZTCXL4374"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const db = getDatabase(app);
+  const storage = getStorage(app);
+
+  // Open modal on Create Profile click
+  document.querySelector("a[href='create_profile.html']").addEventListener("click", e => {
+    e.preventDefault();
+    document.getElementById("profilePopup").style.display = "block";
+  });
+
+  // Show profile image preview
+  document.getElementById("profilePic").addEventListener("change", function(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      const preview = document.getElementById("preview");
+      preview.src = reader.result;
+      preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Save user profile to Firebase and redirect
+  window.saveProfile = async () => {
+    const email = document.getElementById("email").value.trim();
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const dob = document.getElementById("dob").value;
+    const agreed = document.getElementById("agreeRules").checked;
+    const file = document.getElementById("profilePic").files[0];
+
+    if (!email || !firstName || !lastName || !dob || !agreed || !file) {
+      alert("Please complete all fields and agree to Humanity’s rules.");
+      return;
+    }
+
+    try {
+      const picRef = sRef(storage, 'profilePics/' + email);
+      await uploadBytes(picRef, file);
+      const photoURL = await getDownloadURL(picRef);
+
+      const userRef = push(dbRef(db, 'users'));
+      await set(userRef, {
+        email,
+        firstName,
+        lastName,
+        dob,
+        photoURL
+      });
+
+      window.location.href = "universe.html";
+    } catch (error) {
+      alert("Something went wrong while saving your profile.");
+      console.error(error);
+    }
+  };
+</script>
+
+</body>
+</html>
+
 </body>
 </html>
