@@ -1,49 +1,81 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>#HUMANITY Universe</title>
-  <!-- Three.js & Firebase -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.min.js"></script>
   <style>
-    /* Full CSS for layout, buttons, modal, posts, starfield, globe */
+    /* Starfield & layout */
     body { margin:0; background:#080c19; color:#fff; font-family:'Roboto',sans-serif; overflow:hidden; }
     #star-bg, #globe-canvas { position:absolute; z-index:0; }
-    #star-bg { top:0; left:0; width:100vw; height:100vh; }
+    #star-bg { inset:0; width:100vw; height:100vh; }
     #globe-canvas { width:300px; height:300px; top:120px; left:50%; transform:translateX(-50%); pointer-events:none; }
     .button-bar { position:absolute; top:24px; left:50%; transform:translateX(-50%); display:flex; gap:16px; z-index:2; }
-    .btn { padding:13px 24px; background:linear-gradient(90deg,#fff 0%,#ededed 100%); color:#000; border:none; border-radius:6px; font-weight:bold; text-transform:uppercase; cursor:pointer; box-shadow:0 4px 32px rgba(14,248,255,0.47),0 1px 24px rgba(0,12,0,0.5); transition:background .3s,box-shadow .3s; }
-    .btn:hover { background:linear-gradient(90deg,#ededed 0%,#fff 100%); box-shadow:0 6px 40px rgba(14,248,255,0.6),inset 0 0 10px rgba(14,248,255,0.6); }
+    .btn { padding:12px 20px; background:linear-gradient(90deg,#fff,#ccc); color:#000; border:none; border-radius:6px; font-weight:bold; text-transform:uppercase; cursor:pointer; box-shadow:0 4px 20px rgba(0,255,255,0.5); transition:background .3s,box-shadow .3s; }
+    .btn:hover { background:linear-gradient(90deg,#ccc,#fff); box-shadow:0 6px 30px rgba(0,255,255,0.7),inset 0 0 10px rgba(0,255,255,0.5); }
     .centered-new-post { position:absolute; top:440px; left:50%; transform:translateX(-50%); z-index:2; }
-    .overlay,.modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:5; }
-    .overlay.active,.modal.active { display:flex; }
+    .centered-new-post .btn { padding:12px 20px; background:linear-gradient(90deg,#fff 0%,#ededed 100%); color:#000; border:none; border-radius:6px; font-weight:bold; text-transform:uppercase; cursor:pointer; box-shadow:0 0 20px rgba(14,248,255,0.7); transition:background .3s,box-shadow .3s; }
+    .centered-new-post .btn:hover { background:linear-gradient(90deg,#ededed 0%,#fff 100%); box-shadow:0 0 30px rgba(14,248,255,0.8), inset 0 0 10px rgba(14,248,255,0.6); }
+    .overlay, .modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:5; }
+    .overlay.active, .modal.active { display:flex; }
     .overlay { backdrop-filter:blur(12px); background:rgba(0,0,0,0.6); }
-    .modal-box { background:#18181b; border:2px solid #fff; box-shadow:0 4px 32px rgba(14,248,255,0.7),0 1px 24px rgba(0,0,0,0.8); padding:32px; border-radius:8px; width:90%; max-width:400px; }
-    .modal-box h2 { margin:0 0 16px; color:#0ef8; text-transform:uppercase; font-size:1.25rem; text-shadow:0 2px 8px rgba(14,248,255,0.7); }
-    .modal-box img { max-width:100%; max-height:200px; display:none; margin-bottom:12px; border-radius:6px; }
-    .modal-box textarea,.modal-box input[type=file] { width:100%; padding:12px; margin-bottom:16px; background:#21212b; color:#fff; border:2px solid #fff; border-radius:6px; box-shadow:inset 0 0 8px rgba(255,255,255,0.2); font-size:1rem; outline:none; }
-    .modal-box .footer { display:flex; gap:8px; }
-    .modal-box .footer .btn { padding:8px 16px; font-size:0.9rem; }
-    .post-container { position:absolute; top:520px; left:50%; transform:translateX(-50%); width:90%; max-width:600px; max-height:calc(100vh - 540px); overflow-y:auto; z-index:1; }
-    .post { background:#242428; border:1px solid #333; border-radius:6px; padding:12px; margin-bottom:12px; }
-    .post-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-    .post-avatar { width:32px; height:32px; border-radius:50%; }
-    .post-author { font-weight:bold; }
-    .post-time { margin-left:auto; font-size:0.75rem; color:#888; }
+    .modal-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #1b1b1f;
+      border: 2px solid #fff; /* white border */
+      padding: 24px;
+      border-radius: 8px;
+      width: 90%; max-width: 400px;
+      box-shadow: 0 4px 20px rgba(255,255,255,0.6), 0 0 12px rgba(255,255,255,0.8); /* white glow */
+      z-index: 6;
+    }
+    .modal-box h2 {
+      margin-bottom:16px; color:#0ef8; font-size:1.5rem; text-align:center;
+       margin-bottom:16px; color:#0ef8; font-size:1.5rem; text-align:center; }
+    .modal-box img {
+      max-width: 100%;
+      max-height: 200px;
+      margin: 0 auto 12px;
+      display: none;
+      border-radius:6px;
+       max-width:100%; max-height:200px; display:none; margin-bottom:12px; border-radius:6px; }
+    .modal-box textarea, .modal-box input[type=file] {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto 16px;
+      background:#242428; color:#fff; border:1px solid #0ef8; border-radius:6px; font-size:1rem; padding:12px;
+       width:100%; padding:12px; margin-bottom:16px; background:#242428; color:#fff; border:1px solid #0ef8; border-radius:6px; font-size:1rem; }
+    .modal-box .footer {
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      width:100%;
+       display:flex; gap:12px; }
+    .post-container { position:absolute; top:520px; left:50%; transform:translateX(-50%); width:90%; max-width:600px; max-height:calc(100vh - 550px); overflow-y:auto; z-index:1; }
+    .post { background:#28282c; border:1px solid #444; border-radius:6px; padding:16px; margin-bottom:12px; }
+    .post-header { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+    .post-avatar { width:36px; height:36px; border-radius:50%; border:2px solid #0ef8; }
+    .post-author { font-weight:bold; color:#0ef8; }
+    .post-time { margin-left:auto; font-size:.75rem; color:#888; }
+    .post-content { margin-top:8px; color:#ddd; }
     .post-img { max-width:100%; margin-top:12px; border-radius:6px; }
   </style>
 </head>
 <body>
   <canvas id="star-bg"></canvas>
-  <canvas id="globe-canvas"></canvas>
+  <canvas id="globe-canvas" width="300" height="300"></canvas>
 
   <div class="button-bar">
     <button class="btn" id="profileBtn">My Profile</button>
     <button class="btn" id="logoutBtn">Log Out</button>
   </div>
-  <div class="centered-new-post"><button class="btn" id="newPostBtn">New Post</button></div>
+
+  <div class="centered-new-post">
+    <button class="btn" id="newPostBtn">New Post</button>
+  </div>
 
   <div class="overlay" id="overlay"></div>
   <div class="modal" id="postModal">
@@ -63,19 +95,20 @@
 
   <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.module.js';
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-    import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-    import { getDatabase, ref, push, onChildAdded } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
-    import { getStorage, ref as sref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
+    import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+    import { getDatabase, ref, push, onValue, onChildAdded } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js';
+    import { getStorage, ref as sref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
       authDomain: "hashhumanity-58b9a.firebaseapp.com",
       databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
       projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.appspot.com",
+      storageBucket: "hashhumanity-58b9a.firebaseapp.com",
       messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
+      measurementId: "G-3ZTCXL4374"
     };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -89,68 +122,35 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       signInAnonymously(auth).catch(console.error);
-      onAuthStateChanged(auth, user => { if (!user) window.location.href = 'create_profile.html'; });
-
-      document.getElementById('profileBtn').onclick = () => location.href = 'view_profile.html';
-      document.getElementById('logoutBtn').onclick = () => location.href = 'index.html';
+      onAuthStateChanged(auth, user => { if (!user) window.location.href='create_profile.html'; });
 
       const overlay = document.getElementById('overlay');
       const modal = document.getElementById('postModal');
       const previewImg = document.getElementById('previewImg');
       const fileInput = document.getElementById('postImage');
-
-      fileInput.onchange = () => {
-        const file = fileInput.files[0];
-        if (!file) return previewImg.style.display = 'none';
-        previewImg.src = URL.createObjectURL(file);
-        previewImg.style.display = 'block';
-      };
-
-      document.getElementById('newPostBtn').onclick = () => { overlay.classList.add('active'); modal.classList.add('active'); };
-      document.getElementById('cancelBtn').onclick = () => { overlay.classList.remove('active'); modal.classList.remove('active'); previewImg.style.display = 'none'; };
-
-      document.getElementById('postButton').addEventListener('click', async e => {
-        e.preventDefault();
-        const content = document.getElementById('postContent').value.trim();
-        const file = fileInput.files[0];
-        let imageUrl = '';
-        if (file) {
-          const storageRef = sref(storage, `posts/${Date.now()}_${file.name}`);
-          await uploadBytes(storageRef, file);
-          imageUrl = await getDownloadURL(storageRef);
-        }
-        if (content || imageUrl) {
-          await push(ref(db, 'posts'), { content, imageUrl, timestamp: Date.now() });
-        }
-        overlay.classList.remove('active'); modal.classList.remove('active'); previewImg.style.display = 'none';
-        document.getElementById('postContent').value = ''; fileInput.value = '';
+      const feedEl = document.getElementById('postFeed');
+            // Mock previous posts
+      const mockPrevious = [
+        { author: mockProfiles[0], content: 'Welcome to #HUMANITY!', imageUrl: '', timestamp: Date.now() - 600000 },
+        { author: mockProfiles[1], content: 'Hello world—my first post!', imageUrl: '', timestamp: Date.now() - 300000 }
+      ];
+      mockPrevious.forEach(post => {
+        const div = document.createElement('div'); div.className = 'post';
+        div.innerHTML = `
+          <div class="post-header">
+            <img class="post-avatar" src="${post.author.avatar}" alt="avatar" />
+            <div class="post-author">${post.author.name}</div>
+            <div class="post-time">${new Date(post.timestamp).toLocaleString()}</div>
+          </div>
+          <div class="post-content">${post.content}</div>
+        `;
+        feedEl.appendChild(div);
       });
 
-      // --- Render mock posts initially ---
-    const mockPosts = [
-      { author: mockProfiles[0], content: 'Welcome to #HUMANITY!', imageUrl: '' , timestamp: Date.now() - 10000000 },
-      { author: mockProfiles[1], content: 'Excited to share my first post!', imageUrl: '' , timestamp: Date.now() - 5000000 }
-    ];
-    const feedEl = document.getElementById('postFeed');
-    mockPosts.sort((a, b) => a.timestamp - b.timestamp).forEach(post => {
-      const div = document.createElement('div'); div.className = 'post';
-      div.innerHTML = `
-        <div class="post-header">
-          <img class="post-avatar" src="${post.author.avatar}" alt="avatar" />
-          <div class="post-author">${post.author.name}</div>
-          <div class="post-time">${new Date(post.timestamp).toLocaleString()}</div>
-        </div>
-        <div class="post-content">${post.content}</div>
-        ${post.imageUrl ? `<img class="post-img" src="${post.imageUrl}" alt="post image"/>` : ''}
-      `;
-      feedEl.appendChild(div);
-    });
-
-    const postsRef = ref(db, 'posts');
-      onChildAdded(postsRef, snapshot => {
+      // Real-time posts: append all existing and new posts
+      onChildAdded(ref(db, 'posts'), snapshot => {
         const post = snapshot.val();
-        const key = snapshot.key;
-        const profile = mockProfiles[Math.abs(hashCode(key)) % mockProfiles.length];
+        const profile = mockProfiles[Math.abs(hashCode(snapshot.key)) % mockProfiles.length];
         const div = document.createElement('div'); div.className = 'post';
         div.innerHTML = `
           <div class="post-header">
@@ -161,15 +161,53 @@
           <div class="post-content">${post.content || ''}</div>
           ${post.imageUrl ? `<img class="post-img" src="${post.imageUrl}" alt="post image"/>` : ''}
         `;
-        document.getElementById('postFeed').appendChild(div);
+        feedEl.appendChild(div);
+        // Close modal when new post appears
+        if(modal.classList.contains('active')){
+          overlay.classList.remove('active');
+          modal.classList.remove('active');
+          previewImg.style.display='none';
+          document.getElementById('postContent').value='';
+          fileInput.value='';
+        }
+      });
+
+      document.getElementById('newPostBtn').onclick = () => { overlay.classList.add('active'); modal.classList.add('active'); };
+      document.getElementById('cancelBtn').onclick = () => { overlay.classList.remove('active'); modal.classList.remove('active'); previewImg.style.display='none'; };
+      fileInput.onchange = () => { const file=fileInput.files[0]; if(!file){previewImg.style.display='none';return;} previewImg.src=URL.createObjectURL(file); previewImg.style.display='block'; };
+
+      document.getElementById('postButton').onclick = async e => {
+        e.preventDefault();
+        const content = document.getElementById('postContent').value.trim();
+        let imageUrl='';
+        const file=fileInput.files[0];
+        if(file){ const storageRef=sref(storage,`posts/${Date.now()}_${file.name}`); await uploadBytes(storageRef,file); imageUrl=await getDownloadURL(storageRef);}        
+        if(content||imageUrl){ await push(ref(db,'posts'),{content,imageUrl,timestamp:Date.now()}); }
+      };
+
+      onValue(ref(db,'posts'),snapshot=>{
+        feedEl.innerHTML=''; const data=snapshot.val()||{};
+        Object.entries(data).sort(([,a],[,b])=>a.timestamp-b.timestamp).forEach(([key,post])=>{
+          const profile=mockProfiles[Math.abs(hashCode(key))%mockProfiles.length];
+          const div=document.createElement('div');div.className='post';
+          div.innerHTML=`<div class="post-header"><img class="post-avatar" src="${profile.avatar}"/><div class="post-author">${profile.name}</div><div class="post-time">${new Date(post.timestamp).toLocaleString()}</div></div><div class="post-content">${post.content||''}</div>${post.imageUrl?`<img class="post-img" src="${post.imageUrl}"/>`:''}`;
+          feedEl.appendChild(div);
+        });
+      });
+
+      onChildAdded(ref(db,'posts'),()=>{
+        if(modal.classList.contains('active')){
+          overlay.classList.remove('active'); modal.classList.remove('active'); previewImg.style.display='none'; document.getElementById('postContent').value=''; fileInput.value='';
+        }
       });
 
       initStars(); initGlobe();
     });
 
-    function hashCode(s) { let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; } return h; }
-    function initStars() { const c = document.getElementById('star-bg'), ctx = c.getContext('2d'); let stars; function resize() { c.width = innerWidth; c.height = innerHeight; stars = Array.from({ length: 100 }, () => ({ x: Math.random()*c.width, y: Math.random()*c.height, r: Math.random()*1.2+0.3, base: Math.random()*0.5+0.2, phase: Math.random()*Math.PI*2 })); } window.addEventListener('resize', resize); resize(); (function f() { const t = Date.now()*0.002; ctx.clearRect(0,0,c.width,c.height); stars.forEach(s => { ctx.globalAlpha = s.base + Math.sin(t+s.phase)*0.1; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,2*Math.PI); ctx.fillStyle='#fff'; ctx.fill(); }); requestAnimationFrame(f); })(); }
-    function initGlobe() { const gc = document.getElementById('globe-canvas'), renderer = new THREE.WebGLRenderer({ canvas: gc, alpha: true }), scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(50, gc.clientWidth/gc.clientHeight, 0.1, 1000); camera.position.z = 3; const light = new THREE.DirectionalLight(0xffffff,1); light.position.set(5,3,5); scene.add(light); renderer.setSize(gc.clientWidth, gc.clientHeight); new THREE.TextureLoader().load('https://marilyn2015.github.io/Humanity/earthmap1k.jpg', texture => { const sphere = new THREE.Mesh(new THREE.SphereGeometry(1,32,32), new THREE.MeshStandardMaterial({ map: texture })); scene.add(sphere); (function g() { requestAnimationFrame(g); sphere.rotation.y += 0.005; renderer.render(scene, camera); })(); }); }
+    function hashCode(s){let h=0;for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0;}return h;}
+    function initStars(){const c=document.getElementById('star-bg'),ctx=c.getContext('2d');let stars;const resize=()=>{c.width=window.innerWidth;c.height=window.innerHeight;stars=Array.from({length:200},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.2+0.3,base:Math.random()*0.5+0.2,phase:Math.random()*Math.PI*2}));};window.addEventListener('resize',resize);resize();(function a(){const t=Date.now()*0.002;ctx.clearRect(0,0,c.width,c.height);stars.forEach(st=>{ctx.globalAlpha=st.base+Math.sin(t+st.phase)*0.1;ctx.beginPath();ctx.arc(st.x,st.y,st.r,0,2*Math.PI);ctx.fillStyle='#fff';ctx.fill();});requestAnimationFrame(a);})();}
+    function initGlobe(){const gc=document.getElementById('globe-canvas'),renderer=new THREE.WebGLRenderer({canvas:gc,alpha:true,antialias:true}),w=gc.clientWidth,h=gc.clientHeight;renderer.setSize(w,h);renderer.setPixelRatio(window.devicePixelRatio);const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(50,w/h,0.1,1000);camera.position.z=3;const light=new THREE.DirectionalLight(0xffffff,1);light.position.set(5,3,5);scene.add(light);new THREE.TextureLoader().load('https://marilyn2015.github.io/Humanity/earthmap1k.jpg',tex=>{const sph=new THREE.Mesh(new THREE.SphereGeometry(1,32,32),new THREE.MeshStandardMaterial({map:tex}));scene.add(sph);(function r(){requestAnimationFrame(r);sph.rotation.y+=0.005;renderer.render(scene,camera);}());});window.addEventListener('resize',()=>{const ww=gc.clientWidth,hh=gc.clientHeight;renderer.setSize(ww,hh);camera.aspect=ww/hh;camera.updateProjectionMatrix();});}
   </script>
 </body>
 </html>
+
