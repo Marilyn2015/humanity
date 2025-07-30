@@ -3,144 +3,149 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Create Profile • #HUMANITY</title>
-
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-
-  <!-- Font & Styles -->
+  <title>Register • #HUMANITY</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin:0; padding:0; }
-    body { font-family: 'Inter', sans-serif; background: #080c19; color: #eee; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-    .container { background: #111; padding: 40px; border-radius: 12px; box-shadow: 0 0 30px rgba(14,248,255,0.2); width: 100%; max-width: 480px; }
-    h1 { text-align: center; color: #0ef8; margin-bottom: 24px; font-size: 2rem; }
-    .avatar-wrapper { width:140px; height:140px; margin:0 auto 16px; border-radius:50%; border:3px solid #0ef8; overflow:hidden; background:#222; }
-    .avatar-wrapper img { width:100%; height:100%; object-fit:cover; }
-    .glow-btn { display:block; width:100%; text-align:center; background: linear-gradient(90deg, #fff, #e9e9e9); color: #191919; padding: 10px 0; border: none; border-radius: 6px; box-shadow: 0 0 12px #fff9; cursor: pointer; font-weight: 600; margin: 12px 0; transition: 0.2s; }
-    .glow-btn:hover { background: linear-gradient(90deg, #0ef8, #0af0); color: #fff; box-shadow: 0 0 20px #0ef8; transform: translateY(-2px); }
-    input, textarea { width:100%; background:#222; border:1px solid #333; border-radius:6px; padding:12px; margin:10px 0; color:#eee; }
-    ::placeholder { color:#888; }
-    label.checkbox-label { display:flex; align-items:center; margin:10px 0; }
-    label.checkbox-label input { margin-right:8px; }
-    .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); justify-content:center; align-items:center; z-index:1000; }
-    .modal.show { display:flex; }
-    .modal-content { background:#111; padding:20px; border-radius:8px; width:90%; max-width:320px; }
-    .modal-content h3 { color:#0ef8; text-align:center; margin-bottom:12px; }
-    .modal-content input[type=file] { margin:12px 0; }
-    #avatarModalPreview { width:100%; max-height:200px; object-fit:contain; border:1px solid #333; border-radius:6px; margin:12px 0; }
-    .modal-buttons { display:flex; gap:8px; }
-    .modal-buttons button { flex:1; padding:8px; border:none; border-radius:6px; cursor:pointer; }
-    #cancelAvatarBtn { background:#333; color:#eee; }
-    #saveAvatarBtn { background: linear-gradient(90deg, #fff, #e9e9e9); color:#191919; box-shadow:0 0 12px #fff9; }
-    #saveAvatarBtn:hover { background: linear-gradient(90deg, #0ef8, #0af0); color:#fff; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #080c19;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .form-container {
+      background: #1a1f2b;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .form-container h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    .form-container input,
+    .form-container textarea {
+      width: 100%;
+      padding: .75rem;
+      margin-bottom: .75rem;
+      border: none;
+      border-radius: 4px;
+      background: #0f131e;
+      color: #fff;
+    }
+    .form-container button {
+      width: 100%;
+      padding: .75rem;
+      background: #00ffe7;
+      border: none;
+      border-radius: 4px;
+      color: #080c19;
+      font-weight: bold;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Create Your Profile</h1>
-    <div class="avatar-wrapper">
-      <img id="avatarPreview" src="https://via.placeholder.com/140" alt="Avatar">
-    </div>
-    <button class="glow-btn" id="openAvatarModal">Upload Photo</button>
-    <input type="email" id="profileEmail" placeholder="Email Address" required>
-    <input type="password" id="profilePassword" placeholder="Password" required>
-    <input type="text" id="profileUsername" placeholder="Username" required>
-    <input type="text" id="firstName" placeholder="First Name">
-    <input type="text" id="lastName" placeholder="Last Name">
-    <input type="date" id="dob">
-    <textarea id="profileBio" placeholder="Bio…"></textarea>
-    <input type="text" id="location" placeholder="Location">
-    <input type="text" id="interests" placeholder="Interests (comma-separated)">
-    <input type="text" id="githubLink" placeholder="GitHub URL">
-    <input type="text" id="websiteLink" placeholder="Website URL">
-    <label class="checkbox-label">
-      <input type="checkbox" id="emailNotifications"> Receive Email Notifications
-    </label>
-    <button id="createProfileBtn" class="glow-btn">Save Profile</button>
+  <div class="form-container">
+    <h1>Sign Up</h1>
+    <form id="registerForm">
+      <input type="file"    id="photoInput"   accept="image/*" />
+      <input type="email"   id="emailInput"   placeholder="Email" required />
+      <input type="password" id="passwordInput" placeholder="Password" required />
+      <input type="text"    id="firstNameInput" placeholder="First Name" required />
+      <input type="text"    id="lastNameInput"  placeholder="Last Name" required />
+      <input type="date"    id="dobInput"      placeholder="Birthday" required />
+      <textarea id="bioInput"      placeholder="Bio…"></textarea>
+      <input type="text"    id="locationInput"   placeholder="Location" />
+      <input type="text"    id="interestsInput"  placeholder="Interests (comma‑separated)" />
+      <input type="url"     id="githubInput"     placeholder="GitHub URL" />
+      <input type="url"     id="websiteInput"    placeholder="Website URL" />
+      <label>
+        <input type="checkbox" id="receiveEmailInput" />
+        Receive Email Notifications
+      </label>
+      <button type="submit">Create Profile</button>
+    </form>
   </div>
-  <div id="avatarModal" class="modal">
-    <div class="modal-content">
-      <h3>Select Profile Picture</h3>
-      <input type="file" id="avatarFileInput" accept="image/*">
-      <img id="avatarModalPreview" src="" alt="Preview">
-      <div class="modal-buttons">
-        <button id="cancelAvatarBtn">Cancel</button>
-        <button id="saveAvatarBtn">Save Photo</button>
-      </div>
-    </div>
-  </div>
-  <script>
+
+  <script type="module">
+    // 1. Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+    import { getStorage, ref as sref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+
+    // 2. Your Firebase config (replace with yours)
     const firebaseConfig = {
-      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-      authDomain: "hashhumanity-58b9a.firebaseapp.com",
-      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-      projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.appspot.com",
-      messagingSenderId: "886745899016",
-      appId: "1:886745899016:web:2b0f7e043c2434379d71bd"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth(), db = firebase.database(), storage = firebase.storage();
-    let avatarFile = null;
-    document.getElementById('openAvatarModal').addEventListener('click', () => {
-      document.getElementById('avatarModal').classList.add('show');
-      avatarFile = null;
-      document.getElementById('avatarFileInput').value = '';
-      document.getElementById('avatarModalPreview').src = '';
-    });
-    document.getElementById('avatarFileInput').addEventListener('change', e => {
-      const f = e.target.files[0]; if (!f) return; avatarFile = f;
-      const r = new FileReader(); r.onload = ev => document.getElementById('avatarModalPreview').src = ev.target.result;
-      r.readAsDataURL(f);
-    });
-    document.getElementById('cancelAvatarBtn').addEventListener('click', () => document.getElementById('avatarModal').classList.remove('show'));
-    document.getElementById('saveAvatarBtn').addEventListener('click', () => {
-      if (avatarFile && document.getElementById('avatarModalPreview').src) {
-        document.getElementById('avatarPreview').src = document.getElementById('avatarModalPreview').src;
-      }
-      document.getElementById('avatarModal').classList.remove('show');
-    });
-    async function uploadAvatar(uid) {
-      if (!avatarFile) return '';
-      const ref = storage.ref(`avatars/${uid}_${Date.now()}`);
-      const snap = await ref.put(avatarFile);
-      return await snap.ref.getDownloadURL();
-    }
-    document.getElementById('createProfileBtn').addEventListener('click', async e => {
+
+    // 3. Initialize
+    const app     = initializeApp(firebaseConfig);
+    const auth    = getAuth(app);
+    const db      = getDatabase(app);
+    const storage = getStorage(app);
+
+    // 4. Form handler
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('profileEmail').value.trim();
-      const password = document.getElementById('profilePassword').value;
-      const username = document.getElementById('profileUsername').value.trim();
-      if (!email || !password || !username) return alert('Email, password & username are required.');
-      let uid;
+
+      // Grab values
+      const file     = document.getElementById('photoInput').files[0];
+      const email    = document.getElementById('emailInput').value.trim();
+      const password = document.getElementById('passwordInput').value;
+      const first    = document.getElementById('firstNameInput').value.trim();
+      const last     = document.getElementById('lastNameInput').value.trim();
+      const dob      = document.getElementById('dobInput').value;
+      const bio      = document.getElementById('bioInput').value.trim();
+      const location = document.getElementById('locationInput').value.trim();
+      const interests= document.getElementById('interestsInput').value.split(',').map(s=>s.trim());
+      const github   = document.getElementById('githubInput').value.trim();
+      const website  = document.getElementById('websiteInput').value.trim();
+      const notify   = document.getElementById('receiveEmailInput').checked;
+
       try {
-        const cred = await auth.createUserWithEmailAndPassword(email, password);
-        uid = cred.user.uid;
-        let avatarURL = '';
-        try { avatarURL = await uploadAvatar(uid); } catch(err) { console.warn(err); }
-        const data = {
-          uid, email, username,
-          firstName: document.getElementById('firstName').value.trim(),
-          lastName: document.getElementById('lastName').value.trim(),
-          dob: document.getElementById('dob').value,
-          bio: document.getElementById('profileBio').value.trim(),
-          location: document.getElementById('location').value.trim(),
-          interests: document.getElementById('interests').value.split(',').map(s=>s.trim()).filter(Boolean),
-          github: document.getElementById('githubLink').value.trim(),
-          website: document.getElementById('websiteLink').value.trim(),
-          emailNotifications: document.getElementById('emailNotifications').checked,
-          avatar: avatarURL,
-          createdAt: new Date().toISOString()
-        };
-        await db.ref(`users/${uid}`).set(data);
-        window.location.href = `view_profile.html?user=${uid}`;
-      } catch(err) {
-        console.error('Create profile error', err);
-        alert(err.message || 'Failed to create profile.');
+        // 4a. Create user
+        const { user } = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = user.uid;
+
+        // 4b. Upload photo if present
+        let photoURL = "";
+        if (file) {
+          const storageRef = sref(storage, `avatars/${uid}/${file.name}`);
+          await uploadBytes(storageRef, file);
+          photoURL = await getDownloadURL(storageRef);
+        }
+
+        // 4c. Write profile to DB
+        await set(ref(db, `users/${uid}`), {
+          email, first, last, dob, bio,
+          location, interests, github, website,
+          notify, photoURL
+        });
+
+        // 4d. Redirect to universe
+        window.location.href = 'universe.html';
+
+      } catch (err) {
+        // Handle “email in use” specifically
+        if (err.code === 'auth/email-already-in-use') {
+          alert('That email is already registered. Redirecting to login…');
+          window.location.href = 'login.html';
+        } else {
+          // Other errors
+          alert(err.message);
+        }
       }
     });
   </script>
