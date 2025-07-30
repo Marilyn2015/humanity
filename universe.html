@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -90,7 +91,7 @@
       signInAnonymously(auth).catch(console.error);
       onAuthStateChanged(auth, user => { if (!user) window.location.href = 'create_profile.html'; });
 
-      document.getElementById('profileBtn').onclick = () => location.href = 'create_profile.html';
+      document.getElementById('profileBtn').onclick = () => location.href = 'view_profile.html';
       document.getElementById('logoutBtn').onclick = () => location.href = 'index.html';
 
       const overlay = document.getElementById('overlay');
@@ -125,7 +126,27 @@
         document.getElementById('postContent').value = ''; fileInput.value = '';
       });
 
-      const postsRef = ref(db, 'posts');
+      // --- Render mock posts initially ---
+    const mockPosts = [
+      { author: mockProfiles[0], content: 'Welcome to #HUMANITY!', imageUrl: '' , timestamp: Date.now() - 10000000 },
+      { author: mockProfiles[1], content: 'Excited to share my first post!', imageUrl: '' , timestamp: Date.now() - 5000000 }
+    ];
+    const feedEl = document.getElementById('postFeed');
+    mockPosts.sort((a, b) => a.timestamp - b.timestamp).forEach(post => {
+      const div = document.createElement('div'); div.className = 'post';
+      div.innerHTML = `
+        <div class="post-header">
+          <img class="post-avatar" src="${post.author.avatar}" alt="avatar" />
+          <div class="post-author">${post.author.name}</div>
+          <div class="post-time">${new Date(post.timestamp).toLocaleString()}</div>
+        </div>
+        <div class="post-content">${post.content}</div>
+        ${post.imageUrl ? `<img class="post-img" src="${post.imageUrl}" alt="post image"/>` : ''}
+      `;
+      feedEl.appendChild(div);
+    });
+
+    const postsRef = ref(db, 'posts');
       onChildAdded(postsRef, snapshot => {
         const post = snapshot.val();
         const key = snapshot.key;
