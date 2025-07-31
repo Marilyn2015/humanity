@@ -17,6 +17,8 @@
     .reply-box input[type="file"] { color: white; }
     .reply-box button { padding: 10px 16px; border: none; border-radius: 6px; background: #0ef8ff; font-weight: bold; cursor: pointer; }
     img.chat-image { max-width: 100%; margin-top: 6px; border-radius: 6px; }
+    .emoji-picker { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; cursor: pointer; }
+    .emoji-picker span { font-size: 1.2rem; }
   </style>
 </head>
 <body>
@@ -44,11 +46,28 @@
         <div class="messages" id="msgs-${otherUserId}"></div>
         <div class="reply-box">
           <input type="text" id="reply-${otherUserId}" placeholder="Type a message..." />
+          <div class="emoji-picker" id="emoji-${otherUserId}"></div>
           <input type="file" id="file-${otherUserId}" accept="image/*" />
           <button onclick="window.sendReply('${otherUserId}')">Send</button>
         </div>
       `;
       threadEl.appendChild(div);
+      renderEmojis(`emoji-${otherUserId}`, `reply-${otherUserId}`);
+    }
+
+    function renderEmojis(containerId, inputId) {
+      const emojis = ['😀','😂','😍','😎','🔥','👍','🙏','🎉','❤️','😢'];
+      const el = document.getElementById(containerId);
+      emojis.forEach(e => {
+        const span = document.createElement('span');
+        span.textContent = e;
+        span.onclick = () => {
+          const input = document.getElementById(inputId);
+          input.value += e;
+          input.focus();
+        };
+        el.appendChild(span);
+      });
     }
 
     function appendMessage(toId, fromId, text, timestamp, currentUserId, imageUrl) {
