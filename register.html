@@ -122,16 +122,27 @@
     });
 
     document.getElementById('saveBtn').addEventListener('click', () => {
+      console.log('[DEBUG] Save button clicked');
       const agreeChecked = document.getElementById('agreeRules').checked;
       if (!agreeChecked) {
         alert('You must agree to the #HUMANITY Rules before saving.');
         return;
       }
       onAuthStateChanged(auth, async (user) => {
+        console.log('[DEBUG] onAuthStateChanged fired');
+        if (!user) {
+        console.warn('[DEBUG] No user is logged in');
+        alert("You are not logged in. Please log in before creating your profile.");
+        window.location.href = "login.html";
+          alert("Not logged in");
+          return;
+        }
+        console.log('[DEBUG] Authenticated user:', user.uid);
         if (!user) return alert("Not logged in");
 
         try {
           const uid = user.uid;
+          console.log('[DEBUG] Collecting form data');
           const firstName = document.getElementById('firstName').value;
           const lastName = document.getElementById('lastName').value;
           const email = document.getElementById('email').value;
@@ -152,6 +163,7 @@
             firstName, lastName, email, dob, username, bio, location, avatarURL
           };
 
+          console.log('[DEBUG] Saving to Firebase:', profileData);
           await set(ref(db, 'users/' + uid), profileData)
             .then(() => {
               window.location.href = "universe.html";
