@@ -1,0 +1,34 @@
+<#
+.SYNOPSIS
+    Starts an HTTP server for the project directory and opens login.html.
+.PARAMETER Port
+    The port number to serve on. Defaults to 8080.
+.PARAMETER Directory
+    The directory to serve. Defaults to the script location.
+#>
+Param(
+    [int]$Port = 8080,
+    [string]$Directory = (Split-Path -Parent $MyInvocation.MyCommand.Definition)
+)
+
+Write-Host "Serving directory '$Directory' on port $Port..."
+Push-Location $Directory
+
+# Ensure http-server is installed: npm install -g http-server
+if (-not (Get-Command http-server -ErrorAction SilentlyContinue)) {
+    Write-Host "http-server not found. Installing globally..."
+    npm install -g http-server
+}
+
+# Start the server in background
+Start-Process -NoNewWindow -FilePath "http-server" -ArgumentList "-p $Port -c-1 ."
+
+# Wait briefly for server to start
+Start-Sleep -Seconds 2
+
+# Open the login page\ akoz
+$loginUrl = "http://localhost:$Port/login.html"
+Write-Host "Opening $loginUrl in default browser..."
+Start-Process $loginUrl
+
+Pop-Location
