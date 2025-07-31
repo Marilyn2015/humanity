@@ -208,6 +208,9 @@
     </div>
     <div class="actions">
       <button class="btn" id="editBtn">Edit Profile</button>
+      <button class="btn" id="messagesBtn">Messages <span class="badge">3</span></button>
+      <button class="btn" id="followingBtn">Following <span class="badge">78</span></button>
+      <button class="btn" id="friendRequestsBtn">Friend Requests <span class="badge">5</span></button>
     </div>
   </div>
 
@@ -308,6 +311,58 @@
         }
       });
     });
+  </script>
+  <!-- Messages Modal -->
+  <div id="messagesModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Inbox / Outbox</h2>
+        <button class="close-btn" onclick="messagesModal.classList.remove('active')">×</button>
+      </div>
+      <div class="modal-body">
+        <p>No messages yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Following Modal -->
+  <div id="followingModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Following</h2>
+        <button class="close-btn" onclick="followingModal.classList.remove('active')">×</button>
+      </div>
+      <div class="modal-body">
+        <p>You are following 78 users.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Friend Requests Modal -->
+  <div id="friendRequestsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Friend Requests</h2>
+        <button class="close-btn" onclick="friendRequestsModal.classList.remove('active')">×</button>
+      </div>
+      <div class="modal-body">
+        <p>You have 5 pending requests.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const messagesBtn = document.getElementById('messagesBtn');
+    const followingBtn = document.getElementById('followingBtn');
+    const friendRequestsBtn = document.getElementById('friendRequestsBtn');
+
+    const messagesModal = document.getElementById('messagesModal');
+    const followingModal = document.getElementById('followingModal');
+    const friendRequestsModal = document.getElementById('friendRequestsModal');
+
+    messagesBtn?.addEventListener('click', () => messagesModal.classList.add('active'));
+    followingBtn?.addEventListener('click', () => followingModal.classList.add('active'));
+    friendRequestsBtn?.addEventListener('click', () => friendRequestsModal.classList.add('active'));
   </script>
 </body>
 </html>
