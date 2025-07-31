@@ -88,7 +88,7 @@
   <!-- Firebase Modular SDK -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+    import { getAuth, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
     import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
     import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
@@ -132,9 +132,17 @@
         console.log('[DEBUG] onAuthStateChanged fired');
         if (!user) {
         console.warn('[DEBUG] No user is logged in');
-        alert("You must log in before creating a profile.");
-        window.location.href = "login.html";
-        return;
+        console.log('[DEBUG] Attempting anonymous sign-in...');
+        try {
+          const result = await signInAnonymously(auth);
+          user = result.user;
+          console.log('[DEBUG] Anonymous user created:', user.uid);
+        } catch (err) {
+          console.error('[ERROR] Failed to sign in anonymously:', err);
+          alert("Failed to authenticate. Please refresh and try again.");
+          return;
+        }
+      }
         }
         console.log('[DEBUG] Authenticated user:', user.uid);
         if (!user) return alert("Not logged in");
