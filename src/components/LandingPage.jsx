@@ -1,5 +1,8 @@
 // src/components/LandingPage.jsx
 import React, { useEffect, useRef } from 'react';
+import './LandingPage.css';
+// …rest of your component…
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import * as THREE from 'three';
 import './LandingPage.css';
