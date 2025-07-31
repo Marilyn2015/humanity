@@ -73,6 +73,7 @@
     <label>First Name <input type="text" id="firstName"></label>
     <label>Last Name <input type="text" id="lastName"></label>
     <label>Email <input type="email" id="email"></label>
+    <label>Password <input type="password" id="password"></label>
     <label>Date of Birth <input type="date" id="dob"></label>
     <label>Username <input type="text" id="username"></label>
     <label>Bio <textarea id="bio"></textarea></label>
@@ -86,108 +87,92 @@
   </div>
 
   <!-- Firebase Modular SDK -->
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-    import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
-    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+  import { getAuth, createUserWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+  import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
+  import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyExample-ReplaceWithRealKey",
-      authDomain: "hashhumanity-58b9a.firebaseapp.com",
-      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-      projectId: "hashhumanity-58b9a",
-      storageBucket: "hashhumanity-58b9a.appspot.com",
-      messagingSenderId: "000000000000",
-      appId: "1:000000000000:web:exampleappid"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyExample-ReplaceWithRealKey",
+    authDomain: "hashhumanity-58b9a.firebaseapp.com",
+    databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+    projectId: "hashhumanity-58b9a",
+    storageBucket: "hashhumanity-58b9a.appspot.com",
+    messagingSenderId: "000000000000",
+    appId: "1:000000000000:web:exampleappid"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-    const storage = getStorage(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+  const storage = getStorage(app);
 
-    document.getElementById('avatar').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const preview = document.getElementById('avatarPreview');
-          preview.src = event.target.result;
-          preview.style.display = 'block';
-          document.getElementById('avatarSection').style.display = 'block';
-        };
-        reader.readAsDataURL(file);
+  document.getElementById('avatar').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const preview = document.getElementById('avatarPreview');
+        preview.src = event.target.result;
+        preview.style.display = 'block';
+        document.getElementById('avatarSection').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  document.getElementById('saveBtn').addEventListener('click', async () => {
+    console.log('[DEBUG] Save button clicked');
+    const agreeChecked = document.getElementById('agreeRules').checked;
+    if (!agreeChecked) {
+      alert('You must agree to the #HUMANITY Rules before saving.');
+      return;
+    }
+
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    if (!email || !password) {
+      alert('Please enter both email and password to register.');
+      return;
+    }
+
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      const user = result.user;
+      const uid = user.uid;
+      console.log('[DEBUG] Registered new user:', uid);
+
+      const firstName = document.getElementById('firstName').value;
+      const lastName = document.getElementById('lastName').value;
+      const dob = document.getElementById('dob').value;
+      const username = document.getElementById('username').value;
+      const bio = document.getElementById('bio').value;
+      const location = document.getElementById('location').value;
+      const avatarFile = document.getElementById('avatar').files[0];
+
+      let avatarURL = '';
+      if (avatarFile) {
+        const avatarStorageRef = sRef(storage, `avatars/${uid}`);
+        await uploadBytes(avatarStorageRef, avatarFile);
+        avatarURL = await getDownloadURL(avatarStorageRef);
       }
-    });
 
-    document.getElementById('saveBtn').addEventListener('click', () => {
-      console.log('[DEBUG] Save button clicked');
-      const agreeChecked = document.getElementById('agreeRules').checked;
-      if (!agreeChecked) {
-        alert('You must agree to the #HUMANITY Rules before saving.');
-        return;
-      }
-      onAuthStateChanged(auth, async (user) => {
-        console.log('[DEBUG] onAuthStateChanged fired');
-        if (!user) {
-        console.warn('[DEBUG] No user is logged in');
-        console.log('[DEBUG] Attempting anonymous sign-in...');
-        try {
-          const result = await signInAnonymously(auth);
-          user = result.user;
-          console.log('[DEBUG] Anonymous user created:', user.uid);
-        } catch (err) {
-          console.error('[ERROR] Failed to sign in anonymously:', err);
-          alert("Failed to authenticate. Please refresh and try again.");
-          return;
-        }
-      }
-        }
-        console.log('[DEBUG] Authenticated user:', user.uid);
-        if (!user) return alert("Not logged in");
+      const profileData = {
+        firstName, lastName, email, dob, username, bio, location, avatarURL
+      };
 
-        try {
-          // const uid = user.uid; (overridden if no user)
-          let uid = user.uid;
-          console.log('[DEBUG] Using logged-in UID:', uid);
-          console.log('[DEBUG] Collecting form data');
-          const firstName = document.getElementById('firstName').value;
-          const lastName = document.getElementById('lastName').value;
-          const email = document.getElementById('email').value;
-          const dob = document.getElementById('dob').value;
-          const username = document.getElementById('username').value;
-          const bio = document.getElementById('bio').value;
-          const location = document.getElementById('location').value;
-          const avatarFile = document.getElementById('avatar').files[0];
+      console.log('[DEBUG] Saving to Firebase Realtime Database:', profileData);
+      await set(ref(db, `users/${uid}`), profileData);
 
-          let avatarURL = "";
-          if (avatarFile) {
-            const avatarStorageRef = sRef(storage, `avatars/${uid}`);
-            await uploadBytes(avatarStorageRef, avatarFile);
-            avatarURL = await getDownloadURL(avatarStorageRef);
-          }
+      window.location.href = 'universe.html';
+    } catch (error) {
+      console.error('[ERROR] Account creation or profile save failed:', error);
+      alert('There was an error creating your account. Please try again.');
+    }
+  });
+</script>
 
-          const profileData = {
-            firstName, lastName, email, dob, username, bio, location, avatarURL
-          };
-
-          console.log('[DEBUG] Saving to Firebase:', profileData);
-          const path = 'users/' + uid;
-          await set(ref(db, path), profileData)
-            .then(() => {
-              window.location.href = "universe.html";
-            })
-            .catch((error) => {
-              console.error("Failed to write user data:", error);
-              alert("There was an error saving your profile. Please try again.");
-            });
-        } catch (error) {
-          console.error("Error saving profile:", error);
-          alert("Failed to save profile. See console for details.");
-        }
-      });
-    });
   </script>
 <div id="rulesModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999;">
   <div style="background:#111726; color:white; width:80%; max-width:600px; margin:5% auto; padding:2rem; border-radius:10px; box-shadow:0 0 15px #0ef8; position:relative;">
