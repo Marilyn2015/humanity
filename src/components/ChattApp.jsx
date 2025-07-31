@@ -1,111 +1,130 @@
+// src/components/ChatApp.jsx
 import React, { useState, useEffect } from 'react';
-import './ChatApp.css';
+import { auth, db, storage } from '../firebaseConfig';               // <-- no “.js” extension
+import { ref, onChildAdded, set, push } from 'firebase/database';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { onAuthStateChanged } from 'firebase/auth';
+import './ChatApp.css';                                              // <-- make sure ChatApp.css is in the same folder
 
-const emojis = ['😀','😂','😍','😎','🔥','👍','🙏','🎉','❤️','😢'];
+const emojis = ['😀', '😂', '😍', '😎', '🔥', '👍', '🙏', '🎉', '❤️', '😢'];
 
-const ChatApp = ({ currentUser }) => {
-  const [threads, setThreads] = useState({});
-  const [messages, setMessages] = useState({});
-  
-  const renderThread = (otherUserId) => {
-    if (!threads[otherUserId]) {
-      setThreads(prev => ({
-        ...prev,
-        [otherUserId]: {
-          messages: [],
-          reply: '',
-          image: null
-        }
-      }));
+export default function ChatApp() {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [threads, setThreads] = useState([]);
+  const [activeThread, setActiveThread] = useState(null);
+  const [reply, setReply] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+
+  // Auth listener
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, user => {
+      setCurrentUser(user ? user.uid : null);
+    });
+    return () => unsub();
+  }, []);
+
+  // Thread list listener
+  useEffect(() => {
+    if (!currentUser) return;
+    const threadsRef = ref(db, `threads/${currentUser}`);
+    const off = onChildAdded(threadsRef, snap => {
+      const id = snap.key;
+      const otherUser = id.split('_').find(x => x !== currentUser);
+      setThreads(prev =>
+        prev.some(t => t.id === id) ? prev : [...prev, { id, otherUser, messages: [] }]
+      );
+    });
+    return () => off();
+  }, [currentUser]);
+
+  // Messages listener
+  useEffect(() => {
+    if (!activeThread) return;
+    const msgsRef = ref(db, `messages/${activeThread}`);
+    const off = onChildAdded(msgsRef, snap => {
+      const msg = snap.val();
+      setThreads(prev =>
+        prev.map(t =>
+          t.id === activeThread ? { ...t, messages: [...t.messages, msg] } : t
+        )
+      );
+    });
+    return () => off();
+  }, [activeThread]);
+
+  const startChat = otherUserId => {
+    const threadId = [currentUser, otherUserId].sort().join('_');
+    set(ref(db, `threads/${currentUser}/${threadId}`), true);
+    set(ref(db, `threads/${otherUserId}/${threadId}`), true);
+    setActiveThread(threadId);
+  };
+
+  const sendReply = async () => {
+    if (!reply && !imageFile) return;
+    let imageUrl = '';
+    if (imageFile) {
+      const imgRef = storageRef(storage, `chatImages/${activeThread}/${Date.now()}_${imageFile.name}`);
+      await uploadBytes(imgRef, imageFile);
+      imageUrl = await getDownloadURL(imgRef);
     }
+    const msg = { from: currentUser, text: reply, imageUrl, timestamp: Date.now() };
+    await push(ref(db, `messages/${activeThread}`), msg);
+    setReply('');
+    setImageFile(null);
   };
 
-  const handleEmojiClick = (emoji, userId) => {
-    setThreads(prev => ({
-      ...prev,
-      [userId]: {
-        ...prev[userId],
-        reply: prev[userId].reply + emoji
-      }
-    }));
-  };
-
-  const sendReply = (receiverId) => {
-    const { reply, image } = threads[receiverId];
-    if (!reply && !image) return;
-
-    const newMessage = {
-      from: currentUser,
-      to: receiverId,
-      text: reply,
-      imageUrl: image && URL.createObjectURL(image),
-      timestamp: Date.now()
-    };
-
-    setMessages(prev => ({
-      ...prev,
-      [receiverId]: [...(prev[receiverId] || []), newMessage]
-    }));
-
-    setThreads(prev => ({
-      ...prev,
-      [receiverId]: { ...prev[receiverId], reply: '', image: null }
-    }));
-  };
+  if (!currentUser) {
+    return <div>Please log in to chat.</div>;
+  }
 
   return (
     <div className="chat-container">
       <div className="chat-header">Your Messages</div>
-      
-      {Object.keys(threads).map(userId => (
-        <div key={userId} className="message-thread">
-          <div><strong>Conversation with:</strong> {userId}</div>
+      <div className="thread-list">
+        {threads.map(t => (
+          <button key={t.id} onClick={() => setActiveThread(t.id)}>
+            Chat with {t.otherUser}
+          </button>
+        ))}
+        <button onClick={() => startChat('demoUser123')}>
+          Start Chat with Demo User
+        </button>
+      </div>
+
+      {activeThread && (
+        <div className="thread-window">
           <div className="messages">
-            {(messages[userId] || []).map((msg, idx) => (
-              <div key={idx} className={`message-box ${msg.from === currentUser ? 'sent' : 'received'}`}>
-                {msg.text}
-                {msg.imageUrl && <img src={msg.imageUrl} alt="chat" className="chat-image" />}
-                <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>
-                  {new Date(msg.timestamp).toLocaleTimeString()}
-                </div>
+            {(threads.find(t => t.id === activeThread)?.messages || []).map((m, i) => (
+              <div key={i} className={m.from === currentUser ? 'sent' : 'received'}>
+                {m.text}
+                {m.imageUrl && <img src={m.imageUrl} alt="chat" className="chat-image" />}
+                <div className="timestamp">{new Date(m.timestamp).toLocaleTimeString()}</div>
               </div>
             ))}
           </div>
           <div className="reply-box">
             <input
               type="text"
-              value={threads[userId].reply}
-              onChange={(e) =>
-                setThreads(prev => ({
-                  ...prev,
-                  [userId]: { ...prev[userId], reply: e.target.value }
-                }))
-              }
+              value={reply}
+              onChange={e => setReply(e.target.value)}
               placeholder="Type a message..."
             />
             <div className="emoji-picker">
               {emojis.map(e => (
-                <span key={e} onClick={() => handleEmojiClick(e, userId)}>{e}</span>
+                <span key={e} onClick={() => setReply(r => r + e)}>
+                  {e}
+                </span>
               ))}
             </div>
             <input
               type="file"
               accept="image/*"
-              onChange={(e) =>
-                setThreads(prev => ({
-                  ...prev,
-                  [userId]: { ...prev[userId], image: e.target.files[0] }
-                }))
-              }
+              onChange={e => setImageFile(e.target.files[0])}
             />
-            <button onClick={() => sendReply(userId)}>Send</button>
+            <button onClick={sendReply}>Send</button>
           </div>
         </div>
-      ))}
-
-      <button onClick={() => renderThread('demoUser123')}>Start Chat with Demo User</button>
+      )}
     </div>
   );
-};
-
-export default ChatApp;
+}
