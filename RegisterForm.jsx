@@ -4,16 +4,6 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import { ref as dbRef, set } from 'firebase/database';
 import { auth, db, storage } from '../firebase';
 import './RegisterForm.css';
-import RegisterForm from './components/RegisterForm';
-
-function App() {
-  return (
-    <div>
-      <RegisterForm />
-    </div>
-  );
-}
-
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
