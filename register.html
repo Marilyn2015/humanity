@@ -170,6 +170,10 @@
       console.error('[ERROR] Account creation or profile save failed:', error);
       alert('There was an error creating your account. Please try again.');
     }
+    catch (error) {
+  console.error('[ERROR] Account creation or profile save failed:', error);
+  alert(`Account error: ${error.message}`);
+}
   });
 </script>
 
