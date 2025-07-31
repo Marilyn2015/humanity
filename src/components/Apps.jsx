@@ -22,7 +22,7 @@ const mockProfiles = [
 let currentUserId = null;
 onAuthStateChanged(auth, user => {
   if (!user) {
-    window.location.href = 'index.html';
+    window.location.href = '/';
   } else {
     currentUserId = user.uid;
     const userRef = child(ref(db), `profiles/${user.uid}`);
@@ -49,20 +49,20 @@ onAuthStateChanged(auth, user => {
 });
 
 document.getElementById('profileBtn').onclick = () => (window.location.href = 'view_profile.html');
-document.getElementById('logoutBtn').onclick = () => (window.location.href = 'index.html');
+document.getElementById('logoutBtn').onclick = () => (window.location.href = '/');
 
 document.getElementById('newPostBtn').onclick = () => {
   document.getElementById('overlay').classList.add('active');
   document.getElementById('postModal').classList.add('active');
 };
+const fileInput = document.getElementById('postImage');
+
 document.getElementById('cancelBtn').onclick = () => {
   document.getElementById('overlay').classList.remove('active');
   document.getElementById('postModal').classList.remove('active');
   document.getElementById('postContent').value = '';
   fileInput.value = '';
 };
-
-const fileInput = document.getElementById('postImage');
 let editingKey = null;
 
 document.getElementById('postButton').onclick = async e => {
