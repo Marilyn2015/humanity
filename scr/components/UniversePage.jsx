@@ -1,15 +1,17 @@
 import { useEffect } from "react";
+import GlobeCanvas from "./GlobeCanvas";
+import StarCanvas from "./StarCanvas";
 import "./UniversePage.css";
 
 function UniversePage() {
   useEffect(() => {
-    // Placeholder for globe/stars Firebase logic you'll move here
+    // You'll later move your Firebase and button event logic here using hooks
   }, []);
 
   return (
     <>
-      <canvas id="star-bg"></canvas>
-      <canvas id="globe-canvas" width="300" height="300"></canvas>
+      <StarCanvas />
+      <GlobeCanvas />
 
       <div className="button-bar">
         <button className="btn" id="newPostBtn">New Post</button>
