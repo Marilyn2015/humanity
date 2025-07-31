@@ -13,15 +13,20 @@
     .btn {
       padding: 10px 20px;
       background: #1a1a1a;
-      color: #0ef8;
-      border: 2px solid #0ef8;
-      border-radius: 2px;
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 4px;
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 1px;
       cursor: pointer;
-      box-shadow: 0 0 8px rgba(14,248,255,0.8), inset 0 0 4px rgba(14,248,255,0.4);
+      box-shadow: 0 0 8px rgba(255,255,255,0.8), inset 0 0 4px rgba(255,255,255,0.4);
       transition: box-shadow 0.3s ease, transform 0.2s ease;
+    }
+    .btn:hover {
+      box-shadow: 0 0 16px rgba(255,255,255,1), inset 0 0 8px rgba(255,255,255,0.6);
+      transform: scale(1.1);
+      background: rgba(10,10,15,0.9);
     }
     .btn:hover {
       box-shadow: 0 0 16px rgba(14,248,255,1), inset 0 0 8px rgba(14,248,255,0.6);
