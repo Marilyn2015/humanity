@@ -80,7 +80,7 @@
     <label>Profile Picture <input type="file" id="avatar"></label>
     <label style="margin-top: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
       <input type="checkbox" id="agreeRules" style="width: auto; box-shadow: none;" />
-      I agree to the <a href="https://www.socialmediarules.org/basic-etiquette" target="_blank" style="color: #0ef8; text-decoration: underline;">#HUMANITY Rules</a>
+      <span id="rulesLink" style="color: #0ef8; text-decoration: underline; cursor: pointer;">#HUMANITY Rules</span>
     </label>
     <button id="saveBtn">Save Profile</button>
   </div>
@@ -132,16 +132,17 @@
         console.log('[DEBUG] onAuthStateChanged fired');
         if (!user) {
         console.warn('[DEBUG] No user is logged in');
-        alert("You are not logged in. Please log in before creating your profile.");
+        alert("You must log in before creating a profile.");
         window.location.href = "login.html";
-          alert("Not logged in");
-          return;
+        return;
         }
         console.log('[DEBUG] Authenticated user:', user.uid);
         if (!user) return alert("Not logged in");
 
         try {
-          const uid = user.uid;
+          // const uid = user.uid; (overridden if no user)
+          let uid = user.uid;
+          console.log('[DEBUG] Using logged-in UID:', uid);
           console.log('[DEBUG] Collecting form data');
           const firstName = document.getElementById('firstName').value;
           const lastName = document.getElementById('lastName').value;
@@ -164,7 +165,8 @@
           };
 
           console.log('[DEBUG] Saving to Firebase:', profileData);
-          await set(ref(db, 'users/' + uid), profileData)
+          const path = 'users/' + uid;
+          await set(ref(db, path), profileData)
             .then(() => {
               window.location.href = "universe.html";
             })
@@ -179,5 +181,27 @@
       });
     });
   </script>
-</body>
+<div id="rulesModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999;">
+  <div style="background:#111726; color:white; width:80%; max-width:600px; margin:5% auto; padding:2rem; border-radius:10px; box-shadow:0 0 15px #0ef8; position:relative;">
+    <h3>Basic Social Media Rules</h3>
+    <ul style="margin-top:1rem;">
+      <li>Respect others and avoid hate speech or personal attacks.</li>
+      <li>Do not post misleading, harmful, or false information.</li>
+      <li>Keep your content appropriate and avoid NSFW material.</li>
+      <li>Engage constructively in conversations—no trolling.</li>
+      <li>Protect your own privacy and respect others’ confidentiality.</li>
+    </ul>
+    <button id="closeModal" style="margin-top:1.5rem; background:#0ef8; color:#000; font-weight:bold; padding:0.5rem 1rem; border:none; border-radius:5px; cursor:pointer;">Close</button>
+  </div>
+</div>
+<script>
+  document.getElementById('rulesLink').addEventListener('click', () => {
+    document.getElementById('rulesModal').style.display = 'block';
+  });
+  document.getElementById('closeModal').addEventListener('click', () => {
+    document.getElementById('rulesModal').style.display = 'none';
+  });
+</script>
+
+$1
 </html>
