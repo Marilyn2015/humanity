@@ -1,28 +1,18 @@
-// app.js
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.136.0/build/three.module.js';
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
-import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+// src/Apps.js
+import * as THREE from 'three';
+import { app, auth, db, storage } from './firebaseConfig';
+import { onAuthStateChanged } from 'firebase/auth';
 import {
-  getDatabase, ref, child, get, push, onChildAdded, remove, update,
+  ref,
+  child,
+  get,
+  push,
+  onChildAdded,
+  remove,
+  update,
   onValue
-} from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js';
-import { getStorage, ref as sref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
-  authDomain: "hashhumanity-58b9a.firebaseapp.com",
-  databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
-  projectId: "hashhumanity-58b9a",
-  storageBucket: "hashhumanity-58b9a.appspot.com",
-  messagingSenderId: "886745899016",
-  appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
-  measurementId: "G-3ZTCXL4374"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-const storage = getStorage(app);
+} from 'firebase/database';
+import { ref as sref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const mockProfiles = [
   { name: 'Alice', avatar: 'https://randomuser.me/api/portraits/women/68.jpg' },
@@ -36,28 +26,30 @@ onAuthStateChanged(auth, user => {
   } else {
     currentUserId = user.uid;
     const userRef = child(ref(db), `users/${user.uid}`);
-    get(userRef).then(snapshot => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const fullName = `${data.firstName} ${data.lastName}`;
-        document.getElementById('profileBtn').textContent = fullName;
-        window.currentUserProfile = {
-          name: fullName,
-          avatar: data.photoURL || mockProfiles[0].avatar
-        };
-      } else {
-        document.getElementById('profileBtn').textContent = user.email;
-        window.currentUserProfile = {
-          name: user.email,
-          avatar: mockProfiles[0].avatar
-        };
-      }
-    }).catch(console.error);
+    get(userRef)
+      .then(snapshot => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const fullName = `${data.firstName} ${data.lastName}`;
+          document.getElementById('profileBtn').textContent = fullName;
+          window.currentUserProfile = {
+            name: fullName,
+            avatar: data.photoURL || mockProfiles[0].avatar
+          };
+        } else {
+          document.getElementById('profileBtn').textContent = user.email;
+          window.currentUserProfile = {
+            name: user.email,
+            avatar: mockProfiles[0].avatar
+          };
+        }
+      })
+      .catch(console.error);
   }
 });
 
-document.getElementById('profileBtn').onclick = () => window.location.href = 'view_profile.html';
-document.getElementById('logoutBtn').onclick = () => window.location.href = 'index.html';
+document.getElementById('profileBtn').onclick = () => (window.location.href = 'view_profile.html');
+document.getElementById('logoutBtn').onclick = () => (window.location.href = 'index.html');
 
 document.getElementById('newPostBtn').onclick = () => {
   document.getElementById('overlay').classList.add('active');
@@ -109,7 +101,9 @@ document.getElementById('postButton').onclick = async e => {
 onChildAdded(ref(db, 'posts'), snapshot => {
   const post = snapshot.val();
   const key = snapshot.key;
-  const profile = window.currentUserProfile || mockProfiles[Math.abs(hashCode(key)) % mockProfiles.length];
+  const profile =
+    window.currentUserProfile ||
+    mockProfiles[Math.abs(hashCode(key)) % mockProfiles.length];
 
   const div = document.createElement('div');
   div.className = 'post';
@@ -131,22 +125,22 @@ onChildAdded(ref(db, 'posts'), snapshot => {
       <button class="btn" onclick="commentPost('${key}')">Comment</button>
       <div id="comments-${key}" class="comments-list"></div>
     </div>
-    ${post.userId === currentUserId ? `
+    ${post.userId === currentUserId
+      ? `
       <div style="margin-top:10px">
         <button class="btn" onclick="editPost('${key}', '${post.content.replace(/'/g, "\'")}')">Edit</button>
         <button class="btn" onclick="deletePost('${key}')">Delete</button>
       </div>
-    ` : ''}
+    `
+      : ''}
   `;
   document.getElementById('postFeed').prepend(div);
 
-  // Listen for likes
   onValue(ref(db, `likes/${key}`), snap => {
     const likes = snap.exists() ? Object.keys(snap.val()).length : 0;
     document.getElementById(`like-count-${key}`).textContent = likes;
   });
 
-  // Load comments
   onChildAdded(ref(db, `comments/${key}`), commentSnap => {
     const comment = commentSnap.val();
     const cDiv = document.createElement('div');
@@ -204,68 +198,8 @@ function hashCode(s) {
   return h;
 }
 
-function initStars() {
-  const c = document.getElementById('star-bg');
-  const ctx = c.getContext('2d');
-  let stars = [];
-  function resize() {
-    c.width = window.innerWidth;
-    c.height = window.innerHeight;
-    stars = Array.from({ length: 200 }, () => ({
-      x: Math.random() * c.width,
-      y: Math.random() * c.height,
-      r: Math.random() * 1.2 + 0.3,
-      base: Math.random() * 0.5 + 0.2,
-      phase: Math.random() * Math.PI * 2
-    }));
-  }
-  window.addEventListener('resize', resize);
-  resize();
-  (function animate() {
-    const t = Date.now() * 0.002;
-    ctx.clearRect(0, 0, c.width, c.height);
-    stars.forEach(s => {
-      ctx.globalAlpha = s.base + Math.sin(t + s.phase) * 0.1;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
-      ctx.fillStyle = '#fff';
-      ctx.fill();
-    });
-    requestAnimationFrame(animate);
-  })();
-}
-
-function initGlobe() {
-  const gc = document.getElementById('globe-canvas');
-  const renderer = new THREE.WebGLRenderer({ canvas: gc, alpha: true, antialias: true });
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(50, gc.clientWidth / gc.clientHeight, 0.1, 1000);
-  camera.position.z = 3;
-  const light = new THREE.DirectionalLight(0xffffff, 1);
-  light.position.set(5, 3, 5);
-  scene.add(light);
-
-  new THREE.TextureLoader().load('https://marilyn2015.github.io/Humanity/earthmap1k.jpg', texture => {
-    const sphere = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 32, 32),
-      new THREE.MeshStandardMaterial({ map: texture })
-    );
-    scene.add(sphere);
-    function render() {
-      sphere.rotation.y += 0.005;
-      renderer.setSize(gc.clientWidth, gc.clientHeight);
-      renderer.render(scene, camera);
-      requestAnimationFrame(render);
-    }
-    render();
-  });
-
-  window.addEventListener('resize', () => {
-    camera.aspect = gc.clientWidth / gc.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(gc.clientWidth, gc.clientHeight);
-  });
-}
+function initStars() {...}
+function initGlobe() {...}
 
 initStars();
 initGlobe();
