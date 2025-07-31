@@ -1,4 +1,3 @@
-<!-- view_profile.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,11 +11,9 @@
       --bg-start: #101115;
       --bg-end: #23272e;
       --card-bg: #1b1e24;
-      --accent: #00ffe7;
-      --accent-light: #01c7fa;
       --text-main: #f6f6f7;
       --text-secondary: #c4fff8;
-      --shadow-color: rgba(0,255,231,0.8);
+      --shadow-color: rgba(255,255,255,0.2);
       --modal-bg: #272b33;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,28 +29,91 @@
     }
     .profile-card {
       background: var(--card-bg);
-      border-radius: 16px;
-      padding: 2rem;
-      width: 100%; max-width: 360px;
-      box-shadow: 0 4px 20px var(--shadow-color);
+      border-radius: 20px;
+      padding: 4rem 2rem 3rem;
+      width: 100%;
+      max-width: 700px;
+      box-shadow: 0 8px 32px var(--shadow-color);
       text-align: center;
-      position: relative;
+      margin: auto;
     }
     .avatar {
-      width: 100px; height: 100px;
-      border-radius: 50%; object-fit: cover;
-      border: 2px solid var(--accent);
-      margin: 0 auto 1rem;
-      transition: box-shadow .3s;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 5px solid #fff;
+      margin: 0 auto 2rem;
+      transition: box-shadow 0.3s;
       cursor: pointer;
     }
-    .avatar:hover { box-shadow: 0 0 40px var(--accent-light); }
-    .username { font-size: 1.5rem; font-weight: 600; color: var(--accent); margin-bottom: 0.5rem; }
-    .bio { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4; font-style: italic; }
-    .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem; }
-    .btn { flex: 1 1 auto; min-width: 100px; padding: 0.5rem 1rem; background: var(--accent); color: #000;
-      border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: background .2s; }
-    .btn:hover { background: var(--accent-light); }
+    .avatar:hover { box-shadow: 0 0 70px rgba(255,255,255,0.7); }
+    .username {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.75rem;
+    }
+    .bio {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      line-height: 1.7;
+    }
+    .stats {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      margin-bottom: 2.5rem;
+    }
+    .stat {
+      text-align: center;
+    }
+    .count {
+      font-size: 1.75rem;
+      font-weight: bold;
+      color: #fff;
+    }
+    .label {
+      font-size: 1rem;
+      color: var(--text-secondary);
+    }
+    .actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    .btn {
+      flex: 1 1 auto;
+      min-width: 140px;
+      padding: 1rem 1.75rem;
+      background: transparent;
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(255,255,255,0.4);
+      transition: box-shadow 0.3s ease, transform 0.2s ease;
+    }
+    .btn:hover {
+      box-shadow: 0 0 18px rgba(255,255,255,0.8);
+      transform: translateY(-3px);
+    }
+    .badge {
+      display: inline-block;
+      margin-left: 0.5rem;
+      padding: 0.3rem 0.6rem;
+      background: #fff;
+      color: #000;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
     .modal {
       display: none;
       position: fixed;
@@ -68,99 +128,184 @@
     .modal.active { display: flex; }
     .modal-content {
       background: var(--modal-bg);
-      border-radius: 12px;
-      padding: 1.5rem;
-      width: 100%; max-width: 400px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.6);
       color: var(--text-main);
       text-align: left;
     }
     .modal-header {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 1rem;
     }
-    .modal-header h2 { font-size: 1.25rem; color: var(--accent-light); }
-    .close-btn { background: transparent; border: none; font-size: 1.2rem; color: var(--text-secondary); cursor: pointer; }
-    .modal-body { max-height: 250px; overflow-y: auto; margin-bottom: 1rem; }
-    .preview { display:block; width:80px; height:80px; border-radius:50%; object-fit:cover; margin:0 auto 1rem; border:2px solid var(--accent); }
-    .form-group { margin-bottom:1rem; }
-    .form-group label { display:block; margin-bottom:0.25rem; color:var(--text-main); font-size:0.9rem; }
-    .form-group input[type="text"], .form-group textarea { width:100%; padding:0.5rem; background:var(--card-bg); border:1px solid #444; border-radius:6px; color:var(--text-main); }
-    .form-group input[type="file"] { color:var(--text-secondary); }
-    .modal-buttons { display:flex; justify-content:flex-end; gap:0.5rem; }
+    .modal-header h2 {
+      font-size: 1.75rem;
+      color: #fff;
+    }
+    .close-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.75rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .modal-body {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 1.5rem;
+    }
+    .preview {
+      display: block;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 1.5rem;
+      border: 3px solid #fff;
+    }
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+      font-size: 1rem;
+    }
+    .form-group input[type="text"],
+    .form-group textarea {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--card-bg);
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 1rem;
+    }
+    .form-group input[type="file"] {
+      color: var(--text-secondary);
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
   </style>
 </head>
 <body>
   <div class="profile-card">
     <img id="avatar" class="avatar" src="default_avatar.png" alt="Avatar" />
-    <div class="username" id="username">John Doe</div>
-    <div class="bio" id="bio">This is a sample bio.</div>
+    <div class="username" id="username">User</div>
+    <div class="bio" id="bio">This is a sample bio. It can include interests, roles, or a personal motto.</div>
+    <div class="stats">
+      <div class="stat"><div class="count">56</div><div class="label">Posts</div></div>
+      <div class="stat"><div class="count">104</div><div class="label">Followers</div></div>
+      <div class="stat"><div class="count">78</div><div class="label">Following</div></div>
+    </div>
     <div class="actions">
       <button class="btn" id="editBtn">Edit Profile</button>
-      <button class="btn" id="messagesBtn">Messages</button>
-      <button class="btn" id="followersBtn">Followers</button>
-      <button class="btn" id="requestsBtn">Friend Requests</button>
-      <button class="btn" id="universeBtn">Universe</button>
     </div>
   </div>
 
-  <!-- Edit Profile Modal -->
   <div id="editModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <h2>Edit Profile</h2>
         <button class="close-btn" id="closeEdit">×</button>
+        <button class="btn" id="backBtn">← Back</button>
       </div>
       <div class="modal-body">
-        <img id="previewAvatar" class="preview" src="default_avatar.png" alt="Preview Avatar" />
-        <div class="form-group">
-          <label for="avatarInput">Change Avatar</label>
-          <input type="file" id="avatarInput" accept="image/*" />
-        </div>
-        <div class="form-group">
-          <label for="usernameInput">Username</label>
-          <input type="text" id="usernameInput" value="John Doe" />
-        </div>
-        <div class="form-group">
-          <label for="bioInput">Bio</label>
-          <textarea id="bioInput" rows="3">This is a sample bio.</textarea>
-        </div>
+        <form id="editForm">
+          <div class="form-group">
+            <label for="avatarInput">Upload Avatar <br><small>Preferred size: 150×150</small></label>
+            <input type="file" id="avatarInput" accept="image/*" />
+            <img id="previewAvatar" class="preview" src="default_avatar.png" alt="Avatar Preview" />
+          </div>
+          <div class="form-group">
+            <label for="usernameInput">Username</label>
+            <input type="text" id="usernameInput" value="User" />
+          </div>
+          <div class="form-group">
+            <label for="bioInput">Bio</label>
+            <textarea id="bioInput" rows="4">This is a sample bio. It can include interests, roles, or a personal motto.</textarea>
+          </div>
+        </form>
       </div>
       <div class="modal-buttons">
-        <button class="btn" id="saveEdit">Save</button>
-        <button class="btn" id="cancelEdit">Cancel</button>
+        <button type="button" class="btn" id="saveEdit">Save</button>
+        <button type="button" class="btn" id="cancelEdit">Cancel</button>
       </div>
     </div>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Utility to toggle modals
-      const toggleModal = (id, show) => {
-        const m = document.getElementById(id);
-        if (m) m.classList[show ? 'add' : 'remove']('active');
-      };
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedProfile = localStorage.getItem('profileData');
+      const savedAvatar = localStorage.getItem('avatarData');
+      if (savedProfile) {
+        const profile = JSON.parse(savedProfile);
+        document.getElementById('username').textContent = profile.username;
+        document.getElementById('bio').textContent = profile.bio;
+        document.getElementById('usernameInput').value = profile.username;
+        document.getElementById('bioInput').value = profile.bio;
+      }
+      if (savedAvatar) {
+        document.getElementById('avatar').src = savedAvatar;
+        document.getElementById('previewAvatar').src = savedAvatar;
+      }
+      const editBtn = document.getElementById('editBtn');
+      const editModal = document.getElementById('editModal');
+      const closeEdit = document.getElementById('closeEdit');
+      const cancelEdit = document.getElementById('cancelEdit');
+      const saveEdit = document.getElementById('saveEdit');
 
-      // Edit Profile
-      document.getElementById('editBtn')?.addEventListener('click', () => {
-        document.getElementById('previewAvatar').src = document.getElementById('avatar').src;
-        document.getElementById('usernameInput').value = document.getElementById('username').textContent;
-        document.getElementById('bioInput').value = document.getElementById('bio').textContent;
-        toggleModal('editModal', true);
+      const avatarInput = document.getElementById('avatarInput');
+      const previewAvatar = document.getElementById('previewAvatar');
+      const usernameInput = document.getElementById('usernameInput');
+      const bioInput = document.getElementById('bioInput');
+
+      const avatarDisplay = document.getElementById('avatar');
+      const usernameDisplay = document.getElementById('username');
+      const bioDisplay = document.getElementById('bio');
+
+      editBtn?.addEventListener('click', () => editModal.classList.add('active'));
+      closeEdit?.addEventListener('click', () => editModal.classList.remove('active'));
+      cancelEdit?.addEventListener('click', () => editModal.classList.remove('active'));
+
+      const backBtn = document.getElementById('backBtn');
+      backBtn?.addEventListener('click', () => editModal.classList.remove('active'));
+
+      avatarInput?.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) previewAvatar.src = URL.createObjectURL(file);
       });
-      document.getElementById('closeEdit')?.addEventListener('click', () => toggleModal('editModal', false));
-      document.getElementById('cancelEdit')?.addEventListener('click', () => toggleModal('editModal', false));
-      document.getElementById('avatarInput')?.addEventListener('change', e => {
-        const f = e.target.files[0]; if (f) document.getElementById('previewAvatar').src = URL.createObjectURL(f);
-      });
-      document.getElementById('saveEdit')?.addEventListener('click', () => {
-        const fileInput = document.getElementById('avatarInput');
-        if (fileInput.files[0]) document.getElementById('avatar').src = document.getElementById('previewAvatar').src;
-        const uname = document.getElementById('usernameInput').value.trim();
-        const bio = document.getElementById('bioInput').value.trim();
-        if (uname) document.getElementById('username').textContent = uname;
-        if (bio) document.getElementById('bio').textContent = bio;
-        toggleModal('editModal', false);
+
+      saveEdit?.addEventListener('click', () => {
+        const profileData = {
+          username: usernameInput.value,
+          bio: bioInput.value
+        };
+
+        usernameDisplay.textContent = profileData.username;
+        bioDisplay.textContent = profileData.bio;
+
+        if (avatarInput.files[0]) {
+          const reader = new FileReader();
+          reader.onload = e => {
+            avatarDisplay.src = e.target.result;
+            localStorage.setItem('avatarData', e.target.result);
+            localStorage.setItem('profileData', JSON.stringify(profileData));
+            window.location.href = 'universe.html';
+          };
+          reader.readAsDataURL(avatarInput.files[0]);
+        } else {
+          localStorage.setItem('profileData', JSON.stringify(profileData));
+          window.location.href = 'universe.html';
+        }
       });
     });
   </script>
