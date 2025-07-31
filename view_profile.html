@@ -1,12 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="View and edit your #HUMANITY profile." />
   <link rel="icon" href="favicon.ico" />
-  <title>Profile • #HUMANITY</title>
-  <style>
+  <title>Profile • #HUMANITY</title>  <!-- Firebase SDKs -->  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>  <style>
     :root {
       --bg-start: #101115;
       --bg-end: #23272e;
@@ -66,9 +64,7 @@
       justify-content: center;
       margin-bottom: 2.5rem;
     }
-    .stat {
-      text-align: center;
-    }
+    .stat { text-align: center; }
     .count {
       font-size: 1.75rem;
       font-weight: bold;
@@ -142,10 +138,7 @@
       align-items: center;
       margin-bottom: 1rem;
     }
-    .modal-header h2 {
-      font-size: 1.75rem;
-      color: #fff;
-    }
+    .modal-header h2 { font-size: 1.75rem; color: #fff; }
     .close-btn {
       background: transparent;
       border: none;
@@ -153,11 +146,7 @@
       color: var(--text-secondary);
       cursor: pointer;
     }
-    .modal-body {
-      max-height: 400px;
-      overflow-y: auto;
-      margin-bottom: 1.5rem;
-    }
+    .modal-body { max-height: 400px; overflow-y: auto; margin-bottom: 1.5rem; }
     .preview {
       display: block;
       width: 180px;
@@ -167,35 +156,14 @@
       margin: 0 auto 1.5rem;
       border: 3px solid #fff;
     }
-    .form-group {
-      margin-bottom: 1.25rem;
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-main); font-size: 1rem; }
+    .form-group input[type="text"], .form-group textarea {
+      width: 100%; padding: 0.85rem; background: var(--card-bg); border: 1px solid #444; border-radius: 8px; color: var(--text-main); font-size: 1rem;
     }
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--text-main);
-      font-size: 1rem;
-    }
-    .form-group input[type="text"],
-    .form-group textarea {
-      width: 100%;
-      padding: 0.85rem;
-      background: var(--card-bg);
-      border: 1px solid #444;
-      border-radius: 8px;
-      color: var(--text-main);
-      font-size: 1rem;
-    }
-    .form-group input[type="file"] {
-      color: var(--text-secondary);
-    }
-    .modal-buttons {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-    }
-  </style>
-</head>
+    .form-group input[type="file"] { color: var(--text-secondary); }
+    .modal-buttons { display: flex; justify-content: flex-end; gap: 1rem; }
+  </style></head>
 <body>
   <div class="profile-card">
     <img id="avatar" class="avatar" src="default_avatar.png" alt="Avatar" />
@@ -212,9 +180,7 @@
       <button class="btn" id="followingBtn">Following <span class="badge">78</span></button>
       <button class="btn" id="friendRequestsBtn">Friend Requests <span class="badge">5</span></button>
     </div>
-  </div>
-
-  <div id="editModal" class="modal">
+  </div>  <div id="editModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <h2>Edit Profile</h2>
@@ -243,126 +209,125 @@
         <button type="button" class="btn" id="cancelEdit">Cancel</button>
       </div>
     </div>
-  </div>
+  </div>  <!-- Firebase Initialization & Logic -->  <script>
+    // Firebase config - replace with your actual credentials
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const database = firebase.database();
+    const storage = firebase.storage();
 
-  <script>
     window.addEventListener('DOMContentLoaded', () => {
-      const savedProfile = localStorage.getItem('profileData');
-      const savedAvatar = localStorage.getItem('avatarData');
-      if (savedProfile) {
-        const profile = JSON.parse(savedProfile);
-        document.getElementById('username').textContent = profile.username;
-        document.getElementById('bio').textContent = profile.bio;
-        document.getElementById('usernameInput').value = profile.username;
-        document.getElementById('bioInput').value = profile.bio;
-      }
-      if (savedAvatar) {
-        document.getElementById('avatar').src = savedAvatar;
-        document.getElementById('previewAvatar').src = savedAvatar;
-      }
-      const editBtn = document.getElementById('editBtn');
-      const editModal = document.getElementById('editModal');
-      const closeEdit = document.getElementById('closeEdit');
-      const cancelEdit = document.getElementById('cancelEdit');
-      const saveEdit = document.getElementById('saveEdit');
-
       const avatarInput = document.getElementById('avatarInput');
       const previewAvatar = document.getElementById('previewAvatar');
       const usernameInput = document.getElementById('usernameInput');
       const bioInput = document.getElementById('bioInput');
-
       const avatarDisplay = document.getElementById('avatar');
       const usernameDisplay = document.getElementById('username');
       const bioDisplay = document.getElementById('bio');
 
-      editBtn?.addEventListener('click', () => editModal.classList.add('active'));
-      closeEdit?.addEventListener('click', () => editModal.classList.remove('active'));
-      cancelEdit?.addEventListener('click', () => editModal.classList.remove('active'));
-
-      const backBtn = document.getElementById('backBtn');
-      backBtn?.addEventListener('click', () => editModal.classList.remove('active'));
-
-      avatarInput?.addEventListener('change', e => {
+      // Show real-time preview
+      avatarInput.addEventListener('change', e => {
         const file = e.target.files[0];
         if (file) previewAvatar.src = URL.createObjectURL(file);
       });
 
-      saveEdit?.addEventListener('click', () => {
-        const profileData = {
-          username: usernameInput.value,
-          bio: bioInput.value
-        };
-
-        usernameDisplay.textContent = profileData.username;
-        bioDisplay.textContent = profileData.bio;
-
-        if (avatarInput.files[0]) {
-          const reader = new FileReader();
-          reader.onload = e => {
-            avatarDisplay.src = e.target.result;
-            localStorage.setItem('avatarData', e.target.result);
-            localStorage.setItem('profileData', JSON.stringify(profileData));
-            window.location.href = 'universe.html';
-          };
-          reader.readAsDataURL(avatarInput.files[0]);
-        } else {
-          localStorage.setItem('profileData', JSON.stringify(profileData));
-          window.location.href = 'universe.html';
+      // Ensure user is authenticated
+      auth.onAuthStateChanged(user => {
+        if (!user) {
+          // Redirect if not logged in
+          window.location.href = 'login.html';
+          return;
         }
+        const uid = user.uid;
+        // Load existing profile data
+        database.ref(`users/${uid}`).once('value').then(snapshot => {
+          const profile = snapshot.val();
+          if (profile) {
+            usernameDisplay.textContent = profile.username || usernameDisplay.textContent;
+            bioDisplay.textContent = profile.bio || bioDisplay.textContent;
+            usernameInput.value = profile.username || usernameInput.value;
+            bioInput.value = profile.bio || bioInput.value;
+            if (profile.avatar) {
+              avatarDisplay.src = profile.avatar;
+              previewAvatar.src = profile.avatar;
+            }
+          }
+        }).catch(console.error);
+
+        // Save logic
+        document.getElementById('saveEdit').addEventListener('click', () => {
+          const profileData = {
+            username: usernameInput.value.trim(),
+            bio: bioInput.value.trim()
+          };
+          const file = avatarInput.files[0];
+          if (file) {
+            const storageRef = storage.ref().child(`avatars/${uid}.jpg`);
+            storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL()).then(url => {
+              profileData.avatar = url;
+              avatarDisplay.src = url;
+              previewAvatar.src = url;
+              return database.ref(`users/${uid}`).set(profileData);
+            }).then(() => {
+              window.location.href = 'universe.html';
+            }).catch(console.error);
+          } else {
+            database.ref(`users/${uid}`).set(profileData).then(() => {
+              window.location.href = 'universe.html';
+            }).catch(console.error);
+          }
+        });
       });
+
+      // Modal controls
+      const editBtn = document.getElementById('editBtn');
+      const editModal = document.getElementById('editModal');
+      const closeEdit = document.getElementById('closeEdit');
+      const cancelEdit = document.getElementById('cancelEdit');
+      const backBtn = document.getElementById('backBtn');
+      editBtn.addEventListener('click', () => editModal.classList.add('active'));
+      closeEdit.addEventListener('click', () => editModal.classList.remove('active'));
+      cancelEdit.addEventListener('click', () => editModal.classList.remove('active'));
+      backBtn.addEventListener('click', () => editModal.classList.remove('active'));  
+
+      // Messages, Following, Friend Requests modals
+      document.getElementById('messagesBtn').addEventListener('click', () => document.getElementById('messagesModal').classList.add('active'));
+      document.getElementById('followingBtn').addEventListener('click', () => document.getElementById('followingModal').classList.add('active'));
+      document.getElementById('friendRequestsBtn').addEventListener('click', () => document.getElementById('friendRequestsModal').classList.add('active'));
     });
-  </script>
-  <!-- Messages Modal -->
-  <div id="messagesModal" class="modal">
+  </script>  <!-- Messages Modal -->  <div id="messagesModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <h2>Inbox / Outbox</h2>
-        <button class="close-btn" onclick="messagesModal.classList.remove('active')">×</button>
+        <button class="close-btn" onclick="document.getElementById('messagesModal').classList.remove('active')">×</button>
       </div>
-      <div class="modal-body">
-        <p>No messages yet.</p>
-      </div>
+      <div class="modal-body"><p>No messages yet.</p></div>
     </div>
-  </div>
-
-  <!-- Following Modal -->
-  <div id="followingModal" class="modal">
+  </div>  <!-- Following Modal -->  <div id="followingModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <h2>Following</h2>
-        <button class="close-btn" onclick="followingModal.classList.remove('active')">×</button>
+        <button class="close-btn" onclick="document.getElementById('followingModal').classList.remove('active')">×</button>
       </div>
-      <div class="modal-body">
-        <p>You are following 78 users.</p>
-      </div>
+      <div class="modal-body"><p>You are following 78 users.</p></div>
     </div>
-  </div>
-
-  <!-- Friend Requests Modal -->
-  <div id="friendRequestsModal" class="modal">
+  </div>  <!-- Friend Requests Modal -->  <div id="friendRequestsModal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <h2>Friend Requests</h2>
-        <button class="close-btn" onclick="friendRequestsModal.classList.remove('active')">×</button>
+        <button class="close-btn" onclick="document.getElementById('friendRequestsModal').classList.remove('active')">×</button>
       </div>
-      <div class="modal-body">
-        <p>You have 5 pending requests.</p>
-      </div>
+      <div class="modal-body"><p>You have 5 pending requests.</p></div>
     </div>
   </div>
-
-  <script>
-    const messagesBtn = document.getElementById('messagesBtn');
-    const followingBtn = document.getElementById('followingBtn');
-    const friendRequestsBtn = document.getElementById('friendRequestsBtn');
-
-    const messagesModal = document.getElementById('messagesModal');
-    const followingModal = document.getElementById('followingModal');
-    const friendRequestsModal = document.getElementById('friendRequestsModal');
-
-    messagesBtn?.addEventListener('click', () => messagesModal.classList.add('active'));
-    followingBtn?.addEventListener('click', () => followingModal.classList.add('active'));
-    friendRequestsBtn?.addEventListener('click', () => friendRequestsModal.classList.add('active'));
-  </script>
 </body>
 </html>
