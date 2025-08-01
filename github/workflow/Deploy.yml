@@ -2,7 +2,7 @@ name: Deploy Vite site to GitHub Pages
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "gh" ]
   workflow_dispatch:
 
 permissions:
@@ -21,15 +21,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Install deps
-        run: npm ci || npm i
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Build
+      - name: Build project
         run: npm run build
 
       - name: Copy SPA fallback 404
