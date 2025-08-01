@@ -1,264 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>#HUMANITY Landing</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="#HUMANITY: Prove you're real in the digital age" />
-    <meta name="author" content="#HUMANITY Team" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Starfield & Spinning Globe</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      overflow: hidden;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+    }
+    #globe {
+      z-index: 1;
+    }
+    #starfield {
+      z-index: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Starfield Background -->
+  <canvas id="starfield"></canvas>
 
-    <!-- Fonts & Three.js -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
-   <script src="https://cdn.jsdelivr.net/npm/three@0.156.1/build/three.min.js"></script>
-   <style>
-      :root {
-        --bg-image: url('https://source.unsplash.com/1600x900/?outer-space,stars');
-        --button-color: #0ef8;
-      }
-      *, *::before, *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      html, body {
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        font-family: 'Roboto', sans-serif;
-        background: var(--bg-image) center/cover no-repeat fixed;
-        background-color: #000;
-        color: #fff;
-      }
-      #starfield {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 0;
-        pointer-events: none;
-      }
-      .container {
-        position: relative;
-        z-index: 1;
-        text-align: center;
-        padding: 20px 40px;
-        max-width: 600px;
-        margin: auto;
-        margin-top: 5vh;
-      }
-      canvas#globe {
-        display: block;
-        width: 100%;
-        max-width: 300px;
-        margin: 0 auto 20px;
-      }
-      h1 {
-        font-family: 'Playfair Display', serif;
-        font-size: 2.2rem;
-        margin-bottom: 10px;
-      }
-      p {
-        font-size: 1rem;
-        margin-bottom: 24px;
-      }
-      .button {
-        display: inline-block;
-        width: 200px;
-        margin: 8px auto;
-        padding: 12px 0;
-        background: transparent;
-        color: var(--button-color);
-        border: 2px solid var(--button-color);
-        font-family: 'Playfair Display', serif;
-        font-size: 1rem;
-        font-weight: 700;
-        text-decoration: none;
-        transition: background 0.3s, color 0.3s, box-shadow 0.3s;
-        box-shadow: 0 0 8px rgba(14,248,255,0.7);
-      }
-      .button:hover {
-        background: var(--button-color);
-        color: #111;
-        box-shadow: 0 0 20px var(--button-color), inset 0 0 10px var(--button-color);
-      }
-      @media (max-width: 600px) {
-        .container { padding: 16px; }
-        canvas#globe { max-width: 200px; margin-bottom: 16px; }
-        h1 { font-size: 1.6rem; }
-        p { font-size: 0.9rem; margin-bottom: 16px; }
-        .button { padding: 8px 16px; font-size: 0.8rem; margin: 4px auto; }
-      }
-    </style>
-  </head>
+  <!-- Spinning Globe -->
+  <canvas id="globe"></canvas>
 
-  <body>
-    <canvas id="starfield"></canvas>
-    <div class="container">
-      <canvas id="globe" width="300" height="300"></canvas>
-      <h1>#HUMANITY</h1>
-      <p>Sign in or register to continue</p>
-      <a href="login.html" class="button">Log in</a>
-      <a href="register.html" class="button">Register</a>
-    </div>
-   <script type="module" src="/humanity/src/index.js"></script>
+  <!-- Scripts -->
+  <script>
+    // Starfield
+    const starCanvas = document.getElementById('starfield');
+    const sCtx = starCanvas.getContext('2d');
+    let stars = [];
 
- <script>
-      // Starfield background
-      const starCanvas = document.getElementById('starfield');
-      const sCtx = starCanvas.getContext('2d');
-      let stars = [];
-
-      function resizeStars() {
-        starCanvas.width = window.innerWidth;
-        starCanvas.height = window.innerHeight;
-        stars = Array.from({ length: 300 }, () => ({
-          x: Math.random() * starCanvas.width,
-          y: Math.random() * starCanvas.height,
-          r: Math.random() * 1.2 + 0.3,
-          base: Math.random() * 0.5 + 0.2,
-          phase: Math.random() * Math.PI * 2
-        }));
-      }
-
-      function drawStars() {
-        sCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
-        const t = Date.now() * 0.002;
-        stars.forEach(st => {
-          const opacity = st.base + Math.sin(t + st.phase) * 0.1;
-          sCtx.globalAlpha = opacity;
-          sCtx.beginPath();
-          sCtx.arc(st.x, st.y, st.r, 0, 2 * Math.PI);
-          sCtx.fillStyle = '#fff';
-          sCtx.fill();
-        });
-        requestAnimationFrame(drawStars);
-      }
-
-      window.addEventListener('resize', resizeStars);
-      resizeStars();
-      drawStars();
-
-      // Spinning globe with Three.js
-      const globeCanvas = document.getElementById('globe');
-      const renderer = new THREE.WebGLRenderer({ canvas: globeCanvas, alpha: true });
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(50, globeCanvas.clientWidth / globeCanvas.clientHeight, 0.1, 1000);
-      camera.position.z = 3;
-
-      const light = new THREE.DirectionalLight(0xffffff, 1);
-      light.position.set(5, 3, 5);
-      scene.add(light);
-
-      const loader = new THREE.TextureLoader();
-      loader.load('/earthmap1k.jpg', texture => {
-        const globe = new THREE.Mesh(
-          new THREE.SphereGeometry(1, 32, 32),
-          new THREE.MeshStandardMaterial({ map: texture })
-        );
-        scene.add(globe);
-
-        // Animation loop
-        function animate() {
-          globe.rotation.y += 0.005;
-          renderer.setSize(globeCanvas.clientWidth, globeCanvas.clientHeight);
-          renderer.render(scene, camera);
-          requestAnimationFrame(animate);
-        }
-
-        animate();
-      });
-    </script>
-
-    <!-- Optional: React App Mount -->
-
-  // Starfield background
-  const starCanvas = document.getElementById('starfield');
-  const sCtx = starCanvas.getContext('2d');
-  let stars = [];
-
-  function resizeStars() {
-    starCanvas.width = window.innerWidth;
-    starCanvas.height = window.innerHeight;
-    stars = Array.from({ length: 300 }, () => ({
-      x: Math.random() * starCanvas.width,
-      y: Math.random() * starCanvas.height,
-      r: Math.random() * 1.2 + 0.3,
-      base: Math.random() * 0.5 + 0.2,
-      phase: Math.random() * Math.PI * 2
-    }));
-  }
-
-  function drawStars() {
-    sCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
-    const t = Date.now() * 0.002;
-    stars.forEach(st => {
-      const opacity = st.base + Math.sin(t + st.phase) * 0.1;
-      sCtx.globalAlpha = opacity;
-      sCtx.beginPath();
-      sCtx.arc(st.x, st.y, st.r, 0, 2 * Math.PI);
-      sCtx.fillStyle = '#fff';
-      sCtx.fill();
-    });
-    requestAnimationFrame(drawStars);
-  }
-
-  window.addEventListener('resize', resizeStars);
-  resizeStars();
-  drawStars();
-
-  // Spinning globe with Three.js
-  const globeCanvas = document.getElementById('globe');
-  const renderer = new THREE.WebGLRenderer({ canvas: globeCanvas, alpha: true });
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(50, globeCanvas.clientWidth / globeCanvas.clientHeight, 0.1, 1000);
-  camera.position.z = 3;
-
-<script>
-  const globeCanvas = document.getElementById('globe');
-  const renderer = new THREE.WebGLRenderer({ canvas: globeCanvas, alpha: true });
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(
-    50,
-    globeCanvas.clientWidth / globeCanvas.clientHeight,
-    0.1,
-    1000
-  );
-  camera.position.z = 3;
-
-  const light = new THREE.DirectionalLight(0xffffff, 1);
-  light.position.set(5, 3, 5);
-  scene.add(light);
-
-  const loader = new THREE.TextureLoader();
-  loader.load('/earthmap1k.jpg', texture => {
-    const globe = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 32, 32),
-      new THREE.MeshStandardMaterial({ map: texture })
-    );
-    scene.add(globe);
-
-    function animate() {
-      globe.rotation.y += 0.005;
-      renderer.setSize(globeCanvas.clientWidth, globeCanvas.clientHeight);
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
+    function resizeStars() {
+      starCanvas.width = window.innerWidth;
+      starCanvas.height = window.innerHeight;
+      stars = Array.from({ length: 300 }, () => ({
+        x: Math.random() * starCanvas.width,
+        y: Math.random() * starCanvas.height,
+        r: Math.random() * 1.2 + 0.3,
+        base: Math.random() * 0.5 + 0.2,
+        phase: Math.random() * Math.PI * 2
+      }));
     }
 
-    animate();
-  });
-</script>
+    function drawStars() {
+      sCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+      const t = Date.now() * 0.002;
+      stars.forEach(s => {
+        sCtx.globalAlpha = s.base + Math.sin(t + s.phase) * 0.1;
+        sCtx.beginPath();
+        sCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        sCtx.fillStyle = '#fff';
+        sCtx.fill();
+      });
+      requestAnimationFrame(drawStars);
+    }
 
-<!-- External JavaScript Module -->
-<script type="module" src="/src/index.js"></script>
+    window.addEventListener('resize', resizeStars);
+    resizeStars();
+    drawStars();
+  </script>
 
-<!-- Optional: React Entry Point -->
-<!-- <script type="module" src="/src/main.jsx"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"></script>
+  <script>
+    // Globe with Three.js
+    const globeCanvas = document.getElementById('globe');
+    const renderer = new THREE.WebGLRenderer({ canvas: globeCanvas, alpha: true });
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 3;
 
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 3, 5);
+    scene.add(light);
+
+    const loader = new THREE.TextureLoader();
+    loader.load('/earthmap1k.jpg', texture => {
+      const globe = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 32, 32),
+        new THREE.MeshStandardMaterial({ map: texture })
+      );
+      scene.add(globe);
+
+      function animate() {
+        globe.rotation.y += 0.005;
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
 </body>
 </html>
-
-
-
-   
- 
