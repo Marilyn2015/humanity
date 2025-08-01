@@ -11,7 +11,6 @@ export default function LandingPage() {
   // Starfield background
   useEffect(() => {
     const canvas = starRef.current;
-    console.log('Star canvas ref:', canvas);
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let stars = [];
@@ -47,20 +46,14 @@ export default function LandingPage() {
     return () => window.removeEventListener('resize', resizeCanvas);
   }, []);
 
-  // Three.js spinning globe
+  // Spinning globe
   useEffect(() => {
     const canvas = globeRef.current;
-    console.log('Globe canvas ref:', canvas);
     if (!canvas) return;
 
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(
-      50,
-      canvas.clientWidth / canvas.clientHeight,
-      0.1,
-      1000
-    );
+    const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
     camera.position.z = 3;
 
     const light = new THREE.DirectionalLight(0xffffff, 1);
@@ -71,24 +64,22 @@ export default function LandingPage() {
     loader.load(
       '/earthmap1k.jpg',
       texture => {
-        console.log('Texture loaded:', texture);
         const globe = new THREE.Mesh(
           new THREE.SphereGeometry(1, 32, 32),
           new THREE.MeshStandardMaterial({ map: texture })
         );
         scene.add(globe);
 
-        (function animate() {
+        function animate() {
           globe.rotation.y += 0.005;
           renderer.setSize(canvas.clientWidth, canvas.clientHeight);
           renderer.render(scene, camera);
           requestAnimationFrame(animate);
-        })();
+        }
+        animate();
       },
       undefined,
-      error => {
-        console.error('Error loading globe texture:', error);
-      }
+      error => console.error('Globe texture error:', error)
     );
 
     function onResize() {
