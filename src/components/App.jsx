@@ -1,38 +1,20 @@
-import React, { Suspense } from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from './components/LandingPage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import HomePage from './pages/HomePage';
-import { AuthProvider, useAuth } from './context/AuthContext';
-
-function ProtectedRoute({ children }) {
-  const { user } = useAuth();
-  return user ? children : <Navigate to="/login" replace />;
-}
+import React from 'react'
+import { Routes, Route, Link } from 'react-router-dom'
+import Home from './pages/Home'
+import About from './pages/About'
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Suspense fallback={<div>Loading…</div>}>
-          <Routes>
-            <Route index element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <HomePage />
-                </ProtectedRoute>
-              }
-            />
-            {/* Catch-all to keep users off dead routes */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </Router>
-    </AuthProvider>
-  );
+    <div style={{ padding: 20, fontFamily: 'system-ui, sans-serif' }}>
+      <header style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+        <Link to="/">Home</Link>
+        <Link to="/about">About</Link>
+      </header>
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+      </Routes>
+    </div>
+  )
 }
