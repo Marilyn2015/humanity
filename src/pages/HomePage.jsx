@@ -1,5 +1,8 @@
-import React from 'react';
-
-export default function HomePage() {
-  return <h2 style={{color:'white',textAlign:'center',marginTop:'2rem'}}>Welcome to the Dashboard</h2>;
+export default function Home() {
+  return (
+    <main>
+      <h1>#HUMANITY</h1>
+      <p>If you can see this on GitHub Pages under <code>/humanity/</code>, the setup works.</p>
+    </main>
+  )
 }
