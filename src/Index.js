@@ -1,8 +1,13 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import LandingPage from './components/LandingPage';
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import App from './App'
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <LandingPage />
-);
-
+const root = createRoot(document.getElementById('root'))
+root.render(
+  <React.StrictMode>
+    <BrowserRouter basename="/humanity">
+      <App />
+    </BrowserRouter>
+  </React.StrictMode>
+)
