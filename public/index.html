@@ -92,6 +92,7 @@
       }
     </style>
   </head>
+
   <body>
     <canvas id="starfield"></canvas>
     <div class="container">
@@ -107,6 +108,7 @@
       const starCanvas = document.getElementById('starfield');
       const sCtx = starCanvas.getContext('2d');
       let stars = [];
+
       function resizeStars() {
         starCanvas.width = window.innerWidth;
         starCanvas.height = window.innerHeight;
@@ -118,6 +120,7 @@
           phase: Math.random() * Math.PI * 2
         }));
       }
+
       function drawStars() {
         sCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
         const t = Date.now() * 0.002;
@@ -131,6 +134,7 @@
         });
         requestAnimationFrame(drawStars);
       }
+
       window.addEventListener('resize', resizeStars);
       resizeStars();
       drawStars();
@@ -154,17 +158,21 @@
         );
         scene.add(globe);
 
+        // Animation loop
         function animate() {
           globe.rotation.y += 0.005;
           renderer.setSize(globeCanvas.clientWidth, globeCanvas.clientHeight);
           renderer.render(scene, camera);
           requestAnimationFrame(animate);
         }
+
         animate();
       });
     </script>
 
-    <!-- Optional: Vite React mount if needed -->
+    <!-- Optional: React App Mount -->
     <!-- <script type="module" src="/src/main.jsx"></script> -->
   </body>
 </html>
+
+ 
