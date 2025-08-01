@@ -173,8 +173,94 @@
     </script>
 
     <!-- Optional: React App Mount -->
-    <!-- <script type="module" src="/src/main.jsx"></script> -->
-  </body>
+    <<script>
+  // Starfield background
+  const starCanvas = document.getElementById('starfield');
+  const sCtx = starCanvas.getContext('2d');
+  let stars = [];
+
+  function resizeStars() {
+    starCanvas.width = window.innerWidth;
+    starCanvas.height = window.innerHeight;
+    stars = Array.from({ length: 300 }, () => ({
+      x: Math.random() * starCanvas.width,
+      y: Math.random() * starCanvas.height,
+      r: Math.random() * 1.2 + 0.3,
+      base: Math.random() * 0.5 + 0.2,
+      phase: Math.random() * Math.PI * 2
+    }));
+  }
+
+  function drawStars() {
+    sCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+    const t = Date.now() * 0.002;
+    stars.forEach(st => {
+      const opacity = st.base + Math.sin(t + st.phase) * 0.1;
+      sCtx.globalAlpha = opacity;
+      sCtx.beginPath();
+      sCtx.arc(st.x, st.y, st.r, 0, 2 * Math.PI);
+      sCtx.fillStyle = '#fff';
+      sCtx.fill();
+    });
+    requestAnimationFrame(drawStars);
+  }
+
+  window.addEventListener('resize', resizeStars);
+  resizeStars();
+  drawStars();
+
+  // Spinning globe with Three.js
+  const globeCanvas = document.getElementById('globe');
+  const renderer = new THREE.WebGLRenderer({ canvas: globeCanvas, alpha: true });
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, globeCanvas.clientWidth / globeCanvas.clientHeight, 0.1, 1000);
+  camera.position.z = 3;
+
+<script>
+  const globeCanvas = document.getElementById('globe');
+  const renderer = new THREE.WebGLRenderer({ canvas: globeCanvas, alpha: true });
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(
+    50,
+    globeCanvas.clientWidth / globeCanvas.clientHeight,
+    0.1,
+    1000
+  );
+  camera.position.z = 3;
+
+  const light = new THREE.DirectionalLight(0xffffff, 1);
+  light.position.set(5, 3, 5);
+  scene.add(light);
+
+  const loader = new THREE.TextureLoader();
+  loader.load('/earthmap1k.jpg', texture => {
+    const globe = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 32, 32),
+      new THREE.MeshStandardMaterial({ map: texture })
+    );
+    scene.add(globe);
+
+    function animate() {
+      globe.rotation.y += 0.005;
+      renderer.setSize(globeCanvas.clientWidth, globeCanvas.clientHeight);
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  });
+</script>
+
+<!-- External JavaScript Module -->
+<script type="module" src="/src/index.js"></script>
+
+<!-- Optional: React Entry Point -->
+<!-- <script type="module" src="/src/main.jsx"></script> -->
+
+</body>
 </html>
 
+
+
+   
  
