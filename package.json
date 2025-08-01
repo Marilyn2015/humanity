@@ -2,6 +2,7 @@
   "name": "humanity",
   "version": "1.0.0",
   "private": true,
+  "homepage": "https://Marilyn2015.github.io/humanity",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
