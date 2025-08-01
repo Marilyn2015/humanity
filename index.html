@@ -1,15 +1,221 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/humanity/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>#Humanity</title>
-    <script type="module" crossorigin src="/humanity/assets/index-5b74ab03.js"></script>
-    <link rel="stylesheet" href="/humanity/assets/index-0bddca8e.css">
-  </head>
-  <body>
-    <div id="root"></div>
-    
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>#HUMANITY</title>
+  <link rel="icon" href="/favicon.ico" />
+  <style>
+    :root {
+      --bg-image: url('https://source.unsplash.com/1600x900/?outer-space,stars');
+      --button-color: #0ef8;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-image) center/cover no-repeat fixed;
+      background-color: #000;
+      color: #fff;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .landing-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .starfield {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(6px);
+      border-radius: 12px;
+      opacity: 0;
+      animation: fadeIn 1.2s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    .globe {
+      width: 100%;
+      max-width: 300px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1rem;
+      margin-bottom: 24px;
+    }
+
+    .button {
+      display: inline-block;
+      width: 200px;
+      margin: 8px;
+      padding: 12px 0;
+      background: transparent;
+      color: var(--button-color);
+      border: 2px solid var(--button-color);
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+      box-shadow: 0 0 8px rgba(14,248,255,0.7);
+    }
+
+    .button:hover {
+      background: var(--button-color);
+      color: #111;
+      box-shadow: 0 0 20px var(--button-color), inset 0 0 10px var(--button-color);
+    }
+  </style>
+</head>
+<body>
+  <div class="landing-container">
+    <canvas id="starfield" class="starfield"></canvas>
+    <div class="content">
+      <canvas id="globe" class="globe"></canvas>
+      <h1>#HUMANITY</h1>
+      <p>Sign in or register to continue</p>
+      <a href="/register.html" class="button">Register</a>
+      <a href="/login.html" class="button">Log in</a>
+    </div>
+  </div>
+
+  <!-- Firebase + Three.js + Canvas Logic -->
+  <script type="module">
+    import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.156.1/build/three.module.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+    import { getDatabase, ref as dbRef, push, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBT7P7DAfV-I9ESe6f9Jdp5ioCyGIK0d9A",
+      authDomain: "hashhumanity-58b9a.firebaseapp.com",
+      databaseURL: "https://hashhumanity-58b9a-default-rtdb.firebaseio.com",
+      projectId: "hashhumanity-58b9a",
+      storageBucket: "hashhumanity-58b9a.appspot.com",
+      messagingSenderId: "886745899016",
+      appId: "1:886745899016:web:2b0f7e043c2434379d71bd",
+      measurementId: "G-3ZTCXL4374"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    // Starfield animation
+    const starCanvas = document.getElementById("starfield");
+    const starCtx = starCanvas.getContext("2d");
+    let stars = [];
+
+    function resizeStars() {
+      starCanvas.width = window.innerWidth;
+      starCanvas.height = window.innerHeight;
+      stars = Array.from({ length: 300 }, () => ({
+        x: Math.random() * starCanvas.width,
+        y: Math.random() * starCanvas.height,
+        r: Math.random() * 1.2 + 0.3,
+        base: Math.random() * 0.5 + 0.2,
+        phase: Math.random() * Math.PI * 2
+      }));
+    }
+
+    function drawStars() {
+      starCtx.clearRect(0, 0, starCanvas.width, starCanvas.height);
+      const t = Date.now() * 0.002;
+      stars.forEach(s => {
+        starCtx.globalAlpha = s.base + Math.sin(t + s.phase) * 0.1;
+        starCtx.beginPath();
+        starCtx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
+        starCtx.fillStyle = "#fff";
+        starCtx.fill();
+      });
+      requestAnimationFrame(drawStars);
+    }
+
+    window.addEventListener("resize", resizeStars);
+    resizeStars();
+    drawStars();
+
+    // Spinning globe
+    const globeCanvas = document.getElementById("globe");
+    const renderer = new THREE.WebGLRenderer({ canvas: globeCanvas, alpha: true, antialias: true });
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, globeCanvas.clientWidth / globeCanvas.clientHeight, 0.1, 1000);
+    camera.position.z = 3;
+
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 3, 5);
+    scene.add(light);
+
+    const loader = new THREE.TextureLoader();
+    loader.load("/earthmap1k.jpg", texture => {
+      const globe = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 32, 32),
+        new THREE.MeshStandardMaterial({ map: texture })
+      );
+      scene.add(globe);
+
+      function animate() {
+        globe.rotation.y += 0.005;
+        renderer.setSize(globeCanvas.clientWidth, globeCanvas.clientHeight);
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+    });
+
+    window.addEventListener("resize", () => {
+      camera.aspect = globeCanvas.clientWidth / globeCanvas.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(globeCanvas.clientWidth, globeCanvas.clientHeight);
+    });
+  </script>
+</body>
 </html>
