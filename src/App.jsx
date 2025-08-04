@@ -1,8 +1,20 @@
-// vite.config.js
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import './App.css';
 
-export default defineConfig({
-  plugins: [react()],
-  base: '/Marilyn2015.github.oi/humanity/', // 👈 Replace with your actual repo name
-});
+function App() {
+  return (
+    <div className="landing">
+      <header className="landing-header">
+        <h1>🚀 Welcome to My Site</h1>
+        <p>Your one-stop destination for awesome content.</p>
+        <a
+          className="landing-button"
+          href="#"
+        >
+          Get Started
+        </a>
+      </header>
+    </div>
+  );
+}
+
+export default App;
