@@ -4,6 +4,5 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/humanity/', // ✅ Only the repo name, no username or domain
+  base: '/humanity/' // match your GitHub Pages subdirectory
 });
-
