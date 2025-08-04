@@ -1,61 +1,70 @@
-import { useEffect, useRef } from 'react';
-import * as THREE from 'three';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Globe from './Globe'; // Your globe component
 import './LandingPage.css';
 
-export default function LandingPage() {
-  const globeRef = useRef();
+function LandingPage() {
+  const [showModal, setShowModal] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [userText, setUserText] = useState('');
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, globeRef.current.clientWidth / globeRef.current.clientHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(globeRef.current.clientWidth, globeRef.current.clientHeight);
-    globeRef.current.appendChild(renderer.domElement);
-
-    const starsGeometry = new THREE.BufferGeometry();
-    const starCount = 1000;
-    const starVertices = [];
-
-    for (let i = 0; i < starCount; i++) {
-      starVertices.push(
-        THREE.MathUtils.randFloatSpread(600), 
-        THREE.MathUtils.randFloatSpread(600),
-        THREE.MathUtils.randFloatSpread(600)
-      );
-    }
-
-    starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-    const starsMaterial = new THREE.PointsMaterial({ color: 0xffffff });
-    const stars = new THREE.Points(starsGeometry, starsMaterial);
-    scene.add(stars);
-
-    const geometry = new THREE.SphereGeometry(2, 32, 32);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00aaff, wireframe: true });
-    const globe = new THREE.Mesh(geometry, material);
-    scene.add(globe);
-
-    camera.position.z = 5;
-
-    function animate() {
-      requestAnimationFrame(animate);
-      globe.rotation.y += 0.01;
-      renderer.render(scene, camera);
-    }
-
-    animate();
-
-    return () => {
-      globeRef.current.removeChild(renderer.domElement);
+  const handlePost = () => {
+    if (!userText.trim()) return;
+    const newPost = {
+      name: 'Username', // Replace with dynamic user data if available
+      content: userText,
+      timestamp: new Date().toLocaleString(),
     };
-  }, []);
+    setPosts([newPost, ...posts]);
+    setUserText('');
+    setShowModal(false);
+  };
 
   return (
     <div className="landing-container">
-      <div className="globe-background" ref={globeRef}></div>
-      <div className="action-buttons">
-        <button className="login">Login</button>
-        <button className="register">Register</button>
+      <div className="globe-wrapper">
+        <Globe />
+      </div>
+
+      <div className="button-group">
+        <button onClick={() => navigate('/view-profile')} className="btn glow">
+          View Profile
+        </button>
+        <button onClick={() => setShowModal(true)} className="btn glow">
+          New Post
+        </button>
+        <button onClick={() => navigate('/login')} className="btn logout">
+          Log Out
+        </button>
+      </div>
+
+      {showModal && (
+        <div className="modal">
+          <textarea
+            value={userText}
+            onChange={(e) => setUserText(e.target.value)}
+            placeholder="What's on your mind?"
+          />
+          <button className="btn glow" onClick={handlePost}>
+            Post
+          </button>
+        </div>
+      )}
+
+      <div className="timeline">
+        {posts.map((post, index) => (
+          <div className="post" key={index}>
+            <p className="meta">
+              <strong>{post.name}</strong> • {post.timestamp}
+            </p>
+            <p>{post.content}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
+
+export default LandingPage;
+
