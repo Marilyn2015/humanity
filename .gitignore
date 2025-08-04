@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Logs
 logs
 *.log
@@ -55,4 +54,4 @@ yarn-error.log*
 
 # macOS folder metadata
 __MACOSX/
->>>>>>> 41dcf794d50b30e1bb2c30f37dd693db8b254048
+
