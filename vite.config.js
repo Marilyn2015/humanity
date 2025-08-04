@@ -4,6 +4,6 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/humanity/', // Matches your GitHub repo name
+  base: '/humanity/', // ✅ Only the repo name, no username or domain
 });
 
