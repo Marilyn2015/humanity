@@ -1,54 +1,33 @@
-name: 🚀 Deploy Vite App to GitHub Pages
-
-permissions:
-  contents: write
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "github-pages"
-  cancel-in-progress: true
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main  # or your default branch
 
 jobs:
   build:
-    name: 🏗️ Build
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      - name: 🧰 Set Up Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: '18'
 
-      - name: 📦 Install Dependencies
-        run: npm ci
+      - name: Install dependencies
+        run: npm install
 
-      - name: 🔨 Build Project
+      - name: Build project
         run: npm run build
 
-      - name: 🧩 Add SPA Fallback
+      - name: Add SPA fallback
         run: cp dist/index.html dist/404.html
 
-      - name: 📤 Upload Artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          path: ./dist
-
-  deploy:
-    name: 🚚 Deploy
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: 🚀 Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
