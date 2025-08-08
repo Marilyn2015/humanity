@@ -1,149 +1,107 @@
-// src/components/LandingPage.jsx
-import React, { useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
-import * as THREE from 'three'
-import { getDatabase, ref, set } from 'firebase/database'
-import { auth } from '../firebase/firebase'
-import './LandingPage.css'
+import React, { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import * as THREE from "three";
+import "./LandingPage.css";
 
 export default function LandingPage() {
-  const starRef = useRef(null)
-  const globeRef = useRef(null)
+  const starRef = useRef(null);
+  const globeRef = useRef(null);
 
-  // Log page visit to Firebase
+  // ----- STARFIELD -----
   useEffect(() => {
-    const db = getDatabase()
-    const user = auth.currentUser
+    const canvas = starRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
 
-    const logLandingVisit = () => {
-      const visitRef = ref(db, `analytics/landing_visits/${Date.now()}`)
-      set(visitRef, {
-        timestamp: Date.now(),
-        uid: user ? user.uid : 'guest',
-        route: 'LandingPage'
-      }).catch(err => console.error("🔥 Error logging visit:", err))
-    }
+    let stars = [];
+    const numStars = 350;
 
-    logLandingVisit()
-  }, [])
-
-  // ★ Starfield Background
-  useEffect(() => {
-    const canvas = starRef.current
-    const ctx = canvas.getContext('2d')
-    let stars = [], anim
-
-    const resizeStars = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-      stars = Array.from({ length: 300 }, () => ({
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      stars = Array.from({ length: numStars }, () => ({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        r: Math.random() * 1.2 + 0.3,
-        base: Math.random() * 0.5 + 0.2,
-        phase: Math.random() * Math.PI * 2
-      }))
+        r: Math.random() * 1.2 + 0.3
+      }));
     }
 
-    const drawStars = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-      const t = Date.now() * 0.002
-      for (const s of stars) {
-        ctx.globalAlpha = s.base + Math.sin(t + s.phase) * 0.1
-        ctx.beginPath()
-        ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI)
-        ctx.fillStyle = '#fff'
-        ctx.fill()
-      }
-      anim = requestAnimationFrame(drawStars)
+    function drawStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "white";
+      stars.forEach((s) => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
     }
 
-    window.addEventListener('resize', resizeStars)
-    resizeStars()
-    drawStars()
-    return () => {
-      window.removeEventListener('resize', resizeStars)
-      cancelAnimationFrame(anim)
+    function animate() {
+      drawStars();
+      requestAnimationFrame(animate);
     }
-  }, [])
 
-  // ★ Spinning Globe
+    resizeCanvas();
+    animate();
+    window.addEventListener("resize", resizeCanvas);
+    return () => window.removeEventListener("resize", resizeCanvas);
+  }, []);
+
+  // ----- GLOBE -----
   useEffect(() => {
-    const canvas = globeRef.current
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
-    renderer.setPixelRatio(window.devicePixelRatio)
-    const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000)
-    camera.position.z = 3.2
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
 
-    const light = new THREE.DirectionalLight(0xffffff, 1)
-    light.position.set(5, 5, 5)
-    scene.add(light)
+    const renderer = new THREE.WebGLRenderer({ alpha: true });
+    renderer.setSize(350, 350);
+    globeRef.current.appendChild(renderer.domElement);
 
-    new THREE.TextureLoader().load(
-      '/earthmap1k.jpg',
-      texture => {
-        const globe = new THREE.Mesh(
-          new THREE.SphereGeometry(1, 64, 64),
-          new THREE.MeshStandardMaterial({ map: texture })
-        )
-        scene.add(globe)
+    const geometry = new THREE.SphereGeometry(5, 32, 32);
+    const texture = new THREE.TextureLoader().load(
+      "https://threejsfundamentals.org/threejs/resources/images/earth.jpg"
+    );
+    const material = new THREE.MeshStandardMaterial({ map: texture });
+    const sphere = new THREE.Mesh(geometry, material);
+    scene.add(sphere);
 
-        const animate = () => {
-          globe.rotation.y += 0.003
-          renderer.render(scene, camera)
-          requestAnimationFrame(animate)
-        }
-        animate()
-      },
-      undefined,
-      err => console.error('Globe load error:', err)
-    )
+    const light = new THREE.PointLight(0xffffff, 1);
+    light.position.set(10, 10, 10);
+    scene.add(light);
 
-    const resizeGlobe = () => {
-      const width = canvas.clientWidth
-      const height = canvas.clientHeight
-      renderer.setSize(width, height, false)
-      camera.aspect = width / height
-      camera.updateProjectionMatrix()
+    camera.position.z = 12;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      sphere.rotation.y += 0.0015;
+      renderer.render(scene, camera);
     }
+    animate();
 
-    window.addEventListener('resize', resizeGlobe)
-    resizeGlobe()
-
-    return () => window.removeEventListener('resize', resizeGlobe)
-  }, [])
+    return () => {
+      while (globeRef.current.firstChild) {
+        globeRef.current.removeChild(globeRef.current.firstChild);
+      }
+    };
+  }, []);
 
   return (
     <div className="landing-container">
-      <canvas
-        ref={starRef}
-        style={{
-          position: 'fixed', top: 0, left: 0,
-          width: '100vw', height: '100vh', zIndex: 0
-        }}
-      />
-      <canvas
-        ref={globeRef}
-        style={{
-          position: 'fixed',
-          top: '50%', left: '50%',
-          width: '80vw',
-          height: '80vw',
-          maxWidth: 800,
-          maxHeight: 800,
-          transform: 'translate(-50%, -50%)',
-          zIndex: 1
-        }}
-      />
-      <div className="overlay">
-        <h1>#HUMANITY</h1>
-        <p>Sign in or register to continue</p>
-        <div className="buttons">
+      <canvas ref={starRef} className="starfield"></canvas>
+
+      <div className="content">
+        <div ref={globeRef} className="globe"></div>
+
+        <h1 className="title">HASH HUMANITY</h1>
+        <div className="button-group">
+          <Link to="/login" className="btn">Login</Link>
           <Link to="/register" className="btn">Register</Link>
-          <Link to="/login" className="btn">Log in</Link>
         </div>
       </div>
     </div>
-  )
+  );
 }
