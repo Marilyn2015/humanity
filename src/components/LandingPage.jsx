@@ -14,6 +14,7 @@ export default function LandingPage() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let stars = [];
+    let rafId;
 
     function resizeCanvas() {
       canvas.width = window.innerWidth;
@@ -30,20 +31,24 @@ export default function LandingPage() {
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const t = Date.now() * 0.002;
-      stars.forEach(s => {
+      for (const s of stars) {
         ctx.globalAlpha = s.base + Math.sin(t + s.phase) * 0.1;
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
         ctx.fillStyle = '#fff';
         ctx.fill();
-      });
-      requestAnimationFrame(draw);
+      }
+      rafId = requestAnimationFrame(draw);
     }
 
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
     draw();
-    return () => window.removeEventListener('resize', resizeCanvas);
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   // Spinning globe
@@ -53,7 +58,17 @@ export default function LandingPage() {
 
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+
+    function setSizes() {
+      const w = canvas.clientWidth || 400;
+      const h = canvas.clientHeight || 400;
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+
+    setSizes(); // ensure we have a non-zero size at start
     camera.position.z = 3;
 
     const light = new THREE.DirectionalLight(0xffffff, 1);
@@ -61,34 +76,45 @@ export default function LandingPage() {
     scene.add(light);
 
     const loader = new THREE.TextureLoader();
+    let globe;
+    let rafId;
+
     loader.load(
       '/earthmap1k.jpg',
       texture => {
-        const globe = new THREE.Mesh(
+        globe = new THREE.Mesh(
           new THREE.SphereGeometry(1, 32, 32),
           new THREE.MeshStandardMaterial({ map: texture })
         );
         scene.add(globe);
 
-        function animate() {
+        const animate = () => {
           globe.rotation.y += 0.005;
-          renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+          setSizes();
           renderer.render(scene, camera);
-          requestAnimationFrame(animate);
-        }
+          rafId = requestAnimationFrame(animate);
+        };
         animate();
       },
       undefined,
       error => console.error('Globe texture error:', error)
     );
 
-    function onResize() {
-      camera.aspect = canvas.clientWidth / canvas.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(canvas.clientWidth, canvas.clientHeight);
-    }
+    function onResize() { setSizes(); }
     window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
+
+    return () => {
+      window.removeEventListener('resize', onResize);
+      if (rafId) cancelAnimationFrame(rafId);
+      renderer.dispose();
+      scene.traverse(obj => {
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+          else obj.material.dispose();
+        }
+      });
+    };
   }, []);
 
   return (
@@ -98,8 +124,10 @@ export default function LandingPage() {
         <canvas ref={globeRef} className="globe" />
         <h1>#HUMANITY</h1>
         <p>Sign in or register to continue</p>
-        <Link to="/register" className="button">Register</Link>
-        <Link to="/login" className="button">Log in</Link>
+        <div>
+          <Link to="/register" className="button">Register</Link>
+          <Link to="/login" className="button">Log in</Link>
+        </div>
       </div>
     </div>
   );
