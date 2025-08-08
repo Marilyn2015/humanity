@@ -1,0 +1,11 @@
+{
+  "name": "Node.js & Vite",
+  "image": "mcr.microsoft.com/devcontainers/universal:latest",
+  "features": {
+    "ghcr.io/devcontainers-contrib/features/node-install:2": {
+      "version": "18"
+    }
+  },
+  "forwardPorts": [5173],
+  "postCreateCommand": "npm install"
+}
