@@ -1,120 +1,60 @@
-/* Container */
 .landing-container {
   position: relative;
-  width: 100vw;
   height: 100vh;
-  background: #000;
+  width: 100vw;
+  background-color: black;
   overflow: hidden;
-  font-family: 'Segoe UI', sans-serif;
 }
 
-/* Starfield: fixed so it always fills */
 .starfield {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
   z-index: 0;
 }
 
-/* Globe: fixed, centered */
-.globe {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 40vw;
-  height: 40vw;
-  max-width: 360px;
-  max-height: 360px;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-}
-
-/* Overlay content */
-.overlay {
+.content {
   position: relative;
-  z-index: 2;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  text-align: center;
-  color: #fff;
-  padding: 0 1rem;
+  height: 100%;
 }
 
-.overlay h1 {
-  margin-bottom: 1rem;
-  font-size: clamp(2rem, 6vw, 3rem);
-  text-shadow: 0 0 8px rgba(255,255,255,0.6);
+.globe {
+  margin-bottom: 20px;
 }
 
-.overlay p {
-  margin-bottom: 2rem;
-  font-size: clamp(1rem, 3vw, 1.5rem);
-  text-shadow: 0 0 6px rgba(255,255,255,0.4);
+.title {
+  font-size: 3rem;
+  color: white;
+  text-shadow: 0 0 15px white;
+  margin-bottom: 30px;
+  font-family: 'Orbitron', sans-serif;
 }
 
-/* Buttons */
-.buttons {
+.button-group {
   display: flex;
-  gap: 1rem;
-  pointer-events: auto; /* enable clicks */
+  gap: 20px;
 }
 
 .btn {
-  position: relative;
-  padding: 0.6rem 1.4rem;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.4);
-  border-radius: 6px;
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 600;
-  text-transform: uppercase;
+  padding: 12px 25px;
+  font-size: 1.2rem;
+  color: white;
   text-decoration: none;
-  cursor: pointer;
-  overflow: hidden;
-  transition:
-    background 0.3s ease,
-    box-shadow 0.3s ease,
-    transform 0.2s ease;
-}
-
-.btn::before {
-  content: '';
-  position: absolute;
-  top: -50%; left: -50%;
-  width: 200%; height: 200%;
-  background: radial-gradient(circle at center,
-    rgba(255,255,255,0.4),
-    transparent 70%
-  );
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 2px solid white;
+  border-radius: 5px;
+  text-shadow: 0 0 5px white;
+  box-shadow: 0 0 10px white;
+  transition: all 0.3s ease;
 }
 
 .btn:hover {
-  background: rgba(255,255,255,0.2);
-  transform: translateY(-2px);
-  box-shadow:
-    0 0 8px rgba(255,255,255,0.5),
-    0 0 20px rgba(255,255,255,0.2);
-}
-
-.btn:hover::before {
-  opacity: 1;
-}
-
-.btn:active,
-.btn:focus {
-  outline: none;
-  background: rgba(255,255,255,0.25);
-  box-shadow:
-    0 0 12px rgba(255,255,255,0.6),
-    inset 0 0 4px rgba(255,255,255,0.3);
-  transform: translateY(0);
+  background-color: white;
+  color: black;
+  text-shadow: none;
 }
