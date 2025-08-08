@@ -1,70 +1,107 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Globe from './Globe'; // Your globe component
-import './LandingPage.css';
+import React, { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import * as THREE from "three";
+import "./LandingPage.css";
 
-function LandingPage() {
-  const [showModal, setShowModal] = useState(false);
-  const [posts, setPosts] = useState([]);
-  const [userText, setUserText] = useState('');
-  const navigate = useNavigate();
+export default function LandingPage() {
+  const starRef = useRef(null);
+  const globeRef = useRef(null);
 
-  const handlePost = () => {
-    if (!userText.trim()) return;
-    const newPost = {
-      name: 'Username', // Replace with dynamic user data if available
-      content: userText,
-      timestamp: new Date().toLocaleString(),
+  // ----- STARFIELD -----
+  useEffect(() => {
+    const canvas = starRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    let stars = [];
+    const numStars = 350;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      stars = Array.from({ length: numStars }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.2 + 0.3
+      }));
+    }
+
+    function drawStars() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "white";
+      stars.forEach((s) => {
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function animate() {
+      drawStars();
+      requestAnimationFrame(animate);
+    }
+
+    resizeCanvas();
+    animate();
+    window.addEventListener("resize", resizeCanvas);
+    return () => window.removeEventListener("resize", resizeCanvas);
+  }, []);
+
+  // ----- GLOBE -----
+  useEffect(() => {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true });
+    renderer.setSize(350, 350);
+    globeRef.current.appendChild(renderer.domElement);
+
+    const geometry = new THREE.SphereGeometry(5, 32, 32);
+    const texture = new THREE.TextureLoader().load(
+      "https://threejsfundamentals.org/threejs/resources/images/earth.jpg"
+    );
+    const material = new THREE.MeshStandardMaterial({ map: texture });
+    const sphere = new THREE.Mesh(geometry, material);
+    scene.add(sphere);
+
+    const light = new THREE.PointLight(0xffffff, 1);
+    light.position.set(10, 10, 10);
+    scene.add(light);
+
+    camera.position.z = 12;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      sphere.rotation.y += 0.0015;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    return () => {
+      while (globeRef.current.firstChild) {
+        globeRef.current.removeChild(globeRef.current.firstChild);
+      }
     };
-    setPosts([newPost, ...posts]);
-    setUserText('');
-    setShowModal(false);
-  };
+  }, []);
 
   return (
     <div className="landing-container">
-      <div className="globe-wrapper">
-        <Globe />
-      </div>
+      <canvas ref={starRef} className="starfield"></canvas>
 
-      <div className="button-group">
-        <button onClick={() => navigate('/view-profile')} className="btn glow">
-          View Profile
-        </button>
-        <button onClick={() => setShowModal(true)} className="btn glow">
-          New Post
-        </button>
-        <button onClick={() => navigate('/login')} className="btn logout">
-          Log Out
-        </button>
-      </div>
+      <div className="content">
+        <div ref={globeRef} className="globe"></div>
 
-      {showModal && (
-        <div className="modal">
-          <textarea
-            value={userText}
-            onChange={(e) => setUserText(e.target.value)}
-            placeholder="What's on your mind?"
-          />
-          <button className="btn glow" onClick={handlePost}>
-            Post
-          </button>
+        <h1 className="title">HASH HUMANITY</h1>
+        <div className="button-group">
+          <Link to="/login" className="btn">Login</Link>
+          <Link to="/register" className="btn">Register</Link>
         </div>
-      )}
-
-      <div className="timeline">
-        {posts.map((post, index) => (
-          <div className="post" key={index}>
-            <p className="meta">
-              <strong>{post.name}</strong> • {post.timestamp}
-            </p>
-            <p>{post.content}</p>
-          </div>
-        ))}
       </div>
     </div>
   );
 }
-
-export default LandingPage;
-
