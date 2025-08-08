@@ -126,3 +126,26 @@ p {
     margin: 4px;
   }
 }
+.landing-wrap {
+  position: relative;
+  width: 100%;
+  height: 100vh;       /* ⬅️ gives the canvas real height */
+  background: #000;    /* black backdrop so stars pop */
+  overflow: hidden;
+}
+
+.globe-wrap {
+  position: absolute;
+  inset: 0;
+}
+
+.cta {
+  position: absolute;
+  bottom: 6vh;
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 0 16px rgba(255,255,255,0.35);
+}
+.cta h1 { font-size: clamp(28px, 4vw, 56px); margin: 0 0 8px; }
+.cta p  { opacity: 0.9; }
