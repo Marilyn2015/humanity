@@ -10,11 +10,10 @@ export default function LandingPage() {
     const mount = mountRef.current;
     if (!mount) return;
 
-    // Sizes
     const width = mount.clientWidth || window.innerWidth;
     const height = mount.clientHeight || window.innerHeight;
 
-    // Scene / Camera / Renderer
+    // Scene, Camera, Renderer
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 1000);
     camera.position.set(0, 0, 3.1);
@@ -25,9 +24,9 @@ export default function LandingPage() {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     mount.appendChild(renderer.domElement);
 
-    // Background starfield
+    // Starfield
     const starGeo = new THREE.BufferGeometry();
-    const starCount = 1100;
+    const starCount = 1000;
     const positions = new Float32Array(starCount * 3);
     for (let i = 0; i < starCount; i++) {
       const r = 28 * Math.cbrt(Math.random());
@@ -38,45 +37,38 @@ export default function LandingPage() {
       positions[i * 3 + 2] = r * Math.cos(v);
     }
     starGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 0.02 }));
-    scene.add(stars);
+    scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 0.02 })));
 
-    // Globe (guaranteed-visible fallback, then texture)
+    // Globe
     const sphere = new THREE.SphereGeometry(1, 64, 64);
     const globe = new THREE.Mesh(
       sphere,
-      new THREE.MeshBasicMaterial({ color: 0x3a3a3a }) // fallback so it's never black/empty
+      new THREE.MeshBasicMaterial({ color: 0x3a3a3a }) // fallback
     );
     scene.add(globe);
 
-    const earthURL = `${import.meta.env.BASE_URL}textures/earth_day.jpg`; // public/textures/earth_day.jpg
+    // Load texture from your current public file
+    const earthURL = `${import.meta.env.BASE_URL}earthmap1k.jpg`; 
     const loader = new THREE.TextureLoader();
     loader.load(
       earthURL,
       (tex) => {
         tex.colorSpace = THREE.SRGBColorSpace;
         globe.material.dispose();
-        globe.material = new THREE.MeshBasicMaterial({ map: tex }); // ignores lights; reliable everywhere
+        globe.material = new THREE.MeshBasicMaterial({ map: tex });
       },
       undefined,
-      (err) => console.error("Texture failed:", earthURL, err)
+      (err) => console.error("Texture load failed:", earthURL, err)
     );
 
-    // Rotation
+    // Animation
     let raf;
     const tick = () => {
       globe.rotation.y += 0.003;
       renderer.render(scene, camera);
       raf = requestAnimationFrame(tick);
     };
-
-    // Honor reduced motion
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (media.matches) {
-      renderer.render(scene, camera);
-    } else {
-      tick();
-    }
+    tick();
 
     // Resize
     const onResize = () => {
@@ -101,48 +93,16 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="landing">
-      {/* Background layers */}
-      <div className="bg-noise" aria-hidden="true" />
-      <div className="bg-gradient" aria-hidden="true" />
-
-      {/* WebGL canvas host */}
-      <div className="globe" ref={mountRef} aria-hidden="true" />
-
-      {/* Header */}
-      <header className="site-header">
-        <div className="brand">#HUMANITY</div>
-        <nav className="nav">
-          <Link to="/login" className="link">Log In</Link>
-          <Link to="/register" className="link">Register</Link>
-        </nav>
-      </header>
-
-      {/* Hero / CTA */}
-      <main className="hero">
-        <section className="card">
-          <h1 className="title">Own your voice.<br />Be verified. Be human.</h1>
-          <p className="subtitle">
-            A secure, modern social network where real people connect.
-          </p>
-          <div className="actions">
-            <Link className="btn primary" to="/register">Get Started</Link>
-            <Link className="btn subtle" to="/login">I already have an account</Link>
-          </div>
-          <div className="bullets">
-            <span>• Human-verified access</span>
-            <span>• Real-time feed</span>
-            <span>• Your data, your rules</span>
-          </div>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="site-footer">
-        <span>© {new Date().getFullYear()} #HUMANITY</span>
-        <span className="dot">•</span>
-        <span>Built for people, not bots</span>
-      </footer>
+    <div className="landing-wrap">
+      <div className="globe-wrap" ref={mountRef} aria-hidden="true" />
+      <div className="cta">
+        <h1>#HUMANITY</h1>
+        <p>Own your voice. Be verified. Be human.</p>
+        <div className="btn-row">
+          <Link className="btn" to="/login">Log In</Link>
+          <Link className="btn ghost" to="/register">Register</Link>
+        </div>
+      </div>
     </div>
   );
 }
