@@ -1,15 +1,17 @@
+// src/components/LandingPage.jsx
 import React, { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import * as THREE from "three";
 import "./LandingPage.css";
 
-// --- Starfield (canvas) ---
+// --- Starfield ---
 function Starfield({ numStars = 280 }) {
   const canvasRef = useRef(null);
   useEffect(() => {
     const c = canvasRef.current;
     if (!c) return;
     const ctx = c.getContext("2d");
+
     const resize = () => {
       c.width = window.innerWidth;
       c.height = window.innerHeight;
@@ -67,8 +69,14 @@ function CenterGlobe() {
     mount.appendChild(renderer.domElement);
 
     const geo = new THREE.SphereGeometry(1, 48, 48);
-    const tex = new THREE.TextureLoader().load("/earthmap1k.jpg"); // put in /public
-    const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8, metalness: 0.6 });
+    // IMPORTANT: respect Vite base path on GitHub Pages
+    const texUrl = import.meta.env.BASE_URL + "earthmap1k.jpg";
+    const tex = new THREE.TextureLoader().load(texUrl);
+    const mat = new THREE.MeshStandardMaterial({
+      map: tex,
+      roughness: 0.8,
+      metalness: 0.6,
+    });
     const sphere = new THREE.Mesh(geo, mat);
     scene.add(sphere);
 
@@ -94,6 +102,19 @@ function CenterGlobe() {
 }
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    // “save and redirect”
+    localStorage.setItem("entry", "login");
+    navigate("/universe");
+  };
+
+  const handleRegister = () => {
+    localStorage.setItem("entry", "register");
+    navigate("/universe");
+  };
+
   return (
     <div className="lp-root">
       <Starfield />
@@ -103,12 +124,11 @@ export default function LandingPage() {
         <p className="lp-sub">A network for verified, real humans. No bots. No bullshit.</p>
 
         <div className="lp-btnrow">
-          <Link className="lp-btn" to="/login">Log In</Link>
-          <Link className="lp-btn lp-btn--primary" to="/register">Register</Link>
-          <Link className="lp-btn" to="/universe">Enter Universe</Link>
+          <button className="lp-btn" onClick={handleLogin}>Log In</button>
+          <button className="lp-btn lp-btn--primary" onClick={handleRegister}>Register</button>
+          <button className="lp-btn" onClick={() => navigate("/universe")}>Enter Universe</button>
         </div>
       </div>
     </div>
   );
 }
-
