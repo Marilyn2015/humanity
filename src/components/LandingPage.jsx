@@ -1,120 +1,149 @@
-import React, { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
-import * as THREE from "three";
-import "./LandingPage.css";
+// src/components/LandingPage.jsx
+import React, { useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
+import * as THREE from 'three'
+import { getDatabase, ref, set } from 'firebase/database'
+import { auth } from '../firebase/firebase'
+import './LandingPage.css'
 
 export default function LandingPage() {
-  const mountRef = useRef(null);
+  const starRef = useRef(null)
+  const globeRef = useRef(null)
 
+  // Log page visit to Firebase
   useEffect(() => {
-    const mount = mountRef.current;
-    if (!mount) return;
+    const db = getDatabase()
+    const user = auth.currentUser
 
-    // --- sizes ---
-    const width = mount.clientWidth || window.innerWidth;
-    const height = mount.clientHeight || window.innerHeight;
-
-    // --- scene/camera/renderer ---
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 3.2);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.shadowMap.enabled = true;
-    mount.appendChild(renderer.domElement);
-
-    // --- starfield ---
-    const starGeo = new THREE.BufferGeometry();
-    const count = 1000;
-    const pos = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const r = 30 * Math.cbrt(Math.random());
-      const u = Math.random() * 2 * Math.PI;
-      const v = Math.acos(2 * Math.random() - 1);
-      pos[i * 3 + 0] = r * Math.sin(v) * Math.cos(u);
-      pos[i * 3 + 1] = r * Math.sin(v) * Math.sin(u);
-      pos[i * 3 + 2] = r * Math.cos(v);
+    const logLandingVisit = () => {
+      const visitRef = ref(db, `analytics/landing_visits/${Date.now()}`)
+      set(visitRef, {
+        timestamp: Date.now(),
+        uid: user ? user.uid : 'guest',
+        route: 'LandingPage'
+      }).catch(err => console.error("🔥 Error logging visit:", err))
     }
-    starGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ size: 0.02 }));
-    scene.add(stars);
 
-    // --- lights for day/night terminator shading ---
-    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-    sun.position.set(3, 2, 4);
-    sun.castShadow = true;
-    scene.add(sun);
+    logLandingVisit()
+  }, [])
 
-    const fill = new THREE.DirectionalLight(0x88aaff, 0.25); // cool rim
-    fill.position.set(-3, -1, -2);
-    scene.add(fill);
+  // ★ Starfield Background
+  useEffect(() => {
+    const canvas = starRef.current
+    const ctx = canvas.getContext('2d')
+    let stars = [], anim
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+    const resizeStars = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+      stars = Array.from({ length: 300 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.2 + 0.3,
+        base: Math.random() * 0.5 + 0.2,
+        phase: Math.random() * Math.PI * 2
+      }))
+    }
 
-    // --- globe ---
-    const sphere = new THREE.SphereGeometry(1, 64, 64);
-    const earthURL = `${import.meta.env.BASE_URL}earthmap1k.jpg`; // your file in /public
-    const tex = new THREE.TextureLoader().load(earthURL);
-    tex.colorSpace = THREE.SRGBColorSpace;
+    const drawStars = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      const t = Date.now() * 0.002
+      for (const s of stars) {
+        ctx.globalAlpha = s.base + Math.sin(t + s.phase) * 0.1
+        ctx.beginPath()
+        ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI)
+        ctx.fillStyle = '#fff'
+        ctx.fill()
+      }
+      anim = requestAnimationFrame(drawStars)
+    }
 
-    const globe = new THREE.Mesh(
-      sphere,
-      new THREE.MeshStandardMaterial({
-        map: tex,
-        roughness: 1,
-        metalness: 0
-      })
-    );
-    globe.castShadow = true;
-    scene.add(globe);
-
-    // --- animate ---
-    let raf;
-    const tick = () => {
-      globe.rotation.y += 0.003;
-      renderer.render(scene, camera);
-      raf = requestAnimationFrame(tick);
-    };
-    tick();
-
-    // --- resize ---
-    const onResize = () => {
-      const w = mount.clientWidth || window.innerWidth;
-      const h = mount.clientHeight || window.innerHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h);
-    };
-    window.addEventListener("resize", onResize);
-
-    // --- cleanup ---
+    window.addEventListener('resize', resizeStars)
+    resizeStars()
+    drawStars()
     return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", onResize);
-      mount.removeChild(renderer.domElement);
-      renderer.dispose();
-      starGeo.dispose();
-      sphere.dispose();
-      tex.dispose();
-      if (globe.material?.map) globe.material.map.dispose();
-      globe.material.dispose();
-    };
-  }, []);
+      window.removeEventListener('resize', resizeStars)
+      cancelAnimationFrame(anim)
+    }
+  }, [])
+
+  // ★ Spinning Globe
+  useEffect(() => {
+    const canvas = globeRef.current
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
+    renderer.setPixelRatio(window.devicePixelRatio)
+    const scene = new THREE.Scene()
+    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000)
+    camera.position.z = 3.2
+
+    const light = new THREE.DirectionalLight(0xffffff, 1)
+    light.position.set(5, 5, 5)
+    scene.add(light)
+
+    new THREE.TextureLoader().load(
+      '/earthmap1k.jpg',
+      texture => {
+        const globe = new THREE.Mesh(
+          new THREE.SphereGeometry(1, 64, 64),
+          new THREE.MeshStandardMaterial({ map: texture })
+        )
+        scene.add(globe)
+
+        const animate = () => {
+          globe.rotation.y += 0.003
+          renderer.render(scene, camera)
+          requestAnimationFrame(animate)
+        }
+        animate()
+      },
+      undefined,
+      err => console.error('Globe load error:', err)
+    )
+
+    const resizeGlobe = () => {
+      const width = canvas.clientWidth
+      const height = canvas.clientHeight
+      renderer.setSize(width, height, false)
+      camera.aspect = width / height
+      camera.updateProjectionMatrix()
+    }
+
+    window.addEventListener('resize', resizeGlobe)
+    resizeGlobe()
+
+    return () => window.removeEventListener('resize', resizeGlobe)
+  }, [])
 
   return (
-    <div className="landing-wrap">
-      <div className="globe-wrap" ref={mountRef} aria-hidden="true" />
-      <div className="cta">
+    <div className="landing-container">
+      <canvas
+        ref={starRef}
+        style={{
+          position: 'fixed', top: 0, left: 0,
+          width: '100vw', height: '100vh', zIndex: 0
+        }}
+      />
+      <canvas
+        ref={globeRef}
+        style={{
+          position: 'fixed',
+          top: '50%', left: '50%',
+          width: '80vw',
+          height: '80vw',
+          maxWidth: 800,
+          maxHeight: 800,
+          transform: 'translate(-50%, -50%)',
+          zIndex: 1
+        }}
+      />
+      <div className="overlay">
         <h1>#HUMANITY</h1>
-        <p>Own your voice. Be verified. Be human.</p>
-        <div className="btn-row">
-          <Link className="btn" to="/login">Log In</Link>
-          <Link className="btn ghost" to="/register">Register</Link>
+        <p>Sign in or register to continue</p>
+        <div className="buttons">
+          <Link to="/register" className="btn">Register</Link>
+          <Link to="/login" className="btn">Log in</Link>
         </div>
       </div>
     </div>
-  );
+  )
 }
