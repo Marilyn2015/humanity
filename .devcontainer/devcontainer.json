@@ -1,11 +1,19 @@
 {
-  "name": "Node.js & Vite",
-  "image": "mcr.microsoft.com/devcontainers/universal:latest",
+  "name": "Timilyn's React Vite Codespace",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
   "features": {
-    "ghcr.io/devcontainers-contrib/features/node-install:2": {
+    "ghcr.io/devcontainers/features/node:1": {
       "version": "18"
     }
   },
-  "forwardPorts": [5173],
-  "postCreateCommand": "npm install"
+  "postCreateCommand": "npm install",
+  "customizations": {
+    "vscode": {
+      "settings": {},
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint"
+      ]
+    }
+  }
 }
