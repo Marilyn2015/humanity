@@ -1,20 +1,28 @@
-import React from 'react'
-import { Routes, Route, Link } from 'react-router-dom'
-import Home from './pages/Home'
-import About from './pages/About'
+// src/App.jsx
+import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import LandingPage from "./pages/LandingPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import UniversePage from "./pages/UniversePage.jsx";
+import ViewProfile from "./pages/ViewProfile.jsx";
 
 export default function App() {
   return (
-    <div style={{ padding: 20, fontFamily: 'system-ui, sans-serif' }}>
-      <header style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        <Link to="/">Home</Link>
-        <Link to="/about">About</Link>
-      </header>
-
+    <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
+        {/* Public routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+
+        {/* Protected/main app routes */}
+        <Route path="/universe" element={<UniversePage />} />
+        <Route path="/profile/:uid" element={<ViewProfile />} />
+
+        {/* Fallback to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </div>
-  )
+    </Router>
+  );
 }
+
