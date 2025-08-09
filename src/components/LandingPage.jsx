@@ -7,7 +7,6 @@ export default function LandingPage() {
   const starsRef = useRef(null);
   const globeRef = useRef(null);
 
-  // --- minimal inline CSS ---
   const css = `
     .landing{position:relative;width:100vw;height:100vh;background:#000;overflow:hidden}
     .overlay{position:absolute;inset:0;display:grid;place-items:center;z-index:4;color:#fff;text-align:center}
@@ -51,31 +50,46 @@ export default function LandingPage() {
     return ()=>{ window.removeEventListener("resize", resize); cancelAnimationFrame(raf); };
   }, []);
 
-  // ---------- GLOBE (uses ONLY earthmap1k.jpg) ----------
+  // ---------- GLOBE with shadow ----------
   useEffect(() => {
     const canvas = globeRef.current; if (!canvas) return;
 
     const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
     camera.position.z = 3.2;
 
-    // Lighting for realistic shading
-    const sun = new THREE.DirectionalLight(0xffffff, 1.15);
-    sun.position.set(5, 2, 3);
-    scene.add(sun);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.24));
+    // Lights
+    const pointLight = new THREE.PointLight(0xffffff, 1.2);
+    pointLight.position.set(5, 2, 3);
+    pointLight.castShadow = true;
+    scene.add(pointLight);
 
-    // Sphere (material gets the texture once loaded)
+    scene.add(new THREE.AmbientLight(0xffffff, 0.2));
+
+    // Smaller sphere
     const globe = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 96, 96),
+      new THREE.SphereGeometry(0.8, 96, 96), // smaller radius
       new THREE.MeshStandardMaterial({ color: 0x999999, roughness: 0.7, metalness: 0.0 })
     );
+    globe.castShadow = true;
     scene.add(globe);
 
-    // Build base that works locally ("/") and on GitHub Pages ("/humanity/")
+    // Shadow "floor"
+    const shadowPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(4, 4),
+      new THREE.ShadowMaterial({ opacity: 0.3 })
+    );
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.position.y = -1;
+    shadowPlane.receiveShadow = true;
+    scene.add(shadowPlane);
+
+    // Load texture
     const isPages = window.location.hostname.endsWith("github.io");
     const repoBase = isPages ? "/humanity/" : "/";
     const absBase = new URL(repoBase, window.location.origin).toString().replace(/\/+$/, "/");
@@ -94,7 +108,7 @@ export default function LandingPage() {
     );
 
     function size(){
-      const s = Math.min(window.innerWidth, window.innerHeight) * 0.8;
+      const s = Math.min(window.innerWidth, window.innerHeight) * 0.6; // smaller size
       renderer.setSize(s, s, false);
       camera.aspect = 1;
       camera.updateProjectionMatrix();
