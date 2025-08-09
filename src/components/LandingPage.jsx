@@ -7,6 +7,7 @@ export default function LandingPage() {
   const starsRef = useRef(null);
   const globeRef = useRef(null);
 
+  // --- minimal inline CSS ---
   const css = `
     .landing{position:relative;width:100vw;height:100vh;background:#000;overflow:hidden}
     .overlay{position:absolute;inset:0;display:grid;place-items:center;z-index:4;color:#fff;text-align:center}
@@ -19,13 +20,14 @@ export default function LandingPage() {
     canvas.globe{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;pointer-events:none}
   `;
 
-  // ---------- STARFIELD (denser + smoother twinkle) ----------
+  // ---------- STARFIELD ----------
   useEffect(() => {
     const c = starsRef.current; if (!c) return;
     const ctx = c.getContext("2d");
     let stars = [], raf;
+
     function resize(){
-      c.width = innerWidth; c.height = innerHeight;
+      c.width = window.innerWidth; c.height = window.innerHeight;
       stars = Array.from({length: 500}, () => ({
         x: Math.random()*c.width,
         y: Math.random()*c.height,
@@ -44,100 +46,70 @@ export default function LandingPage() {
       }
       raf = requestAnimationFrame(draw);
     }
-    addEventListener("resize", resize); resize(); draw();
-    return ()=>{ removeEventListener("resize", resize); cancelAnimationFrame(raf); };
+    window.addEventListener("resize", resize);
+    resize(); draw();
+    return ()=>{ window.removeEventListener("resize", resize); cancelAnimationFrame(raf); };
   }, []);
 
-  // ---------- GLOBE (realistic textures + shadow + clouds) ----------
+  // ---------- GLOBE (uses ONLY earthmap1k.jpg) ----------
   useEffect(() => {
     const canvas = globeRef.current; if (!canvas) return;
 
     const renderer = new THREE.WebGLRenderer({ canvas, alpha:true, antialias:true });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
-    camera.position.z = 3.1;
+    camera.position.z = 3.2;
 
-    // Lights: one directional (sun) to create the terminator, plus soft fill
-    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-    sun.position.set(5, 2, 3); // angle = nice day/night shadow line
+    // Lighting for realistic shading
+    const sun = new THREE.DirectionalLight(0xffffff, 1.15);
+    sun.position.set(5, 2, 3);
     scene.add(sun);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.22));
-    scene.add(new THREE.HemisphereLight(0x88aaff, 0x080820, 0.2));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.24));
 
-    // Sphere + materials
-    const earthGeo = new THREE.SphereGeometry(1, 96, 96);
-    const earthMat = new THREE.MeshPhongMaterial({
-      color: 0xffffff,
-      shininess: 8,            // small highlight over oceans
-      specular: new THREE.Color(0x222222)
-    });
-    const earth = new THREE.Mesh(earthGeo, earthMat);
-    scene.add(earth);
+    // Sphere (material gets the texture once loaded)
+    const globe = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 96, 96),
+      new THREE.MeshStandardMaterial({ color: 0x999999, roughness: 0.7, metalness: 0.0 })
+    );
+    scene.add(globe);
 
-    // Subtle cloud layer (slightly larger radius)
-    const cloudGeo = new THREE.SphereGeometry(1.005, 96, 96);
-    const cloudMat = new THREE.MeshLambertMaterial({ transparent: true, depthWrite: false, opacity: 0.9 });
-    const clouds = new THREE.Mesh(cloudGeo, cloudMat);
-    scene.add(clouds);
+    // Build base that works locally ("/") and on GitHub Pages ("/humanity/")
+    const isPages = window.location.hostname.endsWith("github.io");
+    const repoBase = isPages ? "/humanity/" : "/";
+    const absBase = new URL(repoBase, window.location.origin).toString().replace(/\/+$/, "/");
+    const textureURL = absBase + "earthmap1k.jpg";
+    console.log("[Globe] Loading texture:", textureURL);
 
-    // Build absolute path that works locally + GitHub Pages
-    const base = import.meta?.env?.BASE_URL ?? "/";
-    const absBase = new URL(base, window.location.origin).toString().replace(/\/+$/, "/");
-    const paths = {
-      color:      absBase + "earthmap1k.jpg",      // base color
-      normal:     absBase + "earth_normal.jpg",    // normal map
-      specular:   absBase + "earth_spec.jpg",      // specular map (oceans shine)
-      clouds:     absBase + "earth_clouds.png"     // RGBA clouds (transparent)
-    };
-
-    const loader = new THREE.TextureLoader();
-    const load = (url) => new Promise((res, rej) => loader.load(url, res, undefined, rej));
-
-    (async () => {
-      try {
-        const [colorTex, normalTex, specTex, cloudsTex] = await Promise.all([
-          load(paths.color),
-          load(paths.normal).catch(() => null),
-          load(paths.specular).catch(() => null),
-          load(paths.clouds).catch(() => null),
-        ]);
-
-        // Improve texture sampling
-        [colorTex, normalTex, specTex, cloudsTex].forEach(tex => {
-          if (tex) tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        });
-
-        earthMat.map = colorTex || null;
-        if (normalTex) { earthMat.normalMap = normalTex; earthMat.normalScale = new THREE.Vector2(0.6, 0.6); }
-        if (specTex)   { earthMat.specularMap = specTex; }
-        earthMat.needsUpdate = true;
-
-        if (cloudsTex) {
-          cloudMat.map = cloudsTex;
-          cloudMat.needsUpdate = true;
-        }
-      } catch (e) {
-        console.error("Texture load error:", e, paths);
-      }
-    })();
+    new THREE.TextureLoader().load(
+      textureURL,
+      (tex) => {
+        tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        globe.material.map = tex;
+        globe.material.needsUpdate = true;
+      },
+      undefined,
+      (err) => console.error("Globe texture load error:", err, { textureURL })
+    );
 
     function size(){
-      const s = Math.min(innerWidth, innerHeight) * 0.78;
+      const s = Math.min(window.innerWidth, window.innerHeight) * 0.8;
       renderer.setSize(s, s, false);
-      camera.aspect = 1; camera.updateProjectionMatrix();
+      camera.aspect = 1;
+      camera.updateProjectionMatrix();
     }
     function animate(){
-      earth.rotation.y += 0.0028;
-      clouds.rotation.y += 0.0032;
+      globe.rotation.y += 0.003;
       renderer.render(scene, camera);
       requestAnimationFrame(animate);
     }
-    addEventListener("resize", size);
-    size(); animate();
 
-    return ()=> removeEventListener("resize", size);
+    window.addEventListener("resize", size);
+    size();
+    animate();
+
+    return ()=> window.removeEventListener("resize", size);
   }, []);
 
   return (
