@@ -13,7 +13,6 @@ export default function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        {/* Catch-all: send unknown routes to landing */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>
