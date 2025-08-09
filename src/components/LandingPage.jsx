@@ -1,3 +1,4 @@
+// src/components/LandingPage.jsx
 import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import * as THREE from "three";
@@ -8,104 +9,38 @@ export default function LandingPage() {
   const starRef = useRef(null);
   const globeRef = useRef(null);
 
-  // Inline CSS styles
-  const styles = `
-    .landing-container {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      background: black;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-    }
-    .canvas-stars, .canvas-globe {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      display: block;
-    }
-    .overlay {
-      position: relative;
-      text-align: center;
-      color: white;
-      z-index: 2;
-    }
-    .brand {
-      font-size: 4rem;
-      font-weight: 900;
-      letter-spacing: 4px;
-      margin-bottom: 0.5rem;
-      text-shadow: 0 0 15px white;
-    }
-    .tagline {
-      font-size: 1.2rem;
-      margin-bottom: 2rem;
-      opacity: 0.85;
-    }
-    .buttons {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-    }
-    .btn {
-      padding: 0.75rem 1.5rem;
-      border-radius: 6px;
-      font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.3s ease;
-    }
-    .btn.primary {
-      background: white;
-      color: black;
-      border: none;
-    }
-    .btn.primary:hover {
-      background: #ccc;
-    }
-    .btn.ghost {
-      background: transparent;
-      border: 2px solid white;
-      color: white;
-    }
-    .btn.ghost:hover {
-      background: white;
-      color: black;
-    }
-    canvas.canvas-globe {
-      z-index: 1;
-      pointer-events: none;
-      width: 400px;
-      height: 400px;
-      margin: auto;
-      display: block;
-    }
+  // --- tiny inline CSS so overlay is always visible ---
+  const css = `
+    .landing-container{position:relative;width:100vw;height:100vh;background:#000;overflow:hidden}
+    .overlay{position:absolute;inset:0;display:grid;place-items:center;z-index:3;color:#fff;text-align:center}
+    .overlay .box{display:flex;flex-direction:column;gap:.75rem}
+    .buttons{display:flex;gap:12px;justify-content:center}
+    .btn{padding:.6rem 1.1rem;border:2px solid #fff;color:#000;background:#fff;text-decoration:none;font-weight:700;border-radius:8px}
+    .btn.ghost{background:transparent;color:#fff}
+    canvas.stars{position:fixed;inset:0;z-index:0}
+    canvas.globe{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none}
   `;
 
-  // Log visit to Firebase
+  // Log page visit
   useEffect(() => {
     const db = getDatabase();
     const user = auth.currentUser;
-    const visitRef = ref(db, `analytics/landing_visits/${Date.now()}`);
-    set(visitRef, {
+    set(ref(db, `analytics/landing_visits/${Date.now()}`), {
       timestamp: Date.now(),
       uid: user ? user.uid : "guest",
       route: "LandingPage",
-    }).catch((err) => console.error("🔥 Error logging visit:", err));
+    }).catch((e) => console.error("🔥 log error:", e));
   }, []);
 
   // Starfield
   useEffect(() => {
     const canvas = starRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     let stars = [];
-    let anim;
+    let raf;
 
-    const resizeStars = () => {
+    function resize() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       stars = Array.from({ length: 300 }, () => ({
@@ -115,47 +50,38 @@ export default function LandingPage() {
         base: Math.random() * 0.5 + 0.2,
         phase: Math.random() * Math.PI * 2,
       }));
-    };
-
-    const drawStars = () => {
+    }
+    function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const t = Date.now() * 0.002;
       for (const s of stars) {
-        ctx.globalAlpha = s.base + Math.sin(t + s.phase) * 0.1;
+        ctx.globalAlpha = s.base + Math.sin(t + s.phase) * 0.12;
         ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, 2 * Math.PI);
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         ctx.fillStyle = "#fff";
         ctx.fill();
       }
-      anim = requestAnimationFrame(drawStars);
-    };
-
-    window.addEventListener("resize", resizeStars);
-    resizeStars();
-    drawStars();
-    return () => {
-      window.removeEventListener("resize", resizeStars);
-      cancelAnimationFrame(anim);
-    };
+      raf = requestAnimationFrame(draw);
+    }
+    window.addEventListener("resize", resize);
+    resize(); draw();
+    return () => { window.removeEventListener("resize", resize); cancelAnimationFrame(raf); };
   }, []);
 
   // Globe
   useEffect(() => {
     const canvas = globeRef.current;
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      alpha: true,
-      antialias: true,
-    });
-    renderer.setPixelRatio(window.devicePixelRatio);
+    if (!canvas) return;
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
     camera.position.z = 3.2;
 
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 5, 5);
-    scene.add(light);
+    scene.add(new THREE.DirectionalLight(0xffffff, 1).position.set(5, 5, 5));
+    scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
     const sphere = new THREE.Mesh(
       new THREE.SphereGeometry(1, 64, 64),
@@ -163,10 +89,9 @@ export default function LandingPage() {
     );
     scene.add(sphere);
 
-    // ✅ Safe path for GitHub Pages
-    const base = import.meta?.env?.BASE_URL ?? "/";
-    const texturePath =
-      (base.endsWith("/") ? base : base + "/") + "earthmap1k.jpg";
+    // ✅ Works locally AND on GitHub Pages
+    const base = import.meta?.env?.BASE_URL || "/";
+    const texturePath = (base.endsWith("/") ? base : base + "/") + "earthmap1k.jpg";
 
     new THREE.TextureLoader().load(
       texturePath,
@@ -179,40 +104,38 @@ export default function LandingPage() {
       (err) => console.error("Globe texture load error:", err)
     );
 
-    const animate = () => {
-      sphere.rotation.y += 0.003;
-      renderer.render(scene, camera);
-      requestAnimationFrame(animate);
-    };
-    animate();
-
-    const resizeGlobe = () => {
-      const size = Math.min(window.innerWidth, window.innerHeight) * 0.5;
+    function sizeGlobe() {
+      const size = Math.min(window.innerWidth, window.innerHeight) * 0.8; // 80% viewport
       renderer.setSize(size, size, false);
       camera.aspect = 1;
       camera.updateProjectionMatrix();
-    };
-    window.addEventListener("resize", resizeGlobe);
-    resizeGlobe();
+    }
+    function animate() {
+      sphere.rotation.y += 0.003;
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    window.addEventListener("resize", sizeGlobe);
+    sizeGlobe(); animate();
 
-    return () => window.removeEventListener("resize", resizeGlobe);
+    return () => window.removeEventListener("resize", sizeGlobe);
   }, []);
 
   return (
     <div className="landing-container">
-      <style>{styles}</style>
-      <canvas ref={starRef} className="canvas-stars" />
-      <canvas ref={globeRef} className="canvas-globe" />
+      <style>{css}</style>
+
+      <canvas ref={starRef} className="stars" />
+      <canvas ref={globeRef} className="globe" />
+
       <div className="overlay">
-        <h1 className="brand">#HUMANITY</h1>
-        <p className="tagline">Welcome to the future of verified connection</p>
-        <div className="buttons">
-          <Link to="/register" className="btn primary">
-            Register
-          </Link>
-          <Link to="/login" className="btn ghost">
-            Log In
-          </Link>
+        <div className="box">
+          <h1 style={{ fontSize: 48, letterSpacing: 4, textShadow: "0 0 12px #fff" }}>#HUMANITY</h1>
+          <p>Sign in or register to continue</p>
+          <div className="buttons">
+            <Link to="/register" className="btn">Register</Link>
+            <Link to="/login" className="btn ghost">Log in</Link>
+          </div>
         </div>
       </div>
     </div>
