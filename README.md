@@ -44,4 +44,3 @@ Hosting	Google Cloud Platform (via CLI deployment)
 🔧 Development Status
 #Humanity is currently in active development. We welcome contributions from developers, designers, security experts, and digital rights advocates who share our vision for a more ethical and human-driven internet.
 
-Would you like me to draft a companion whitepaper or a FAQ explaining how World ID resists AI-driven threats in more technical depth? I’m ready when you are.
